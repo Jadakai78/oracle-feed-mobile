@@ -1,0 +1,395 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Oracle Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root{
+      --bg:#0b0f14; --panel:#121922; --panel2:#182230; --line:#273244;
+      --text:#e8eef7; --muted:#97a6ba; --good:#39d98a; --warn:#ffcc66;
+      --bad:#ff6b6b; --blue:#62b0ff; --violet:#a78bfa; --gold:#f5b942;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:Segoe UI, Inter, Arial, sans-serif;
+      background:var(--bg); color:var(--text);
+    }
+    .wrap{max-width:1500px; margin:0 auto; padding:16px}
+    .topbar{
+      display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:10px; margin-bottom:14px;
+    }
+    .stat,.hero,.card{
+      background:linear-gradient(180deg,var(--panel),var(--panel2));
+      border:1px solid var(--line); border-radius:14px;
+      box-shadow:0 8px 24px rgba(0,0,0,.22);
+    }
+    .stat{padding:12px}
+    .stat .k{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em}
+    .stat .v{font-size:22px; font-weight:700; margin-top:6px}
+    .hero{padding:14px; margin-bottom:14px}
+    .hero h1{margin:0 0 6px; font-size:24px}
+    .hero p{margin:0; color:var(--muted)}
+    .toolbar{display:flex; gap:8px; flex-wrap:wrap; margin:14px 0}
+    .tab{
+      border:1px solid var(--line); background:#111723; color:var(--text);
+      padding:10px 14px; border-radius:999px; cursor:pointer; font-weight:600;
+    }
+    .tab.active{background:var(--blue); color:#08111c; border-color:var(--blue)}
+    .best-grid,.grid{
+      display:grid; gap:12px;
+      grid-template-columns:repeat(auto-fill,minmax(330px,1fr));
+    }
+    .section-title{
+      margin:18px 0 10px; font-size:16px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em;
+    }
+    .card{padding:14px}
+    .row{display:flex; align-items:center; justify-content:space-between; gap:8px}
+    .pair{font-size:22px; font-weight:800; letter-spacing:.02em}
+    .pill{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:4px 10px; border-radius:999px; font-size:12px; font-weight:700;
+      border:1px solid var(--line); background:#0f1520;
+    }
+    .buy{color:var(--good)} .sell{color:var(--bad)}
+    .tier{color:var(--gold)} .owner{color:var(--violet)}
+    .ok{color:var(--good)} .no{color:var(--bad)} .mid{color:var(--warn)}
+    .meta{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
+    .prices{
+      display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:12px 0;
+    }
+    .box{
+      background:#0d141e; border:1px solid var(--line); border-radius:10px; padding:10px;
+    }
+    .box .k{font-size:11px; color:var(--muted); text-transform:uppercase}
+    .box .v{font-size:16px; font-weight:700; margin-top:5px}
+    .scores{
+      display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:10px 0 12px;
+    }
+    .score{
+      background:#0d141e; border:1px solid var(--line); border-radius:10px; padding:8px;
+    }
+    .score .k{font-size:10px; color:var(--muted); text-transform:uppercase}
+    .score .v{font-size:15px; font-weight:700; margin-top:4px}
+    .why{
+      margin-top:10px; font-size:13px; line-height:1.45; color:#d8e2f0;
+      background:#0d141e; border:1px solid var(--line); border-radius:10px; padding:10px;
+    }
+    .hide{display:none}
+    .foot{margin-top:18px; color:var(--muted); font-size:12px}
+    @media (max-width: 980px){
+      .topbar{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+  
+.modebar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0 14px}
+.mode-toggle{display:inline-flex;gap:6px;padding:4px;border:1px solid #243041;border-radius:999px;background:#0f1722}
+.mode-btn{border:0;background:transparent;color:#8ea0bc;padding:8px 12px;border-radius:999px;font-weight:700;letter-spacing:.04em;cursor:pointer}
+.mode-btn.active{background:#1a2332;color:#ecf3ff;box-shadow:inset 0 0 0 1px #32445f}
+.mode-note{font-size:12px;color:#8ea0bc}
+
+.mode-count{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 8px;margin-left:6px;border-radius:999px;background:#101926;border:1px solid #2a3a52;color:#d9e7ff;font-size:11px;font-weight:800;line-height:1}
+.mode-btn.active .mode-count{background:#24344d;border-color:#3b5274;color:#ffffff}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <h1>Oracle Panel</h1>
+      <p>4-tier reader built from oracle-feed.json. Fast scan first, deep detail second.</p>
+    </div>
+
+    <div class="topbar" id="stats"></div>
+
+    <div class="section-title">Best ideas</div>
+    <div class="modebar">
+  <div class="section-title" id="bestTitle">Best ideas</div>
+  <div>
+    <div class="mode-toggle" role="tablist" aria-label="Display mode">
+      <button id="parkMode" class="mode-btn active" type="button">PARK <span id="parkCount" class="mode-count">0</span></button>
+      <button id="liveMode" class="mode-btn" type="button">LIVE <span id="liveCount" class="mode-count">0</span></button>
+    </div>
+    <div id="modeNote" class="mode-note">Park shows broader alert-ready ideas.</div>
+  </div>
+</div><div class="best-grid" id="best"></div>
+
+    <div class="toolbar" id="tabs"></div>
+
+    <div class="section-title" id="sectionLabel">Tier view</div>
+    <div class="grid" id="grid"></div>
+
+    <div class="foot" id="foot"></div>
+  </div>
+
+  <script>
+    const tierOrder = { T1: 1, T2: 2, T3: 3, T4: 4 };
+
+    function fmt(v){
+      if(v === null || v === undefined || v === "") return "—";
+      const n = Number(v);
+      if(Number.isNaN(n)) return String(v);
+      if(Math.abs(n) >= 1000) return n.toLocaleString(undefined,{maximumFractionDigits:4});
+      if(Math.abs(n) >= 1) return n.toLocaleString(undefined,{minimumFractionDigits:0, maximumFractionDigits:6});
+      return n.toFixed(8).replace(/0+$/,'').replace(/\.$/,'');
+    }
+
+    function score(row, key){
+      return row.specialist_scores && row.specialist_scores[key] !== undefined
+        ? row.specialist_scores[key]
+        : null;
+    }
+
+    function shieldLabel(row){
+      const trapRisk = String(row.trap_risk || "").toLowerCase();
+      const vol = String(row.volatility_state || "").toLowerCase();
+      const val = String(row.value_state || "").toLowerCase();
+      const mom = String(row.momentum_bias || "").toLowerCase();
+      const rtsTrap = Number(score(row, "RTS_TRAP") || 0);
+
+      if(trapRisk && trapRisk !== "normal") return "SHIELD: TRAP";
+      if(rtsTrap >= 80) return "SHIELD: TRAP";
+      if(vol === "explosive" || vol === "expansion") return "SHIELD: VOL";
+
+      const premiumFade = val === "premium" && mom === "fade";
+      const discountTrend = val === "discount" && mom === "trend";
+      if(premiumFade || discountTrend) return "SHIELD: FLOW";
+
+      return "SHIELD: NONE";
+    }
+
+    function shieldClass(label){
+      if(label === "SHIELD: NONE") return "ok";
+      if(label === "SHIELD: TRAP") return "no";
+      if(label === "SHIELD: VOL") return "mid";
+      if(label === "SHIELD: FLOW") return "mid";
+      return "mid";
+    }
+
+    function sortRows(rows){
+      return [...rows].sort((a,b) => {
+        const ta = tierOrder[a.reader_tier] ?? 9;
+        const tb = tierOrder[b.reader_tier] ?? 9;
+        if(ta !== tb) return ta - tb;
+        if((b.alert_eligible?1:0) !== (a.alert_eligible?1:0)) return (b.alert_eligible?1:0) - (a.alert_eligible?1:0);
+        if((b.execution_efficiency_pass?1:0) !== (a.execution_efficiency_pass?1:0)) return (b.execution_efficiency_pass?1:0) - (a.execution_efficiency_pass?1:0);
+        return (b.specialist_score ?? 0) - (a.specialist_score ?? 0);
+      });
+    }
+
+    function badgeClass(value){
+      if(value === true || value === "pass" || value === "attack" || value === "T1") return "ok";
+      if(value === false || value === "fail" || value === "ignore" || value === "T4") return "no";
+      return "mid";
+    }
+
+    function card(row){
+      const shield = shieldLabel(row);
+      const div = document.createElement("div");
+      div.className = "card";
+      div.innerHTML = `
+        <div class="row">
+          <div class="pair">${row.pair}</div>
+          <div class="pill ${String(row.side || '').toLowerCase() === 'buy' ? 'buy' : 'sell'}">${row.side || '—'}</div>
+        </div>
+
+        <div class="meta">
+          <span class="pill tier ${badgeClass(row.reader_tier)}">${row.reader_tier || '—'}</span>
+          <span class="pill ${badgeClass(row.attack_label)}">${row.attack_label || '—'}</span>
+          <span class="pill owner">${row.owner_specialist || '—'} ${row.owner_timeframe || ''}</span>
+          <span class="pill ${badgeClass(row.alert_eligible)}">alert ${row.alert_eligible ? 'yes' : 'no'}</span>
+          <span class="pill ${badgeClass(row.execution_efficiency_pass)}">exec ${row.execution_efficiency_pass ? 'pass' : 'fail'}</span>
+          <span class="pill">${row.action_state || '—'}</span>
+          <span class="pill ${shieldClass(shield)}">${shield}</span>
+        </div>
+
+        <div class="prices">
+          <div class="box"><div class="k">Entry</div><div class="v">${fmt(row.entry)}</div></div>
+          <div class="box"><div class="k">Stop</div><div class="v">${fmt(row.stop_loss)}</div></div>
+          <div class="box"><div class="k">TP1</div><div class="v">${fmt(row.tp1)}</div></div>
+        </div>
+
+        <div class="scores">
+          <div class="score"><div class="k">RTS Trap</div><div class="v">${fmt(score(row,"RTS_TRAP"))}</div></div>
+          <div class="score"><div class="k">Gimba Vol</div><div class="v">${fmt(score(row,"GIMBA_VOLATILE"))}</div></div>
+          <div class="score"><div class="k">Gimba Range</div><div class="v">${fmt(score(row,"GIMBA_RANGE"))}</div></div>
+          <div class="score"><div class="k">Structure</div><div class="v">${fmt(score(row,"STRUCTURE"))}</div></div>
+        </div>
+
+        <div class="meta">
+          <span class="pill">top ${fmt(row.specialist_score)}</span>
+          <span class="pill">${row.market_regime || '—'}</span>
+          <span class="pill">${row.value_state || '—'}</span>
+          <span class="pill">${row.momentum_bias || '—'}</span>
+          <span class="pill">${row.volatility_state || '—'}</span>
+          <span class="pill">RR ${fmt(row.tp1_rr)}</span>
+        </div>
+
+        <div class="why">${row.why_now || '—'}</div>
+      `;
+      return div;
+    }
+
+    async function run(){
+      const res = await fetch("./oracle-feed.json", { cache: "no-store" });
+      const data = await res.json();
+      const rows = sortRows(data.rows || []);
+      const oracle = data.oracle || {};
+      const summary = data.summary || {};
+      const tiers = summary.tiers || {};
+
+      document.getElementById("stats").innerHTML = `
+        <div class="stat"><div class="k">Generated</div><div class="v">${new Date(data.generated_at).toLocaleTimeString()}</div></div>
+        <div class="stat"><div class="k">Pairs</div><div class="v">${data.count ?? 0}</div></div>
+        <div class="stat"><div class="k">Market phase</div><div class="v">${oracle.market_phase ?? '—'}</div></div>
+        <div class="stat"><div class="k">FG</div><div class="v">${oracle.fg_label ?? '—'}</div></div>
+        <div class="stat"><div class="k">Alert eligible</div><div class="v">${summary.alert_eligible_count ?? 0}</div></div>
+        <div class="stat"><div class="k">Session</div><div class="v">${oracle.active_session ?? '—'}</div></div>
+      `;
+
+      window.__oracleRows = rows;
+      if(typeof window.__oracleSetMode === "function"){
+        window.__oracleSetMode(rows);
+      } else {
+        const best = rows.filter(r => r.alert_eligible).slice(0, 8);
+        const bestEl = document.getElementById("best") || document.querySelector('[id^="best"]');
+        best.forEach(r => bestEl.appendChild(card(r)));
+      }
+
+      const tabDefs = [
+        { key:"BEST", label:`Best (${best.length})` },
+        { key:"T1", label:`T1 (${tiers.T1 ?? 0})` },
+        { key:"T2", label:`T2 (${tiers.T2 ?? 0})` },
+        { key:"T3", label:`T3 (${tiers.T3 ?? 0})` },
+        { key:"T4", label:`T4 (${tiers.T4 ?? 0})` }
+      ];
+
+      const tabsEl = document.getElementById("tabs");
+      const grid = document.getElementById("grid");
+      const label = document.getElementById("sectionLabel");
+
+      function renderTab(key){
+        grid.innerHTML = "";
+        label.textContent = key === "BEST" ? "Best ranked setups" : `${key} view`;
+        let subset = [];
+        if(key === "BEST") subset = rows.filter(r => r.alert_eligible).slice(0, 12);
+        else subset = rows.filter(r => r.reader_tier === key);
+        subset.forEach(r => grid.appendChild(card(r)));
+        [...tabsEl.querySelectorAll(".tab")].forEach(btn => btn.classList.toggle("active", btn.dataset.key === key));
+      }
+
+      tabDefs.forEach((t, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "tab" + (idx === 0 ? " active" : "");
+        btn.dataset.key = t.key;
+        btn.textContent = t.label;
+        btn.onclick = () => renderTab(t.key);
+        tabsEl.appendChild(btn);
+      });
+
+      document.getElementById("foot").textContent =
+        `Source: ${data.source || "oracle-feed.json"} | Watchlist: ${oracle.watchlist_count ?? 0} | Opportunities: ${oracle.opportunity_count ?? 0}`;
+
+      renderTab("BEST");
+    }
+
+    run().catch(err => {
+      document.body.innerHTML = '<div style="padding:20px;color:#ff8080;font-family:Segoe UI, sans-serif">Failed to load oracle-feed.json: ' + err.message + '</div>';
+    });
+  
+function modeRows(rows, mode){
+  if(mode === "live"){
+    return rows.filter(r => r.alert_eligible && r.execution_efficiency_pass);
+  }
+  return rows.filter(r => r.alert_eligible);
+}
+
+function renderBest(rows, mode){
+  const bestEl = document.getElementById("best") || document.querySelector('[id^="best"]');
+  const bestTitle = document.getElementById("bestTitle");
+  const modeNote = document.getElementById("modeNote");
+  const parkBtn = document.getElementById("parkMode");
+  const liveBtn = document.getElementById("liveMode");
+
+  if(!bestEl) return;
+
+  bestEl.innerHTML = "";
+  const filtered = modeRows(rows, mode).slice(0, 8);
+  const bestShielded = filtered.slice(0,4).map(shieldLabel).filter(x => x !== "SHIELD: NONE");
+
+  if(bestTitle){
+    bestTitle.textContent = bestShielded.length
+      ? `Best ideas (${mode.toUpperCase()} | shielded: ${bestShielded.length})`
+      : `Best ideas (${mode.toUpperCase()})`;
+  }
+
+  if(modeNote){
+    modeNote.textContent = mode === "live"
+      ? "Live shows alert-eligible rows that also pass execution."
+      : "Park shows broader alert-ready ideas.";
+  }
+
+  if(parkBtn && liveBtn){
+    parkBtn.classList.toggle("active", mode === "park");
+    liveBtn.classList.toggle("active", mode === "live");
+  }
+
+  filtered.forEach(r => bestEl.appendChild(card(r)));
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  if(window.__liveParkBound) return;
+  window.__liveParkBound = true;
+
+  const parkBtn = document.getElementById("parkMode");
+  const liveBtn = document.getElementById("liveMode");
+  if(!parkBtn || !liveBtn) return;
+
+  let currentMode = "park";
+
+  const rerender = () => {
+    if(typeof window.__oracleRows !== "undefined"){
+      renderBest(window.__oracleRows, currentMode);
+    }
+  };
+
+  parkBtn.addEventListener("click", () => {
+    currentMode = "park";
+    rerender();
+  });
+
+  liveBtn.addEventListener("click", () => {
+    currentMode = "live";
+    rerender();
+  });
+
+  window.__oracleSetMode = (rows) => {
+    window.__oracleRows = rows;
+    rerender();
+  };
+});
+
+function updateModeCounts(){
+  const rows = Array.isArray(window.__oracleRows) ? window.__oracleRows : [];
+  const parkCount = document.getElementById("parkCount");
+  const liveCount = document.getElementById("liveCount");
+
+  const park = rows.filter(r => r && r.alert_eligible === true).length;
+  const live = rows.filter(r => r && r.alert_eligible === true && r.execution_efficiency_pass === true).length;
+
+  if(parkCount) parkCount.textContent = String(park);
+  if(liveCount) liveCount.textContent = String(live);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(updateModeCounts, 150);
+  setTimeout(updateModeCounts, 600);
+  setInterval(updateModeCounts, 1000);
+});
+</script>
+</body>
+</html>
+
+
+
+
+
+
