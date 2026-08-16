@@ -1,6 +1,6 @@
 {
   "schema_version": 4,
-  "generated_at": "2026-08-16T17:42:22.153551+00:00",
+  "generated_at": "2026-08-16T17:48:45.153927+00:00",
   "universe": {
     "requested_pairs": 49,
     "scanned_pairs": 49,
@@ -19,43 +19,55 @@
       "schema_version": 4,
       "pair": "AAVE/USD",
       "symbol": "AAVE",
-      "ts": "2026-08-16T17:42:22.132702+00:00",
+      "ts": "2026-08-16T17:48:45.124853+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
       "eligibility": "REJECTED",
-      "rejected_at": "gate1",
+      "rejected_at": "gate2",
       "geometry": null,
       "gates": {
         "data_integrity": {
+          "status": "PASS",
+          "reason": "valid_completed_candles",
+          "metrics": {
+            "bar_count": 100
+          }
+        },
+        "higher_timeframe_direction": {
           "status": "FAIL",
-          "reason": "invalid_ohlc_last_bar",
-          "metrics": {}
+          "reason": "no_clear_htf_direction",
+          "metrics": {
+            "ema50": 86.357293,
+            "ema200": 86.2775,
+            "price": 86.72,
+            "timeframe": "m15_fallback"
+          }
         },
         "publish_learn": {
           "status": "FAIL",
-          "reason": "rejected_at_gate1",
+          "reason": "rejected_at_gate2",
           "metrics": {}
         }
       },
       "delta_norm": 0.0,
       "speed": 0.0,
       "accel": 1.0,
-      "atr": null,
+      "atr": 0.13817848,
       "rel_vol": 1.0,
-      "price": 86.74,
+      "price": 86.68,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "ADA/USD",
       "symbol": "ADA",
-      "ts": "2026-08-16T17:42:22.137676+00:00",
+      "ts": "2026-08-16T17:48:45.129329+00:00",
       "htf_direction": "DOWN",
       "side": "NONE",
       "score": 0,
       "eligibility": "REJECTED",
-      "rejected_at": "gate3",
+      "rejected_at": "gate5",
       "geometry": null,
       "gates": {
         "data_integrity": {
@@ -69,42 +81,59 @@
           "status": "PASS",
           "reason": "htf_down",
           "metrics": {
-            "ema50": 0.176611,
-            "ema200": 0.176892,
-            "price": 0.176432,
+            "ema50": 0.176593,
+            "ema200": 0.176868,
+            "price": 0.176229,
             "direction": "DOWN",
             "timeframe": "m15_fallback"
           }
         },
         "local_alignment": {
-          "status": "FAIL",
-          "reason": "local_structure_not_aligned",
+          "status": "PASS",
+          "reason": "local_aligned_with_htf",
           "metrics": {
             "htf": "DOWN",
-            "price": 0.176432,
-            "ema20": 0.176464,
+            "price": 0.176229,
+            "ema20": 0.176441,
             "bias": "NEUTRAL"
+          }
+        },
+        "pressure_confirmation": {
+          "status": "PASS",
+          "reason": "pressure_balanced_not_confirmed",
+          "metrics": {
+            "delta_norm": -0.1914,
+            "cvd_slope": -0.000489,
+            "warning": "pressure_weak"
+          }
+        },
+        "participation": {
+          "status": "FAIL",
+          "reason": "thin_market",
+          "metrics": {
+            "rel_vol": 0.32,
+            "atr": 0.000382
           }
         },
         "publish_learn": {
           "status": "FAIL",
-          "reason": "rejected_at_gate3",
+          "reason": "rejected_at_gate5",
           "metrics": {}
         }
       },
-      "delta_norm": 0.0,
-      "speed": 0.0,
-      "accel": 1.0,
-      "atr": 0.00038969,
-      "rel_vol": 1.0,
-      "price": 0.176439,
+      "delta_norm": -0.1914,
+      "speed": 0.2343,
+      "accel": 3.0303,
+      "atr": 0.000382,
+      "rel_vol": 0.32,
+      "price": 0.176172,
       "quarantined": true
     },
     {
       "schema_version": 4,
       "pair": "AIXBT/USD",
       "symbol": "AIXBT",
-      "ts": "2026-08-16T17:42:22.137786+00:00",
+      "ts": "2026-08-16T17:48:45.131628+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -135,7 +164,7 @@
       "schema_version": 4,
       "pair": "ALGO/USD",
       "symbol": "ALGO",
-      "ts": "2026-08-16T17:42:22.138243+00:00",
+      "ts": "2026-08-16T17:48:45.132022+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -154,9 +183,9 @@
           "status": "FAIL",
           "reason": "no_clear_htf_direction",
           "metrics": {
-            "ema50": 0.079025,
-            "ema200": 0.079219,
-            "price": 0.07909,
+            "ema50": 0.07903,
+            "ema200": 0.079212,
+            "price": 0.07916,
             "timeframe": "m15_fallback"
           }
         },
@@ -169,16 +198,16 @@
       "delta_norm": 0.0,
       "speed": 0.0,
       "accel": 1.0,
-      "atr": 0.00011443,
+      "atr": 0.0001127,
       "rel_vol": 1.0,
-      "price": 0.07907,
+      "price": 0.0791,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "APT/USD",
       "symbol": "APT",
-      "ts": "2026-08-16T17:42:22.138929+00:00",
+      "ts": "2026-08-16T17:48:45.132211+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -197,9 +226,9 @@
           "status": "FAIL",
           "reason": "no_clear_htf_direction",
           "metrics": {
-            "ema50": 0.533393,
-            "ema200": 0.534245,
-            "price": 0.5335,
+            "ema50": 0.533394,
+            "ema200": 0.534174,
+            "price": 0.5334,
             "timeframe": "m15_fallback"
           }
         },
@@ -212,16 +241,237 @@
       "delta_norm": 0.0,
       "speed": 0.0,
       "accel": 1.0,
-      "atr": 0.00070957,
+      "atr": 0.00070889,
       "rel_vol": 1.0,
-      "price": 0.5331,
+      "price": 0.5334,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "ARB/USD",
       "symbol": "ARB",
-      "ts": "2026-08-16T17:42:22.139064+00:00",
+      "ts": "2026-08-16T17:48:45.132626+00:00",
+      "htf_direction": "UP",
+      "side": "NONE",
+      "score": 0,
+      "eligibility": "REJECTED",
+      "rejected_at": "gate3",
+      "geometry": null,
+      "gates": {
+        "data_integrity": {
+          "status": "PASS",
+          "reason": "valid_completed_candles",
+          "metrics": {
+            "bar_count": 100
+          }
+        },
+        "higher_timeframe_direction": {
+          "status": "PASS",
+          "reason": "htf_up",
+          "metrics": {
+            "ema50": 0.074022,
+            "ema200": 0.073542,
+            "price": 0.0746,
+            "direction": "UP",
+            "timeframe": "m15_fallback"
+          }
+        },
+        "local_alignment": {
+          "status": "FAIL",
+          "reason": "local_structure_not_aligned",
+          "metrics": {
+            "htf": "UP",
+            "price": 0.0746,
+            "ema20": 0.074427,
+            "bias": "NEUTRAL"
+          }
+        },
+        "publish_learn": {
+          "status": "FAIL",
+          "reason": "rejected_at_gate3",
+          "metrics": {}
+        }
+      },
+      "delta_norm": 0.0,
+      "speed": 0.0,
+      "accel": 1.0,
+      "atr": 0.00018248,
+      "rel_vol": 1.0,
+      "price": 0.0746,
+      "quarantined": false
+    },
+    {
+      "schema_version": 4,
+      "pair": "ASTER/USD",
+      "symbol": "ASTER",
+      "ts": "2026-08-16T17:48:45.132878+00:00",
+      "htf_direction": "UP",
+      "side": "NONE",
+      "score": 0,
+      "eligibility": "REJECTED",
+      "rejected_at": "gate3",
+      "geometry": null,
+      "gates": {
+        "data_integrity": {
+          "status": "PASS",
+          "reason": "valid_completed_candles",
+          "metrics": {
+            "bar_count": 100
+          }
+        },
+        "higher_timeframe_direction": {
+          "status": "PASS",
+          "reason": "htf_up",
+          "metrics": {
+            "ema50": 0.600649,
+            "ema200": 0.600196,
+            "price": 0.6012,
+            "direction": "UP",
+            "timeframe": "m15_fallback"
+          }
+        },
+        "local_alignment": {
+          "status": "FAIL",
+          "reason": "local_structure_not_aligned",
+          "metrics": {
+            "htf": "UP",
+            "price": 0.6012,
+            "ema20": 0.600786,
+            "bias": "NEUTRAL"
+          }
+        },
+        "publish_learn": {
+          "status": "FAIL",
+          "reason": "rejected_at_gate3",
+          "metrics": {}
+        }
+      },
+      "delta_norm": 0.0,
+      "speed": 0.0,
+      "accel": 1.0,
+      "atr": 0.00020208,
+      "rel_vol": 1.0,
+      "price": 0.60095,
+      "quarantined": false
+    },
+    {
+      "schema_version": 4,
+      "pair": "ATOM/USD",
+      "symbol": "ATOM",
+      "ts": "2026-08-16T17:48:45.133365+00:00",
+      "htf_direction": "NONE",
+      "side": "NONE",
+      "score": 0,
+      "eligibility": "REJECTED",
+      "rejected_at": "gate2",
+      "geometry": null,
+      "gates": {
+        "data_integrity": {
+          "status": "PASS",
+          "reason": "valid_completed_candles",
+          "metrics": {
+            "bar_count": 100
+          }
+        },
+        "higher_timeframe_direction": {
+          "status": "FAIL",
+          "reason": "no_clear_htf_direction",
+          "metrics": {
+            "ema50": 1.482898,
+            "ema200": 1.481877,
+            "price": 1.4714,
+            "timeframe": "m15_fallback"
+          }
+        },
+        "publish_learn": {
+          "status": "FAIL",
+          "reason": "rejected_at_gate2",
+          "metrics": {}
+        }
+      },
+      "delta_norm": 0.0,
+      "speed": 0.0,
+      "accel": 1.0,
+      "atr": 0.00362718,
+      "rel_vol": 1.0,
+      "price": 1.4707,
+      "quarantined": false
+    },
+    {
+      "schema_version": 4,
+      "pair": "AVAX/USD",
+      "symbol": "AVAX",
+      "ts": "2026-08-16T17:48:45.133836+00:00",
+      "htf_direction": "DOWN",
+      "side": "NONE",
+      "score": 0,
+      "eligibility": "REJECTED",
+      "rejected_at": "gate5",
+      "geometry": null,
+      "gates": {
+        "data_integrity": {
+          "status": "PASS",
+          "reason": "valid_completed_candles",
+          "metrics": {
+            "bar_count": 100
+          }
+        },
+        "higher_timeframe_direction": {
+          "status": "PASS",
+          "reason": "htf_down",
+          "metrics": {
+            "ema50": 6.379186,
+            "ema200": 6.38543,
+            "price": 6.362,
+            "direction": "DOWN",
+            "timeframe": "m15_fallback"
+          }
+        },
+        "local_alignment": {
+          "status": "PASS",
+          "reason": "local_aligned_with_htf",
+          "metrics": {
+            "htf": "DOWN",
+            "price": 6.362,
+            "ema20": 6.38295,
+            "bias": "NEUTRAL"
+          }
+        },
+        "pressure_confirmation": {
+          "status": "PASS",
+          "reason": "pressure_confirmed",
+          "metrics": {
+            "delta_norm": -0.3334,
+            "cvd_slope": -0.024
+          }
+        },
+        "participation": {
+          "status": "FAIL",
+          "reason": "atr_compression",
+          "metrics": {
+            "atr_pct": 0.196,
+            "atr": 0.012462
+          }
+        },
+        "publish_learn": {
+          "status": "FAIL",
+          "reason": "rejected_at_gate5",
+          "metrics": {}
+        }
+      },
+      "delta_norm": -0.3334,
+      "speed": 0.0802,
+      "accel": 0.5556,
+      "atr": 0.01246205,
+      "rel_vol": 1.075,
+      "price": 6.358,
+      "quarantined": false
+    },
+    {
+      "schema_version": 4,
+      "pair": "BCH/USD",
+      "symbol": "BCH",
+      "ts": "2026-08-16T17:48:45.133993+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -245,15 +495,15 @@
       "accel": 1.0,
       "atr": null,
       "rel_vol": 1.0,
-      "price": 0.0746,
+      "price": 204.11,
       "quarantined": false
     },
     {
       "schema_version": 4,
-      "pair": "ASTER/USD",
-      "symbol": "ASTER",
-      "ts": "2026-08-16T17:42:22.139722+00:00",
-      "htf_direction": "UP",
+      "pair": "BNB/USD",
+      "symbol": "BNB",
+      "ts": "2026-08-16T17:48:45.134595+00:00",
+      "htf_direction": "DOWN",
       "side": "NONE",
       "score": 0,
       "eligibility": "REJECTED",
@@ -269,12 +519,12 @@
         },
         "higher_timeframe_direction": {
           "status": "PASS",
-          "reason": "htf_up",
+          "reason": "htf_down",
           "metrics": {
-            "ema50": 0.600627,
-            "ema200": 0.600184,
-            "price": 0.60124,
-            "direction": "UP",
+            "ema50": 606.70003,
+            "ema200": 607.1787,
+            "price": 605.91,
+            "direction": "DOWN",
             "timeframe": "m15_fallback"
           }
         },
@@ -282,27 +532,26 @@
           "status": "PASS",
           "reason": "local_aligned_with_htf",
           "metrics": {
-            "htf": "UP",
-            "price": 0.60124,
-            "ema20": 0.600743,
+            "htf": "DOWN",
+            "price": 605.91,
+            "ema20": 606.630606,
             "bias": "NEUTRAL"
           }
         },
         "pressure_confirmation": {
           "status": "PASS",
-          "reason": "pressure_balanced_not_confirmed",
+          "reason": "pressure_confirmed",
           "metrics": {
-            "delta_norm": 0.0,
-            "cvd_slope": 0.00048,
-            "warning": "pressure_weak"
+            "delta_norm": -0.2746,
+            "cvd_slope": -0.73
           }
         },
         "participation": {
           "status": "FAIL",
           "reason": "atr_compression",
           "metrics": {
-            "atr_pct": 0.0357,
-            "atr": 0.000215
+            "atr_pct": 0.0962,
+            "atr": 0.582543
           }
         },
         "publish_learn": {
@@ -311,19 +560,19 @@
           "metrics": {}
         }
       },
-      "delta_norm": 0.0,
-      "speed": 1.0,
-      "accel": 1.0,
-      "atr": 0.00021451,
-      "rel_vol": 10.77,
-      "price": 0.6012,
+      "delta_norm": -0.2746,
+      "speed": 0.7896,
+      "accel": 2.0833,
+      "atr": 0.58254311,
+      "rel_vol": 1.523,
+      "price": 605.72,
       "quarantined": false
     },
     {
       "schema_version": 4,
-      "pair": "ATOM/USD",
-      "symbol": "ATOM",
-      "ts": "2026-08-16T17:42:22.139944+00:00",
+      "pair": "BTC/USD",
+      "symbol": "BTC",
+      "ts": "2026-08-16T17:48:45.134774+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -342,9 +591,9 @@
           "status": "FAIL",
           "reason": "no_clear_htf_direction",
           "metrics": {
-            "ema50": 1.48337,
-            "ema200": 1.481896,
-            "price": 1.4725,
+            "ema50": 63039.800618,
+            "ema200": 63021.736,
+            "price": 63073.0,
             "timeframe": "m15_fallback"
           }
         },
@@ -357,17 +606,17 @@
       "delta_norm": 0.0,
       "speed": 0.0,
       "accel": 1.0,
-      "atr": 0.0038214,
+      "atr": 40.77212668,
       "rel_vol": 1.0,
-      "price": 1.4714,
+      "price": 63073.1,
       "quarantined": false
     },
     {
       "schema_version": 4,
-      "pair": "AVAX/USD",
-      "symbol": "AVAX",
-      "ts": "2026-08-16T17:42:22.140272+00:00",
-      "htf_direction": "DOWN",
+      "pair": "CRV/USD",
+      "symbol": "CRV",
+      "ts": "2026-08-16T17:48:45.134973+00:00",
+      "htf_direction": "UP",
       "side": "NONE",
       "score": 0,
       "eligibility": "REJECTED",
@@ -383,12 +632,12 @@
         },
         "higher_timeframe_direction": {
           "status": "PASS",
-          "reason": "htf_down",
+          "reason": "htf_up",
           "metrics": {
-            "ema50": 6.379914,
-            "ema200": 6.38678,
-            "price": 6.367,
-            "direction": "DOWN",
+            "ema50": 0.247207,
+            "ema200": 0.243623,
+            "price": 0.25214,
+            "direction": "UP",
             "timeframe": "m15_fallback"
           }
         },
@@ -396,9 +645,9 @@
           "status": "FAIL",
           "reason": "local_structure_not_aligned",
           "metrics": {
-            "htf": "DOWN",
-            "price": 6.367,
-            "ema20": 6.385155,
+            "htf": "UP",
+            "price": 0.25214,
+            "ema20": 0.249538,
             "bias": "NEUTRAL"
           }
         },
@@ -411,178 +660,21 @@
       "delta_norm": 0.0,
       "speed": 0.0,
       "accel": 1.0,
-      "atr": 0.01257409,
+      "atr": 0.00155274,
       "rel_vol": 1.0,
-      "price": 6.369,
+      "price": 0.25226,
       "quarantined": false
     },
     {
       "schema_version": 4,
-      "pair": "BCH/USD",
-      "symbol": "BCH",
-      "ts": "2026-08-16T17:42:22.140654+00:00",
-      "htf_direction": "NONE",
-      "side": "NONE",
-      "score": 0,
-      "eligibility": "REJECTED",
-      "rejected_at": "gate2",
-      "geometry": null,
-      "gates": {
-        "data_integrity": {
-          "status": "PASS",
-          "reason": "valid_completed_candles",
-          "metrics": {
-            "bar_count": 100
-          }
-        },
-        "higher_timeframe_direction": {
-          "status": "FAIL",
-          "reason": "no_clear_htf_direction",
-          "metrics": {
-            "ema50": 204.059611,
-            "ema200": 203.8402,
-            "price": 204.2,
-            "timeframe": "m15_fallback"
-          }
-        },
-        "publish_learn": {
-          "status": "FAIL",
-          "reason": "rejected_at_gate2",
-          "metrics": {}
-        }
-      },
-      "delta_norm": 0.0,
-      "speed": 0.0,
-      "accel": 1.0,
-      "atr": 0.19751381,
-      "rel_vol": 1.0,
-      "price": 204.2,
-      "quarantined": false
-    },
-    {
-      "schema_version": 4,
-      "pair": "BNB/USD",
-      "symbol": "BNB",
-      "ts": "2026-08-16T17:42:22.140963+00:00",
-      "htf_direction": "DOWN",
-      "side": "NONE",
-      "score": 0,
-      "eligibility": "REJECTED",
-      "rejected_at": "gate5",
-      "geometry": null,
-      "gates": {
-        "data_integrity": {
-          "status": "PASS",
-          "reason": "valid_completed_candles",
-          "metrics": {
-            "bar_count": 100
-          }
-        },
-        "higher_timeframe_direction": {
-          "status": "PASS",
-          "reason": "htf_down",
-          "metrics": {
-            "ema50": 606.73154,
-            "ema200": 607.2268,
-            "price": 606.49,
-            "direction": "DOWN",
-            "timeframe": "m15_fallback"
-          }
-        },
-        "local_alignment": {
-          "status": "PASS",
-          "reason": "local_aligned_with_htf",
-          "metrics": {
-            "htf": "DOWN",
-            "price": 606.49,
-            "ema20": 606.706465,
-            "bias": "NEUTRAL"
-          }
-        },
-        "pressure_confirmation": {
-          "status": "PASS",
-          "reason": "pressure_balanced_not_confirmed",
-          "metrics": {
-            "delta_norm": -0.0683,
-            "cvd_slope": -0.62,
-            "warning": "pressure_weak"
-          }
-        },
-        "participation": {
-          "status": "FAIL",
-          "reason": "atr_compression",
-          "metrics": {
-            "atr_pct": 0.0946,
-            "atr": 0.573522
-          }
-        },
-        "publish_learn": {
-          "status": "FAIL",
-          "reason": "rejected_at_gate5",
-          "metrics": {}
-        }
-      },
-      "delta_norm": -0.0683,
-      "speed": 0.1133,
-      "accel": 1.5,
-      "atr": 0.57352211,
-      "rel_vol": 0.767,
-      "price": 606.14,
-      "quarantined": false
-    },
-    {
-      "schema_version": 4,
-      "pair": "BTC/USD",
-      "symbol": "BTC",
-      "ts": "2026-08-16T17:42:22.141342+00:00",
-      "htf_direction": "NONE",
-      "side": "NONE",
-      "score": 0,
-      "eligibility": "REJECTED",
-      "rejected_at": "gate2",
-      "geometry": null,
-      "gates": {
-        "data_integrity": {
-          "status": "PASS",
-          "reason": "valid_completed_candles",
-          "metrics": {
-            "bar_count": 100
-          }
-        },
-        "higher_timeframe_direction": {
-          "status": "FAIL",
-          "reason": "no_clear_htf_direction",
-          "metrics": {
-            "ema50": 63038.422767,
-            "ema200": 63021.293,
-            "price": 63119.0,
-            "timeframe": "m15_fallback"
-          }
-        },
-        "publish_learn": {
-          "status": "FAIL",
-          "reason": "rejected_at_gate2",
-          "metrics": {}
-        }
-      },
-      "delta_norm": 0.0,
-      "speed": 0.0,
-      "accel": 1.0,
-      "atr": 39.8542506,
-      "rel_vol": 1.0,
-      "price": 63125.5,
-      "quarantined": false
-    },
-    {
-      "schema_version": 4,
-      "pair": "CRV/USD",
-      "symbol": "CRV",
-      "ts": "2026-08-16T17:42:22.142720+00:00",
+      "pair": "DOGE/USD",
+      "symbol": "DOGE",
+      "ts": "2026-08-16T17:48:45.135172+00:00",
       "htf_direction": "UP",
       "side": "NONE",
       "score": 0,
       "eligibility": "REJECTED",
-      "rejected_at": "gate7",
+      "rejected_at": "gate3",
       "geometry": null,
       "gates": {
         "data_integrity": {
@@ -596,115 +688,42 @@
           "status": "PASS",
           "reason": "htf_up",
           "metrics": {
-            "ema50": 0.246999,
-            "ema200": 0.243494,
-            "price": 0.25417,
+            "ema50": 0.069845,
+            "ema200": 0.06978,
+            "price": 0.069927,
             "direction": "UP",
             "timeframe": "m15_fallback"
           }
         },
         "local_alignment": {
-          "status": "PASS",
-          "reason": "local_aligned_with_htf",
+          "status": "FAIL",
+          "reason": "local_structure_not_aligned",
           "metrics": {
             "htf": "UP",
-            "price": 0.25417,
-            "ema20": 0.249265,
+            "price": 0.069927,
+            "ema20": 0.069914,
             "bias": "NEUTRAL"
           }
         },
-        "pressure_confirmation": {
-          "status": "PASS",
-          "reason": "pressure_confirmed",
-          "metrics": {
-            "delta_norm": 0.7128,
-            "cvd_slope": 0.00546
-          }
-        },
-        "participation": {
-          "status": "PASS",
-          "reason": "adequate_participation",
-          "metrics": {
-            "rel_vol": 2.023,
-            "atr": 0.001492,
-            "atr_pct": 0.5917
-          }
-        },
-        "noise_no_chase": {
-          "status": "PASS",
-          "reason": "noise_check_passed",
-          "metrics": {}
-        },
-        "trigger_risk": {
-          "status": "FAIL",
-          "reason": "speed_below_floor",
-          "metrics": {
-            "speed": 0.1173,
-            "floor": 0.5
-          }
-        },
         "publish_learn": {
           "status": "FAIL",
-          "reason": "rejected_at_gate7",
-          "metrics": {}
-        }
-      },
-      "delta_norm": 0.7128,
-      "speed": 0.1173,
-      "accel": 4.1489,
-      "atr": 0.00149214,
-      "rel_vol": 2.023,
-      "price": 0.25218,
-      "quarantined": false
-    },
-    {
-      "schema_version": 4,
-      "pair": "DOGE/USD",
-      "symbol": "DOGE",
-      "ts": "2026-08-16T17:42:22.142951+00:00",
-      "htf_direction": "NONE",
-      "side": "NONE",
-      "score": 0,
-      "eligibility": "REJECTED",
-      "rejected_at": "gate2",
-      "geometry": null,
-      "gates": {
-        "data_integrity": {
-          "status": "PASS",
-          "reason": "valid_completed_candles",
-          "metrics": {
-            "bar_count": 100
-          }
-        },
-        "higher_timeframe_direction": {
-          "status": "FAIL",
-          "reason": "no_clear_htf_direction",
-          "metrics": {
-            "ema50": 0.069842,
-            "ema200": 0.06978,
-            "price": 0.069933,
-            "timeframe": "m15_fallback"
-          }
-        },
-        "publish_learn": {
-          "status": "FAIL",
-          "reason": "rejected_at_gate2",
+          "reason": "rejected_at_gate3",
           "metrics": {}
         }
       },
       "delta_norm": 0.0,
       "speed": 0.0,
       "accel": 1.0,
-      "atr": 6.818e-05,
+      "atr": 6.85e-05,
       "rel_vol": 1.0,
-      "price": 0.069972,
+      "price": 0.0699206,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "DOT/USD",
       "symbol": "DOT",
-      "ts": "2026-08-16T17:42:22.143182+00:00",
+      "ts": "2026-08-16T17:48:45.135368+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -724,8 +743,8 @@
           "reason": "no_clear_htf_direction",
           "metrics": {
             "ema50": 0.762489,
-            "ema200": 0.762236,
-            "price": 0.7648,
+            "ema200": 0.762138,
+            "price": 0.7626,
             "timeframe": "m15_fallback"
           }
         },
@@ -738,16 +757,16 @@
       "delta_norm": 0.0,
       "speed": 0.0,
       "accel": 1.0,
-      "atr": 0.00138785,
+      "atr": 0.00144594,
       "rel_vol": 1.0,
-      "price": 0.7634,
+      "price": 0.7627,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "ETC/USD",
       "symbol": "ETC",
-      "ts": "2026-08-16T17:42:22.143560+00:00",
+      "ts": "2026-08-16T17:48:45.135484+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -757,7 +776,7 @@
       "gates": {
         "data_integrity": {
           "status": "FAIL",
-          "reason": "invalid_ohlc_last_bar",
+          "reason": "zero_volume_last_bar",
           "metrics": {}
         },
         "publish_learn": {
@@ -778,7 +797,7 @@
       "schema_version": 4,
       "pair": "ETH/USD",
       "symbol": "ETH",
-      "ts": "2026-08-16T17:42:22.143759+00:00",
+      "ts": "2026-08-16T17:48:45.135673+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -797,9 +816,9 @@
           "status": "FAIL",
           "reason": "no_clear_htf_direction",
           "metrics": {
-            "ema50": 1881.254915,
-            "ema200": 1880.7487,
-            "price": 1885.35,
+            "ema50": 1881.337143,
+            "ema200": 1880.7578,
+            "price": 1883.3,
             "timeframe": "m15_fallback"
           }
         },
@@ -812,16 +831,16 @@
       "delta_norm": 0.0,
       "speed": 0.0,
       "accel": 1.0,
-      "atr": 1.44972156,
+      "atr": 1.56689856,
       "rel_vol": 1.0,
-      "price": 1884.78,
+      "price": 1883.29,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "FARTCOIN/USD",
       "symbol": "FARTCOIN",
-      "ts": "2026-08-16T17:42:22.143965+00:00",
+      "ts": "2026-08-16T17:48:45.135958+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -840,9 +859,9 @@
           "status": "FAIL",
           "reason": "no_clear_htf_direction",
           "metrics": {
-            "ema50": 0.143326,
-            "ema200": 0.143181,
-            "price": 0.1447,
+            "ema50": 0.143359,
+            "ema200": 0.143201,
+            "price": 0.1442,
             "timeframe": "m15_fallback"
           }
         },
@@ -855,16 +874,16 @@
       "delta_norm": 0.0,
       "speed": 0.0,
       "accel": 1.0,
-      "atr": 0.00058292,
+      "atr": 0.00059124,
       "rel_vol": 1.0,
-      "price": 0.1444,
+      "price": 0.1442,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "FIL/USD",
       "symbol": "FIL",
-      "ts": "2026-08-16T17:42:22.144193+00:00",
+      "ts": "2026-08-16T17:48:45.136168+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -874,7 +893,7 @@
       "gates": {
         "data_integrity": {
           "status": "FAIL",
-          "reason": "zero_volume_last_bar",
+          "reason": "invalid_ohlc_last_bar",
           "metrics": {}
         },
         "publish_learn": {
@@ -895,7 +914,7 @@
       "schema_version": 4,
       "pair": "GRASS/USD",
       "symbol": "GRASS",
-      "ts": "2026-08-16T17:42:22.144508+00:00",
+      "ts": "2026-08-16T17:48:45.136566+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -914,9 +933,9 @@
           "status": "FAIL",
           "reason": "no_clear_htf_direction",
           "metrics": {
-            "ema50": 0.331077,
-            "ema200": 0.330131,
-            "price": 0.3318,
+            "ema50": 0.331105,
+            "ema200": 0.330112,
+            "price": 0.3315,
             "timeframe": "m15_fallback"
           }
         },
@@ -929,7 +948,7 @@
       "delta_norm": 0.0,
       "speed": 0.0,
       "accel": 1.0,
-      "atr": 0.00083887,
+      "atr": 0.00083619,
       "rel_vol": 1.0,
       "price": 0.3315,
       "quarantined": false
@@ -938,12 +957,12 @@
       "schema_version": 4,
       "pair": "HBAR/USD",
       "symbol": "HBAR",
-      "ts": "2026-08-16T17:42:22.145267+00:00",
-      "htf_direction": "NONE",
+      "ts": "2026-08-16T17:48:45.136874+00:00",
+      "htf_direction": "DOWN",
       "side": "NONE",
       "score": 0,
       "eligibility": "REJECTED",
-      "rejected_at": "gate2",
+      "rejected_at": "gate3",
       "geometry": null,
       "gates": {
         "data_integrity": {
@@ -954,34 +973,45 @@
           }
         },
         "higher_timeframe_direction": {
-          "status": "FAIL",
-          "reason": "no_clear_htf_direction",
+          "status": "PASS",
+          "reason": "htf_down",
           "metrics": {
             "ema50": 0.065144,
-            "ema200": 0.065251,
-            "price": 0.06517,
+            "ema200": 0.065249,
+            "price": 0.06514,
+            "direction": "DOWN",
             "timeframe": "m15_fallback"
+          }
+        },
+        "local_alignment": {
+          "status": "FAIL",
+          "reason": "local_structure_not_aligned",
+          "metrics": {
+            "htf": "DOWN",
+            "price": 0.06514,
+            "ema20": 0.065137,
+            "bias": "NEUTRAL"
           }
         },
         "publish_learn": {
           "status": "FAIL",
-          "reason": "rejected_at_gate2",
+          "reason": "rejected_at_gate3",
           "metrics": {}
         }
       },
       "delta_norm": 0.0,
       "speed": 0.0,
       "accel": 1.0,
-      "atr": 7.21e-05,
+      "atr": 7.124e-05,
       "rel_vol": 1.0,
-      "price": 0.06519,
+      "price": 0.06516,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "HYPE/USD",
       "symbol": "HYPE",
-      "ts": "2026-08-16T17:42:22.145524+00:00",
+      "ts": "2026-08-16T17:48:45.137133+00:00",
       "htf_direction": "UP",
       "side": "NONE",
       "score": 0,
@@ -1000,9 +1030,9 @@
           "status": "PASS",
           "reason": "htf_up",
           "metrics": {
-            "ema50": 57.329186,
-            "ema200": 57.1483,
-            "price": 57.84,
+            "ema50": 57.34669,
+            "ema200": 57.1581,
+            "price": 57.77,
             "direction": "UP",
             "timeframe": "m15_fallback"
           }
@@ -1012,8 +1042,8 @@
           "reason": "local_structure_not_aligned",
           "metrics": {
             "htf": "UP",
-            "price": 57.84,
-            "ema20": 57.495986,
+            "price": 57.77,
+            "ema20": 57.522086,
             "bias": "NEUTRAL"
           }
         },
@@ -1026,202 +1056,16 @@
       "delta_norm": 0.0,
       "speed": 0.0,
       "accel": 1.0,
-      "atr": 0.15374835,
+      "atr": 0.15416686,
       "rel_vol": 1.0,
-      "price": 57.92,
+      "price": 57.77,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "INJ/USD",
       "symbol": "INJ",
-      "ts": "2026-08-16T17:42:22.145736+00:00",
-      "htf_direction": "DOWN",
-      "side": "NONE",
-      "score": 0,
-      "eligibility": "REJECTED",
-      "rejected_at": "gate3",
-      "geometry": null,
-      "gates": {
-        "data_integrity": {
-          "status": "PASS",
-          "reason": "valid_completed_candles",
-          "metrics": {
-            "bar_count": 100
-          }
-        },
-        "higher_timeframe_direction": {
-          "status": "PASS",
-          "reason": "htf_down",
-          "metrics": {
-            "ema50": 4.120961,
-            "ema200": 4.14588,
-            "price": 4.118,
-            "direction": "DOWN",
-            "timeframe": "m15_fallback"
-          }
-        },
-        "local_alignment": {
-          "status": "FAIL",
-          "reason": "local_structure_not_aligned",
-          "metrics": {
-            "htf": "DOWN",
-            "price": 4.118,
-            "ema20": 4.113759,
-            "bias": "NEUTRAL"
-          }
-        },
-        "publish_learn": {
-          "status": "FAIL",
-          "reason": "rejected_at_gate3",
-          "metrics": {}
-        }
-      },
-      "delta_norm": 0.0,
-      "speed": 0.0,
-      "accel": 1.0,
-      "atr": 0.01236719,
-      "rel_vol": 1.0,
-      "price": 4.151,
-      "quarantined": false
-    },
-    {
-      "schema_version": 4,
-      "pair": "JTO/USD",
-      "symbol": "JTO",
-      "ts": "2026-08-16T17:42:22.145787+00:00",
-      "htf_direction": "NONE",
-      "side": "NONE",
-      "score": 0,
-      "eligibility": "REJECTED",
-      "rejected_at": "gate1",
-      "geometry": null,
-      "gates": {
-        "data_integrity": {
-          "status": "FAIL",
-          "reason": "zero_volume_last_bar",
-          "metrics": {}
-        },
-        "publish_learn": {
-          "status": "FAIL",
-          "reason": "rejected_at_gate1",
-          "metrics": {}
-        }
-      },
-      "delta_norm": 0.0,
-      "speed": 0.0,
-      "accel": 1.0,
-      "atr": null,
-      "rel_vol": 1.0,
-      "price": 0.59181,
-      "quarantined": false
-    },
-    {
-      "schema_version": 4,
-      "pair": "JUP/USD",
-      "symbol": "JUP",
-      "ts": "2026-08-16T17:42:22.147403+00:00",
-      "htf_direction": "NONE",
-      "side": "NONE",
-      "score": 0,
-      "eligibility": "REJECTED",
-      "rejected_at": "gate1",
-      "geometry": null,
-      "gates": {
-        "data_integrity": {
-          "status": "FAIL",
-          "reason": "zero_volume_last_bar",
-          "metrics": {}
-        },
-        "publish_learn": {
-          "status": "FAIL",
-          "reason": "rejected_at_gate1",
-          "metrics": {}
-        }
-      },
-      "delta_norm": 0.0,
-      "speed": 0.0,
-      "accel": 1.0,
-      "atr": null,
-      "rel_vol": 1.0,
-      "price": 0.1684,
-      "quarantined": false
-    },
-    {
-      "schema_version": 4,
-      "pair": "NEAR/USD",
-      "symbol": "NEAR",
-      "ts": "2026-08-16T17:42:22.147923+00:00",
-      "htf_direction": "DOWN",
-      "side": "NONE",
-      "score": 0,
-      "eligibility": "REJECTED",
-      "rejected_at": "gate5",
-      "geometry": null,
-      "gates": {
-        "data_integrity": {
-          "status": "PASS",
-          "reason": "valid_completed_candles",
-          "metrics": {
-            "bar_count": 100
-          }
-        },
-        "higher_timeframe_direction": {
-          "status": "PASS",
-          "reason": "htf_down",
-          "metrics": {
-            "ema50": 1.62015,
-            "ema200": 1.620968,
-            "price": 1.6159,
-            "direction": "DOWN",
-            "timeframe": "m15_fallback"
-          }
-        },
-        "local_alignment": {
-          "status": "PASS",
-          "reason": "local_aligned_with_htf",
-          "metrics": {
-            "htf": "DOWN",
-            "price": 1.6159,
-            "ema20": 1.620858,
-            "bias": "NEUTRAL"
-          }
-        },
-        "pressure_confirmation": {
-          "status": "PASS",
-          "reason": "pressure_confirmed",
-          "metrics": {
-            "delta_norm": -0.2446,
-            "cvd_slope": -0.0088
-          }
-        },
-        "participation": {
-          "status": "FAIL",
-          "reason": "atr_compression",
-          "metrics": {
-            "atr_pct": 0.1571,
-            "atr": 0.002535
-          }
-        },
-        "publish_learn": {
-          "status": "FAIL",
-          "reason": "rejected_at_gate5",
-          "metrics": {}
-        }
-      },
-      "delta_norm": -0.2446,
-      "speed": 1.0,
-      "accel": 1.7895,
-      "atr": 0.00253542,
-      "rel_vol": 3.323,
-      "price": 1.6135,
-      "quarantined": false
-    },
-    {
-      "schema_version": 4,
-      "pair": "ONDO/USD",
-      "symbol": "ONDO",
-      "ts": "2026-08-16T17:42:22.148103+00:00",
+      "ts": "2026-08-16T17:48:45.137310+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -1240,9 +1084,9 @@
           "status": "FAIL",
           "reason": "no_clear_htf_direction",
           "metrics": {
-            "ema50": 0.327697,
-            "ema200": 0.325617,
-            "price": 0.33135,
+            "ema50": 4.122075,
+            "ema200": 4.14547,
+            "price": 4.15,
             "timeframe": "m15_fallback"
           }
         },
@@ -1255,16 +1099,203 @@
       "delta_norm": 0.0,
       "speed": 0.0,
       "accel": 1.0,
-      "atr": 0.00111691,
+      "atr": 0.0138416,
       "rel_vol": 1.0,
-      "price": 0.33112,
+      "price": 4.139,
+      "quarantined": false
+    },
+    {
+      "schema_version": 4,
+      "pair": "JTO/USD",
+      "symbol": "JTO",
+      "ts": "2026-08-16T17:48:45.138099+00:00",
+      "htf_direction": "NONE",
+      "side": "NONE",
+      "score": 0,
+      "eligibility": "REJECTED",
+      "rejected_at": "gate2",
+      "geometry": null,
+      "gates": {
+        "data_integrity": {
+          "status": "PASS",
+          "reason": "valid_completed_candles",
+          "metrics": {
+            "bar_count": 100
+          }
+        },
+        "higher_timeframe_direction": {
+          "status": "FAIL",
+          "reason": "no_clear_htf_direction",
+          "metrics": {
+            "ema50": 0.590064,
+            "ema200": 0.585398,
+            "price": 0.59181,
+            "timeframe": "m15_fallback"
+          }
+        },
+        "publish_learn": {
+          "status": "FAIL",
+          "reason": "rejected_at_gate2",
+          "metrics": {}
+        }
+      },
+      "delta_norm": 0.0,
+      "speed": 0.0,
+      "accel": 1.0,
+      "atr": 0.00144342,
+      "rel_vol": 1.0,
+      "price": 0.59181,
+      "quarantined": false
+    },
+    {
+      "schema_version": 4,
+      "pair": "JUP/USD",
+      "symbol": "JUP",
+      "ts": "2026-08-16T17:48:45.138789+00:00",
+      "htf_direction": "NONE",
+      "side": "NONE",
+      "score": 0,
+      "eligibility": "REJECTED",
+      "rejected_at": "gate1",
+      "geometry": null,
+      "gates": {
+        "data_integrity": {
+          "status": "FAIL",
+          "reason": "invalid_ohlc_last_bar",
+          "metrics": {}
+        },
+        "publish_learn": {
+          "status": "FAIL",
+          "reason": "rejected_at_gate1",
+          "metrics": {}
+        }
+      },
+      "delta_norm": 0.0,
+      "speed": 0.0,
+      "accel": 1.0,
+      "atr": null,
+      "rel_vol": 1.0,
+      "price": 0.16849,
+      "quarantined": false
+    },
+    {
+      "schema_version": 4,
+      "pair": "NEAR/USD",
+      "symbol": "NEAR",
+      "ts": "2026-08-16T17:48:45.139886+00:00",
+      "htf_direction": "DOWN",
+      "side": "NONE",
+      "score": 0,
+      "eligibility": "REJECTED",
+      "rejected_at": "gate5",
+      "geometry": null,
+      "gates": {
+        "data_integrity": {
+          "status": "PASS",
+          "reason": "valid_completed_candles",
+          "metrics": {
+            "bar_count": 100
+          }
+        },
+        "higher_timeframe_direction": {
+          "status": "PASS",
+          "reason": "htf_down",
+          "metrics": {
+            "ema50": 1.619745,
+            "ema200": 1.620639,
+            "price": 1.6103,
+            "direction": "DOWN",
+            "timeframe": "m15_fallback"
+          }
+        },
+        "local_alignment": {
+          "status": "PASS",
+          "reason": "local_aligned_with_htf",
+          "metrics": {
+            "htf": "DOWN",
+            "price": 1.6103,
+            "ema20": 1.619852,
+            "bias": "NEUTRAL"
+          }
+        },
+        "pressure_confirmation": {
+          "status": "PASS",
+          "reason": "pressure_confirmed",
+          "metrics": {
+            "delta_norm": -0.5249,
+            "cvd_slope": -0.0111
+          }
+        },
+        "participation": {
+          "status": "FAIL",
+          "reason": "atr_compression",
+          "metrics": {
+            "atr_pct": 0.1747,
+            "atr": 0.002811
+          }
+        },
+        "publish_learn": {
+          "status": "FAIL",
+          "reason": "rejected_at_gate5",
+          "metrics": {}
+        }
+      },
+      "delta_norm": -0.5249,
+      "speed": 1.0,
+      "accel": 1.4118,
+      "atr": 0.00281117,
+      "rel_vol": 1.272,
+      "price": 1.6096,
+      "quarantined": false
+    },
+    {
+      "schema_version": 4,
+      "pair": "ONDO/USD",
+      "symbol": "ONDO",
+      "ts": "2026-08-16T17:48:45.141571+00:00",
+      "htf_direction": "NONE",
+      "side": "NONE",
+      "score": 0,
+      "eligibility": "REJECTED",
+      "rejected_at": "gate2",
+      "geometry": null,
+      "gates": {
+        "data_integrity": {
+          "status": "PASS",
+          "reason": "valid_completed_candles",
+          "metrics": {
+            "bar_count": 100
+          }
+        },
+        "higher_timeframe_direction": {
+          "status": "FAIL",
+          "reason": "no_clear_htf_direction",
+          "metrics": {
+            "ema50": 0.327812,
+            "ema200": 0.325662,
+            "price": 0.33071,
+            "timeframe": "m15_fallback"
+          }
+        },
+        "publish_learn": {
+          "status": "FAIL",
+          "reason": "rejected_at_gate2",
+          "metrics": {}
+        }
+      },
+      "delta_norm": 0.0,
+      "speed": 0.0,
+      "accel": 1.0,
+      "atr": 0.00108857,
+      "rel_vol": 1.0,
+      "price": 0.33145,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "OP/USD",
       "symbol": "OP",
-      "ts": "2026-08-16T17:42:22.148552+00:00",
+      "ts": "2026-08-16T17:48:45.141691+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -1295,7 +1326,7 @@
       "schema_version": 4,
       "pair": "PENGU/USD",
       "symbol": "PENGU",
-      "ts": "2026-08-16T17:42:22.149070+00:00",
+      "ts": "2026-08-16T17:48:45.141880+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -1316,7 +1347,7 @@
           "metrics": {
             "ema50": 0.006025,
             "ema200": 0.006015,
-            "price": 0.006038,
+            "price": 0.006028,
             "timeframe": "m15_fallback"
           }
         },
@@ -1329,7 +1360,7 @@
       "delta_norm": 0.0,
       "speed": 0.0,
       "accel": 1.0,
-      "atr": 1.054e-05,
+      "atr": 1.05e-05,
       "rel_vol": 1.0,
       "price": 0.006028,
       "quarantined": false
@@ -1338,30 +1369,70 @@
       "schema_version": 4,
       "pair": "PNUT/USD",
       "symbol": "PNUT",
-      "ts": "2026-08-16T17:42:22.149130+00:00",
-      "htf_direction": "NONE",
+      "ts": "2026-08-16T17:48:45.142099+00:00",
+      "htf_direction": "DOWN",
       "side": "NONE",
       "score": 0,
       "eligibility": "REJECTED",
-      "rejected_at": "gate1",
+      "rejected_at": "gate5",
       "geometry": null,
       "gates": {
         "data_integrity": {
+          "status": "PASS",
+          "reason": "valid_completed_candles",
+          "metrics": {
+            "bar_count": 100
+          }
+        },
+        "higher_timeframe_direction": {
+          "status": "PASS",
+          "reason": "htf_down",
+          "metrics": {
+            "ema50": 0.04097,
+            "ema200": 0.041099,
+            "price": 0.0407,
+            "direction": "DOWN",
+            "timeframe": "m15_fallback"
+          }
+        },
+        "local_alignment": {
+          "status": "PASS",
+          "reason": "local_aligned_with_htf",
+          "metrics": {
+            "htf": "DOWN",
+            "price": 0.0407,
+            "ema20": 0.040871,
+            "bias": "NEUTRAL"
+          }
+        },
+        "pressure_confirmation": {
+          "status": "PASS",
+          "reason": "pressure_balanced_not_confirmed",
+          "metrics": {
+            "delta_norm": -0.2,
+            "cvd_slope": -0.0001,
+            "warning": "pressure_weak"
+          }
+        },
+        "participation": {
           "status": "FAIL",
-          "reason": "zero_volume_last_bar",
-          "metrics": {}
+          "reason": "atr_compression",
+          "metrics": {
+            "atr_pct": 0.0875,
+            "atr": 3.6e-05
+          }
         },
         "publish_learn": {
           "status": "FAIL",
-          "reason": "rejected_at_gate1",
+          "reason": "rejected_at_gate5",
           "metrics": {}
         }
       },
-      "delta_norm": 0.0,
-      "speed": 0.0,
+      "delta_norm": -0.2,
+      "speed": 1.0,
       "accel": 1.0,
-      "atr": null,
-      "rel_vol": 1.0,
+      "atr": 3.559e-05,
+      "rel_vol": 9.571,
       "price": 0.0407,
       "quarantined": false
     },
@@ -1369,7 +1440,7 @@
       "schema_version": 4,
       "pair": "POL/USD",
       "symbol": "POL",
-      "ts": "2026-08-16T17:42:22.149748+00:00",
+      "ts": "2026-08-16T17:48:45.142252+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -1388,9 +1459,9 @@
           "status": "FAIL",
           "reason": "no_clear_htf_direction",
           "metrics": {
-            "ema50": 0.075187,
-            "ema200": 0.075155,
-            "price": 0.07521,
+            "ema50": 0.075184,
+            "ema200": 0.075154,
+            "price": 0.07509,
             "timeframe": "m15_fallback"
           }
         },
@@ -1403,101 +1474,16 @@
       "delta_norm": 0.0,
       "speed": 0.0,
       "accel": 1.0,
-      "atr": 8.54e-05,
+      "atr": 8.788e-05,
       "rel_vol": 1.0,
-      "price": 0.07509,
+      "price": 0.07507,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "POPCAT/USD",
       "symbol": "POPCAT",
-      "ts": "2026-08-16T17:42:22.149806+00:00",
-      "htf_direction": "NONE",
-      "side": "NONE",
-      "score": 0,
-      "eligibility": "REJECTED",
-      "rejected_at": "gate1",
-      "geometry": null,
-      "gates": {
-        "data_integrity": {
-          "status": "FAIL",
-          "reason": "zero_volume_last_bar",
-          "metrics": {}
-        },
-        "publish_learn": {
-          "status": "FAIL",
-          "reason": "rejected_at_gate1",
-          "metrics": {}
-        }
-      },
-      "delta_norm": 0.0,
-      "speed": 0.0,
-      "accel": 1.0,
-      "atr": null,
-      "rel_vol": 1.0,
-      "price": 0.0426,
-      "quarantined": false
-    },
-    {
-      "schema_version": 4,
-      "pair": "PUMP/USD",
-      "symbol": "PUMP",
-      "ts": "2026-08-16T17:42:22.149986+00:00",
-      "htf_direction": "DOWN",
-      "side": "NONE",
-      "score": 0,
-      "eligibility": "REJECTED",
-      "rejected_at": "gate3",
-      "geometry": null,
-      "gates": {
-        "data_integrity": {
-          "status": "PASS",
-          "reason": "valid_completed_candles",
-          "metrics": {
-            "bar_count": 100
-          }
-        },
-        "higher_timeframe_direction": {
-          "status": "PASS",
-          "reason": "htf_down",
-          "metrics": {
-            "ema50": 0.00274,
-            "ema200": 0.002758,
-            "price": 0.002727,
-            "direction": "DOWN",
-            "timeframe": "m15_fallback"
-          }
-        },
-        "local_alignment": {
-          "status": "FAIL",
-          "reason": "local_structure_not_aligned",
-          "metrics": {
-            "htf": "DOWN",
-            "price": 0.002727,
-            "ema20": 0.002727,
-            "bias": "NEUTRAL"
-          }
-        },
-        "publish_learn": {
-          "status": "FAIL",
-          "reason": "rejected_at_gate3",
-          "metrics": {}
-        }
-      },
-      "delta_norm": 0.0,
-      "speed": 0.0,
-      "accel": 1.0,
-      "atr": 1.046e-05,
-      "rel_vol": 1.0,
-      "price": 0.00273,
-      "quarantined": false
-    },
-    {
-      "schema_version": 4,
-      "pair": "RENDER/USD",
-      "symbol": "RENDER",
-      "ts": "2026-08-16T17:42:22.150042+00:00",
+      "ts": "2026-08-16T17:48:45.142370+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -1521,6 +1507,103 @@
       "accel": 1.0,
       "atr": null,
       "rel_vol": 1.0,
+      "price": 0.0426,
+      "quarantined": false
+    },
+    {
+      "schema_version": 4,
+      "pair": "PUMP/USD",
+      "symbol": "PUMP",
+      "ts": "2026-08-16T17:48:45.142974+00:00",
+      "htf_direction": "DOWN",
+      "side": "NONE",
+      "score": 0,
+      "eligibility": "REJECTED",
+      "rejected_at": "gate3",
+      "geometry": null,
+      "gates": {
+        "data_integrity": {
+          "status": "PASS",
+          "reason": "valid_completed_candles",
+          "metrics": {
+            "bar_count": 100
+          }
+        },
+        "higher_timeframe_direction": {
+          "status": "PASS",
+          "reason": "htf_down",
+          "metrics": {
+            "ema50": 0.002739,
+            "ema200": 0.002757,
+            "price": 0.00273,
+            "direction": "DOWN",
+            "timeframe": "m15_fallback"
+          }
+        },
+        "local_alignment": {
+          "status": "FAIL",
+          "reason": "local_structure_not_aligned",
+          "metrics": {
+            "htf": "DOWN",
+            "price": 0.00273,
+            "ema20": 0.002728,
+            "bias": "NEUTRAL"
+          }
+        },
+        "publish_learn": {
+          "status": "FAIL",
+          "reason": "rejected_at_gate3",
+          "metrics": {}
+        }
+      },
+      "delta_norm": 0.0,
+      "speed": 0.0,
+      "accel": 1.0,
+      "atr": 9.92e-06,
+      "rel_vol": 1.0,
+      "price": 0.00273,
+      "quarantined": false
+    },
+    {
+      "schema_version": 4,
+      "pair": "RENDER/USD",
+      "symbol": "RENDER",
+      "ts": "2026-08-16T17:48:45.143129+00:00",
+      "htf_direction": "NONE",
+      "side": "NONE",
+      "score": 0,
+      "eligibility": "REJECTED",
+      "rejected_at": "gate2",
+      "geometry": null,
+      "gates": {
+        "data_integrity": {
+          "status": "PASS",
+          "reason": "valid_completed_candles",
+          "metrics": {
+            "bar_count": 100
+          }
+        },
+        "higher_timeframe_direction": {
+          "status": "FAIL",
+          "reason": "no_clear_htf_direction",
+          "metrics": {
+            "ema50": 1.263742,
+            "ema200": 1.26211,
+            "price": 1.266,
+            "timeframe": "m15_fallback"
+          }
+        },
+        "publish_learn": {
+          "status": "FAIL",
+          "reason": "rejected_at_gate2",
+          "metrics": {}
+        }
+      },
+      "delta_norm": 0.0,
+      "speed": 0.0,
+      "accel": 1.0,
+      "atr": 0.0022209,
+      "rel_vol": 1.0,
       "price": 1.266,
       "quarantined": false
     },
@@ -1528,7 +1611,7 @@
       "schema_version": 4,
       "pair": "S/USD",
       "symbol": "S",
-      "ts": "2026-08-16T17:42:22.150096+00:00",
+      "ts": "2026-08-16T17:48:45.143178+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -1559,12 +1642,12 @@
       "schema_version": 4,
       "pair": "SOL/USD",
       "symbol": "SOL",
-      "ts": "2026-08-16T17:42:22.150365+00:00",
-      "htf_direction": "NONE",
+      "ts": "2026-08-16T17:48:45.143363+00:00",
+      "htf_direction": "DOWN",
       "side": "NONE",
       "score": 0,
       "eligibility": "REJECTED",
-      "rejected_at": "gate2",
+      "rejected_at": "gate5",
       "geometry": null,
       "gates": {
         "data_integrity": {
@@ -1575,34 +1658,61 @@
           }
         },
         "higher_timeframe_direction": {
-          "status": "FAIL",
-          "reason": "no_clear_htf_direction",
+          "status": "PASS",
+          "reason": "htf_down",
           "metrics": {
-            "ema50": 75.349016,
-            "ema200": 75.3796,
-            "price": 75.37,
+            "ema50": 75.345773,
+            "ema200": 75.3784,
+            "price": 75.26,
+            "direction": "DOWN",
             "timeframe": "m15_fallback"
+          }
+        },
+        "local_alignment": {
+          "status": "PASS",
+          "reason": "local_aligned_with_htf",
+          "metrics": {
+            "htf": "DOWN",
+            "price": 75.26,
+            "ema20": 75.36985,
+            "bias": "NEUTRAL"
+          }
+        },
+        "pressure_confirmation": {
+          "status": "PASS",
+          "reason": "pressure_confirmed",
+          "metrics": {
+            "delta_norm": -0.6503,
+            "cvd_slope": -0.22
+          }
+        },
+        "participation": {
+          "status": "FAIL",
+          "reason": "atr_compression",
+          "metrics": {
+            "atr_pct": 0.1243,
+            "atr": 0.093566
           }
         },
         "publish_learn": {
           "status": "FAIL",
-          "reason": "rejected_at_gate2",
+          "reason": "rejected_at_gate5",
           "metrics": {}
         }
       },
-      "delta_norm": 0.0,
-      "speed": 0.0,
-      "accel": 1.0,
-      "atr": 0.08999299,
-      "rel_vol": 1.0,
-      "price": 75.33,
+      "delta_norm": -0.6503,
+      "speed": 1.0,
+      "accel": 1.2,
+      "atr": 0.09356604,
+      "rel_vol": 0.55,
+      "price": 75.25,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "STX/USD",
       "symbol": "STX",
-      "ts": "2026-08-16T17:42:22.150438+00:00",
+      "ts": "2026-08-16T17:48:45.143414+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -1633,7 +1743,7 @@
       "schema_version": 4,
       "pair": "SUI/USD",
       "symbol": "SUI",
-      "ts": "2026-08-16T17:42:22.150574+00:00",
+      "ts": "2026-08-16T17:48:45.143565+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -1652,9 +1762,9 @@
           "status": "FAIL",
           "reason": "no_clear_htf_direction",
           "metrics": {
-            "ema50": 0.677649,
-            "ema200": 0.677608,
-            "price": 0.6775,
+            "ema50": 0.677593,
+            "ema200": 0.677552,
+            "price": 0.6763,
             "timeframe": "m15_fallback"
           }
         },
@@ -1667,70 +1777,16 @@
       "delta_norm": 0.0,
       "speed": 0.0,
       "accel": 1.0,
-      "atr": 0.00081817,
+      "atr": 0.00085262,
       "rel_vol": 1.0,
-      "price": 0.6773,
+      "price": 0.6765,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "TAO/USD",
       "symbol": "TAO",
-      "ts": "2026-08-16T17:42:22.150755+00:00",
-      "htf_direction": "DOWN",
-      "side": "NONE",
-      "score": 0,
-      "eligibility": "REJECTED",
-      "rejected_at": "gate3",
-      "geometry": null,
-      "gates": {
-        "data_integrity": {
-          "status": "PASS",
-          "reason": "valid_completed_candles",
-          "metrics": {
-            "bar_count": 100
-          }
-        },
-        "higher_timeframe_direction": {
-          "status": "PASS",
-          "reason": "htf_down",
-          "metrics": {
-            "ema50": 196.552235,
-            "ema200": 196.650921,
-            "price": 196.5264,
-            "direction": "DOWN",
-            "timeframe": "m15_fallback"
-          }
-        },
-        "local_alignment": {
-          "status": "FAIL",
-          "reason": "local_structure_not_aligned",
-          "metrics": {
-            "htf": "DOWN",
-            "price": 196.5264,
-            "ema20": 196.708782,
-            "bias": "NEUTRAL"
-          }
-        },
-        "publish_learn": {
-          "status": "FAIL",
-          "reason": "rejected_at_gate3",
-          "metrics": {}
-        }
-      },
-      "delta_norm": 0.0,
-      "speed": 0.0,
-      "accel": 1.0,
-      "atr": 0.36021816,
-      "rel_vol": 1.0,
-      "price": 196.5689,
-      "quarantined": false
-    },
-    {
-      "schema_version": 4,
-      "pair": "TIA/USD",
-      "symbol": "TIA",
-      "ts": "2026-08-16T17:42:22.151082+00:00",
+      "ts": "2026-08-16T17:48:45.144470+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -1749,9 +1805,9 @@
           "status": "FAIL",
           "reason": "no_clear_htf_direction",
           "metrics": {
-            "ema50": 0.30458,
-            "ema200": 0.302631,
-            "price": 0.3086,
+            "ema50": 196.553463,
+            "ema200": 196.637629,
+            "price": 196.5757,
             "timeframe": "m15_fallback"
           }
         },
@@ -1764,7 +1820,50 @@
       "delta_norm": 0.0,
       "speed": 0.0,
       "accel": 1.0,
-      "atr": 0.00089639,
+      "atr": 0.37140893,
+      "rel_vol": 1.0,
+      "price": 196.5557,
+      "quarantined": false
+    },
+    {
+      "schema_version": 4,
+      "pair": "TIA/USD",
+      "symbol": "TIA",
+      "ts": "2026-08-16T17:48:45.144751+00:00",
+      "htf_direction": "NONE",
+      "side": "NONE",
+      "score": 0,
+      "eligibility": "REJECTED",
+      "rejected_at": "gate2",
+      "geometry": null,
+      "gates": {
+        "data_integrity": {
+          "status": "PASS",
+          "reason": "valid_completed_candles",
+          "metrics": {
+            "bar_count": 100
+          }
+        },
+        "higher_timeframe_direction": {
+          "status": "FAIL",
+          "reason": "no_clear_htf_direction",
+          "metrics": {
+            "ema50": 0.304757,
+            "ema200": 0.302672,
+            "price": 0.3092,
+            "timeframe": "m15_fallback"
+          }
+        },
+        "publish_learn": {
+          "status": "FAIL",
+          "reason": "rejected_at_gate2",
+          "metrics": {}
+        }
+      },
+      "delta_norm": 0.0,
+      "speed": 0.0,
+      "accel": 1.0,
+      "atr": 0.00087517,
       "rel_vol": 1.0,
       "price": 0.3092,
       "quarantined": false
@@ -1773,7 +1872,7 @@
       "schema_version": 4,
       "pair": "TRUMP/USD",
       "symbol": "TRUMP",
-      "ts": "2026-08-16T17:42:22.151290+00:00",
+      "ts": "2026-08-16T17:48:45.145170+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -1792,9 +1891,9 @@
           "status": "FAIL",
           "reason": "no_clear_htf_direction",
           "metrics": {
-            "ema50": 1.411293,
-            "ema200": 1.40481,
-            "price": 1.418,
+            "ema50": 1.411499,
+            "ema200": 1.40482,
+            "price": 1.417,
             "timeframe": "m15_fallback"
           }
         },
@@ -1807,7 +1906,7 @@
       "delta_norm": 0.0,
       "speed": 0.0,
       "accel": 1.0,
-      "atr": 0.00488434,
+      "atr": 0.00460618,
       "rel_vol": 1.0,
       "price": 1.417,
       "quarantined": false
@@ -1816,7 +1915,7 @@
       "schema_version": 4,
       "pair": "TRX/USD",
       "symbol": "TRX",
-      "ts": "2026-08-16T17:42:22.151622+00:00",
+      "ts": "2026-08-16T17:48:45.145567+00:00",
       "htf_direction": "UP",
       "side": "NONE",
       "score": 0,
@@ -1835,9 +1934,9 @@
           "status": "PASS",
           "reason": "htf_up",
           "metrics": {
-            "ema50": 0.331391,
+            "ema50": 0.331418,
             "ema200": 0.331174,
-            "price": 0.332142,
+            "price": 0.332144,
             "direction": "UP",
             "timeframe": "m15_fallback"
           }
@@ -1847,8 +1946,8 @@
           "reason": "local_aligned_with_htf",
           "metrics": {
             "htf": "UP",
-            "price": 0.332142,
-            "ema20": 0.331658,
+            "price": 0.332144,
+            "ema20": 0.331704,
             "bias": "NEUTRAL"
           }
         },
@@ -1856,17 +1955,17 @@
           "status": "PASS",
           "reason": "pressure_balanced_not_confirmed",
           "metrics": {
-            "delta_norm": 0.0911,
-            "cvd_slope": 0.000192,
+            "delta_norm": 0.0388,
+            "cvd_slope": 0.000143,
             "warning": "pressure_weak"
           }
         },
         "participation": {
           "status": "FAIL",
-          "reason": "atr_compression",
+          "reason": "thin_market",
           "metrics": {
-            "atr_pct": 0.0598,
-            "atr": 0.000199
+            "rel_vol": 0.031,
+            "atr": 0.000189
           }
         },
         "publish_learn": {
@@ -1875,19 +1974,19 @@
           "metrics": {}
         }
       },
-      "delta_norm": 0.0911,
-      "speed": 0.7246,
-      "accel": 5.8689,
-      "atr": 0.00019872,
-      "rel_vol": 0.532,
-      "price": 0.332165,
+      "delta_norm": 0.0388,
+      "speed": 0.8527,
+      "accel": 0.0754,
+      "atr": 0.00018941,
+      "rel_vol": 0.031,
+      "price": 0.332102,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "UNI/USD",
       "symbol": "UNI",
-      "ts": "2026-08-16T17:42:22.151922+00:00",
+      "ts": "2026-08-16T17:48:45.145730+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -1906,9 +2005,9 @@
           "status": "FAIL",
           "reason": "no_clear_htf_direction",
           "metrics": {
-            "ema50": 3.278029,
-            "ema200": 3.255287,
-            "price": 3.2933,
+            "ema50": 3.278857,
+            "ema200": 3.255992,
+            "price": 3.2991,
             "timeframe": "m15_fallback"
           }
         },
@@ -1921,87 +2020,16 @@
       "delta_norm": 0.0,
       "speed": 0.0,
       "accel": 1.0,
-      "atr": 0.01434904,
+      "atr": 0.01450208,
       "rel_vol": 1.0,
-      "price": 3.2986,
+      "price": 3.2991,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "VIRTUAL/USD",
       "symbol": "VIRTUAL",
-      "ts": "2026-08-16T17:42:22.152198+00:00",
-      "htf_direction": "DOWN",
-      "side": "NONE",
-      "score": 0,
-      "eligibility": "REJECTED",
-      "rejected_at": "gate5",
-      "geometry": null,
-      "gates": {
-        "data_integrity": {
-          "status": "PASS",
-          "reason": "valid_completed_candles",
-          "metrics": {
-            "bar_count": 100
-          }
-        },
-        "higher_timeframe_direction": {
-          "status": "PASS",
-          "reason": "htf_down",
-          "metrics": {
-            "ema50": 0.558721,
-            "ema200": 0.559671,
-            "price": 0.558,
-            "direction": "DOWN",
-            "timeframe": "m15_fallback"
-          }
-        },
-        "local_alignment": {
-          "status": "PASS",
-          "reason": "local_aligned_with_htf",
-          "metrics": {
-            "htf": "DOWN",
-            "price": 0.558,
-            "ema20": 0.558972,
-            "bias": "NEUTRAL"
-          }
-        },
-        "pressure_confirmation": {
-          "status": "PASS",
-          "reason": "pressure_balanced_not_confirmed",
-          "metrics": {
-            "delta_norm": 0.0,
-            "cvd_slope": -0.002,
-            "warning": "pressure_weak"
-          }
-        },
-        "participation": {
-          "status": "FAIL",
-          "reason": "thin_market",
-          "metrics": {
-            "rel_vol": 0.042,
-            "atr": 0.00062
-          }
-        },
-        "publish_learn": {
-          "status": "FAIL",
-          "reason": "rejected_at_gate5",
-          "metrics": {}
-        }
-      },
-      "delta_norm": 0.0,
-      "speed": 1.0,
-      "accel": 7.0,
-      "atr": 0.00061993,
-      "rel_vol": 0.042,
-      "price": 0.558,
-      "quarantined": false
-    },
-    {
-      "schema_version": 4,
-      "pair": "WIF/USD",
-      "symbol": "WIF",
-      "ts": "2026-08-16T17:42:22.152527+00:00",
+      "ts": "2026-08-16T17:48:45.147374+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -2011,7 +2039,7 @@
       "gates": {
         "data_integrity": {
           "status": "FAIL",
-          "reason": "invalid_ohlc_last_bar",
+          "reason": "zero_volume_last_bar",
           "metrics": {}
         },
         "publish_learn": {
@@ -2025,68 +2053,14 @@
       "accel": 1.0,
       "atr": null,
       "rel_vol": 1.0,
-      "price": 0.1376,
+      "price": 0.558,
       "quarantined": false
     },
     {
       "schema_version": 4,
-      "pair": "WLD/USD",
-      "symbol": "WLD",
-      "ts": "2026-08-16T17:42:22.152854+00:00",
-      "htf_direction": "UP",
-      "side": "NONE",
-      "score": 0,
-      "eligibility": "REJECTED",
-      "rejected_at": "gate3",
-      "geometry": null,
-      "gates": {
-        "data_integrity": {
-          "status": "PASS",
-          "reason": "valid_completed_candles",
-          "metrics": {
-            "bar_count": 100
-          }
-        },
-        "higher_timeframe_direction": {
-          "status": "PASS",
-          "reason": "htf_up",
-          "metrics": {
-            "ema50": 0.351636,
-            "ema200": 0.349278,
-            "price": 0.3664,
-            "direction": "UP",
-            "timeframe": "m15_fallback"
-          }
-        },
-        "local_alignment": {
-          "status": "FAIL",
-          "reason": "local_structure_not_aligned",
-          "metrics": {
-            "htf": "UP",
-            "price": 0.3664,
-            "ema20": 0.356443,
-            "bias": "NEUTRAL"
-          }
-        },
-        "publish_learn": {
-          "status": "FAIL",
-          "reason": "rejected_at_gate3",
-          "metrics": {}
-        }
-      },
-      "delta_norm": 0.0,
-      "speed": 0.0,
-      "accel": 1.0,
-      "atr": 0.00277525,
-      "rel_vol": 1.0,
-      "price": 0.3654,
-      "quarantined": false
-    },
-    {
-      "schema_version": 4,
-      "pair": "XPL/USD",
-      "symbol": "XPL",
-      "ts": "2026-08-16T17:42:22.153012+00:00",
+      "pair": "WIF/USD",
+      "symbol": "WIF",
+      "ts": "2026-08-16T17:48:45.151221+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -2105,9 +2079,9 @@
           "status": "FAIL",
           "reason": "no_clear_htf_direction",
           "metrics": {
-            "ema50": 0.077152,
-            "ema200": 0.07694,
-            "price": 0.0766,
+            "ema50": 0.137304,
+            "ema200": 0.136845,
+            "price": 0.1376,
             "timeframe": "m15_fallback"
           }
         },
@@ -2120,21 +2094,107 @@
       "delta_norm": 0.0,
       "speed": 0.0,
       "accel": 1.0,
-      "atr": 0.00024197,
+      "atr": 0.00021779,
       "rel_vol": 1.0,
-      "price": 0.0764,
+      "price": 0.1376,
+      "quarantined": false
+    },
+    {
+      "schema_version": 4,
+      "pair": "WLD/USD",
+      "symbol": "WLD",
+      "ts": "2026-08-16T17:48:45.151680+00:00",
+      "htf_direction": "NONE",
+      "side": "NONE",
+      "score": 0,
+      "eligibility": "REJECTED",
+      "rejected_at": "gate2",
+      "geometry": null,
+      "gates": {
+        "data_integrity": {
+          "status": "PASS",
+          "reason": "valid_completed_candles",
+          "metrics": {
+            "bar_count": 100
+          }
+        },
+        "higher_timeframe_direction": {
+          "status": "FAIL",
+          "reason": "no_clear_htf_direction",
+          "metrics": {
+            "ema50": 0.352132,
+            "ema200": 0.349431,
+            "price": 0.3641,
+            "timeframe": "m15_fallback"
+          }
+        },
+        "publish_learn": {
+          "status": "FAIL",
+          "reason": "rejected_at_gate2",
+          "metrics": {}
+        }
+      },
+      "delta_norm": 0.0,
+      "speed": 0.0,
+      "accel": 1.0,
+      "atr": 0.00274105,
+      "rel_vol": 1.0,
+      "price": 0.3623,
+      "quarantined": false
+    },
+    {
+      "schema_version": 4,
+      "pair": "XPL/USD",
+      "symbol": "XPL",
+      "ts": "2026-08-16T17:48:45.151883+00:00",
+      "htf_direction": "NONE",
+      "side": "NONE",
+      "score": 0,
+      "eligibility": "REJECTED",
+      "rejected_at": "gate2",
+      "geometry": null,
+      "gates": {
+        "data_integrity": {
+          "status": "PASS",
+          "reason": "valid_completed_candles",
+          "metrics": {
+            "bar_count": 100
+          }
+        },
+        "higher_timeframe_direction": {
+          "status": "FAIL",
+          "reason": "no_clear_htf_direction",
+          "metrics": {
+            "ema50": 0.077123,
+            "ema200": 0.076936,
+            "price": 0.0765,
+            "timeframe": "m15_fallback"
+          }
+        },
+        "publish_learn": {
+          "status": "FAIL",
+          "reason": "rejected_at_gate2",
+          "metrics": {}
+        }
+      },
+      "delta_norm": 0.0,
+      "speed": 0.0,
+      "accel": 1.0,
+      "atr": 0.00023898,
+      "rel_vol": 1.0,
+      "price": 0.0763,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "XRP/USD",
       "symbol": "XRP",
-      "ts": "2026-08-16T17:42:22.153206+00:00",
-      "htf_direction": "DOWN",
+      "ts": "2026-08-16T17:48:45.152502+00:00",
+      "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
       "eligibility": "REJECTED",
-      "rejected_at": "gate5",
+      "rejected_at": "gate2",
       "geometry": null,
       "gates": {
         "data_integrity": {
@@ -2145,66 +2205,39 @@
           }
         },
         "higher_timeframe_direction": {
-          "status": "PASS",
-          "reason": "htf_down",
-          "metrics": {
-            "ema50": 1.000305,
-            "ema200": 1.00081,
-            "price": 1.00028,
-            "direction": "DOWN",
-            "timeframe": "m15_fallback"
-          }
-        },
-        "local_alignment": {
-          "status": "PASS",
-          "reason": "local_aligned_with_htf",
-          "metrics": {
-            "htf": "DOWN",
-            "price": 1.00028,
-            "ema20": 1.00045,
-            "bias": "NEUTRAL"
-          }
-        },
-        "pressure_confirmation": {
-          "status": "PASS",
-          "reason": "pressure_confirmed",
-          "metrics": {
-            "delta_norm": -0.3435,
-            "cvd_slope": -0.00115
-          }
-        },
-        "participation": {
           "status": "FAIL",
-          "reason": "atr_compression",
+          "reason": "no_clear_htf_direction",
           "metrics": {
-            "atr_pct": 0.0995,
-            "atr": 0.000996
+            "ema50": 1.000313,
+            "ema200": 1.000803,
+            "price": 1.00035,
+            "timeframe": "m15_fallback"
           }
         },
         "publish_learn": {
           "status": "FAIL",
-          "reason": "rejected_at_gate5",
+          "reason": "rejected_at_gate2",
           "metrics": {}
         }
       },
-      "delta_norm": -0.3435,
-      "speed": 0.7882,
-      "accel": 2.2083,
-      "atr": 0.00099592,
-      "rel_vol": 0.705,
-      "price": 1.00109,
+      "delta_norm": 0.0,
+      "speed": 0.0,
+      "accel": 1.0,
+      "atr": 0.00100195,
+      "rel_vol": 1.0,
+      "price": 1.00048,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "ZEC/USD",
       "symbol": "ZEC",
-      "ts": "2026-08-16T17:42:22.153446+00:00",
-      "htf_direction": "UP",
+      "ts": "2026-08-16T17:48:45.153066+00:00",
+      "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
       "eligibility": "REJECTED",
-      "rejected_at": "gate5",
+      "rejected_at": "gate2",
       "geometry": null,
       "gates": {
         "data_integrity": {
@@ -2215,55 +2248,27 @@
           }
         },
         "higher_timeframe_direction": {
-          "status": "PASS",
-          "reason": "htf_up",
-          "metrics": {
-            "ema50": 489.128557,
-            "ema200": 487.8112,
-            "price": 493.29,
-            "direction": "UP",
-            "timeframe": "m15_fallback"
-          }
-        },
-        "local_alignment": {
-          "status": "PASS",
-          "reason": "local_aligned_with_htf",
-          "metrics": {
-            "htf": "UP",
-            "price": 493.29,
-            "ema20": 491.114383,
-            "bias": "NEUTRAL"
-          }
-        },
-        "pressure_confirmation": {
-          "status": "PASS",
-          "reason": "pressure_balanced_not_confirmed",
-          "metrics": {
-            "delta_norm": 0.0035,
-            "cvd_slope": 0.51,
-            "warning": "pressure_weak"
-          }
-        },
-        "participation": {
           "status": "FAIL",
-          "reason": "atr_compression",
+          "reason": "no_clear_htf_direction",
           "metrics": {
-            "atr_pct": 0.2581,
-            "atr": 1.269931
+            "ema50": 489.189429,
+            "ema200": 487.8114,
+            "price": 490.91,
+            "timeframe": "m15_fallback"
           }
         },
         "publish_learn": {
           "status": "FAIL",
-          "reason": "rejected_at_gate5",
+          "reason": "rejected_at_gate2",
           "metrics": {}
         }
       },
-      "delta_norm": 0.0035,
-      "speed": 0.2559,
-      "accel": 5.3333,
-      "atr": 1.26993142,
-      "rel_vol": 3.78,
-      "price": 491.98,
+      "delta_norm": 0.0,
+      "speed": 0.0,
+      "accel": 1.0,
+      "atr": 1.37642753,
+      "rel_vol": 1.0,
+      "price": 489.57,
       "quarantined": false
     }
   ]
