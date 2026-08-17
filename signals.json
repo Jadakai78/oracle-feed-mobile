@@ -1,6 +1,6 @@
 {
   "schema_version": 4,
-  "generated_at": "2026-08-17T21:45:45.015179+00:00",
+  "generated_at": "2026-08-17T21:51:54.939282+00:00",
   "universe": {
     "requested_pairs": 49,
     "scanned_pairs": 49,
@@ -18,7 +18,7 @@
       "schema_version": 4,
       "pair": "HYPE/USD",
       "symbol": "HYPE",
-      "ts": "2026-08-17T21:45:44.990928+00:00",
+      "ts": "2026-08-17T21:51:54.924837+00:00",
       "htf_direction": "UP",
       "side": "LONG",
       "score": 77,
@@ -26,17 +26,17 @@
       "rejected_at": null,
       "geometry": {
         "side": "LONG",
-        "entry": 58.95,
+        "entry": 58.91,
         "entry_zone": [
-          58.89105,
-          59.00895
+          58.85109,
+          58.96891
         ],
         "sl": 58.20117153,
-        "tp1": 60.0732427,
-        "tp2": 60.82207117,
+        "tp1": 59.9732427,
+        "tp2": 60.68207117,
         "invalidation": 58.20117153,
         "atr": 0.18882847,
-        "risk_pct": 1.2703,
+        "risk_pct": 1.2032,
         "room_to_risk": 1.5,
         "reclaim_confirmed": false
       },
@@ -84,7 +84,7 @@
           "metrics": {
             "rel_vol": 1.616,
             "atr": 0.188828,
-            "atr_pct": 0.3203
+            "atr_pct": 0.3205
           }
         },
         "noise_no_chase": {
@@ -98,7 +98,7 @@
           "metrics": {
             "side": "LONG",
             "sl": 58.20117153,
-            "tp1": 60.0732427,
+            "tp1": 59.9732427,
             "room_to_risk": 1.5,
             "speed": 0.5561,
             "accel": 15.0
@@ -118,7 +118,7 @@
       "accel": 15.0,
       "atr": 0.18882847,
       "rel_vol": 1.616,
-      "price": 58.95,
+      "price": 58.91,
       "quarantined": false
     }
   ],
@@ -127,8 +127,78 @@
       "schema_version": 4,
       "pair": "AAVE/USD",
       "symbol": "AAVE",
-      "ts": "2026-08-17T21:45:44.950995+00:00",
+      "ts": "2026-08-17T21:51:54.917144+00:00",
       "htf_direction": "UP",
+      "side": "NONE",
+      "score": 0,
+      "eligibility": "REJECTED",
+      "rejected_at": "gate5",
+      "geometry": null,
+      "gates": {
+        "data_integrity": {
+          "status": "PASS",
+          "reason": "valid_completed_candles",
+          "metrics": {
+            "bar_count": 100
+          }
+        },
+        "higher_timeframe_direction": {
+          "status": "PASS",
+          "reason": "htf_up",
+          "metrics": {
+            "ema50": 87.478021,
+            "ema200": 86.7841,
+            "price": 88.43,
+            "direction": "UP",
+            "timeframe": "m15_fallback"
+          }
+        },
+        "local_alignment": {
+          "status": "PASS",
+          "reason": "local_aligned_with_htf",
+          "metrics": {
+            "htf": "UP",
+            "price": 88.43,
+            "ema20": 87.952879,
+            "bias": "NEUTRAL"
+          }
+        },
+        "pressure_confirmation": {
+          "status": "PASS",
+          "reason": "pressure_confirmed",
+          "metrics": {
+            "delta_norm": 0.5022,
+            "cvd_slope": 0.16
+          }
+        },
+        "participation": {
+          "status": "FAIL",
+          "reason": "atr_compression",
+          "metrics": {
+            "atr_pct": 0.2375,
+            "atr": 0.209997
+          }
+        },
+        "publish_learn": {
+          "status": "FAIL",
+          "reason": "rejected_at_gate5",
+          "metrics": {}
+        }
+      },
+      "delta_norm": 0.5022,
+      "speed": 0.4048,
+      "accel": 11.5,
+      "atr": 0.20999662,
+      "rel_vol": 2.692,
+      "price": 88.43,
+      "quarantined": false
+    },
+    {
+      "schema_version": 4,
+      "pair": "ADA/USD",
+      "symbol": "ADA",
+      "ts": "2026-08-17T21:51:54.918916+00:00",
+      "htf_direction": "DOWN",
       "side": "NONE",
       "score": 0,
       "eligibility": "REJECTED",
@@ -144,12 +214,12 @@
         },
         "higher_timeframe_direction": {
           "status": "PASS",
-          "reason": "htf_up",
+          "reason": "htf_down",
           "metrics": {
-            "ema50": 87.439108,
-            "ema200": 86.7662,
-            "price": 88.27,
-            "direction": "UP",
+            "ema50": 0.174326,
+            "ema200": 0.175079,
+            "price": 0.174019,
+            "direction": "DOWN",
             "timeframe": "m15_fallback"
           }
         },
@@ -157,9 +227,9 @@
           "status": "FAIL",
           "reason": "local_structure_not_aligned",
           "metrics": {
-            "htf": "UP",
-            "price": 88.27,
-            "ema20": 87.902679,
+            "htf": "DOWN",
+            "price": 0.174019,
+            "ema20": 0.174004,
             "bias": "NEUTRAL"
           }
         },
@@ -172,59 +242,16 @@
       "delta_norm": 0.0,
       "speed": 0.0,
       "accel": 1.0,
-      "atr": 0.19845245,
+      "atr": 0.00057502,
       "rel_vol": 1.0,
-      "price": 88.38,
-      "quarantined": false
-    },
-    {
-      "schema_version": 4,
-      "pair": "ADA/USD",
-      "symbol": "ADA",
-      "ts": "2026-08-17T21:45:44.953699+00:00",
-      "htf_direction": "NONE",
-      "side": "NONE",
-      "score": 0,
-      "eligibility": "REJECTED",
-      "rejected_at": "gate2",
-      "geometry": null,
-      "gates": {
-        "data_integrity": {
-          "status": "PASS",
-          "reason": "valid_completed_candles",
-          "metrics": {
-            "bar_count": 100
-          }
-        },
-        "higher_timeframe_direction": {
-          "status": "FAIL",
-          "reason": "no_clear_htf_direction",
-          "metrics": {
-            "ema50": 0.17434,
-            "ema200": 0.175115,
-            "price": 0.173753,
-            "timeframe": "m15_fallback"
-          }
-        },
-        "publish_learn": {
-          "status": "FAIL",
-          "reason": "rejected_at_gate2",
-          "metrics": {}
-        }
-      },
-      "delta_norm": 0.0,
-      "speed": 0.0,
-      "accel": 1.0,
-      "atr": 0.00058425,
-      "rel_vol": 1.0,
-      "price": 0.174172,
+      "price": 0.173857,
       "quarantined": true
     },
     {
       "schema_version": 4,
       "pair": "AIXBT/USD",
       "symbol": "AIXBT",
-      "ts": "2026-08-17T21:45:44.954015+00:00",
+      "ts": "2026-08-17T21:51:54.918988+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -255,12 +282,12 @@
       "schema_version": 4,
       "pair": "ALGO/USD",
       "symbol": "ALGO",
-      "ts": "2026-08-17T21:45:44.955444+00:00",
+      "ts": "2026-08-17T21:51:54.919503+00:00",
       "htf_direction": "DOWN",
       "side": "NONE",
       "score": 0,
       "eligibility": "REJECTED",
-      "rejected_at": "gate3",
+      "rejected_at": "gate5",
       "geometry": null,
       "gates": {
         "data_integrity": {
@@ -274,73 +301,129 @@
           "status": "PASS",
           "reason": "htf_down",
           "metrics": {
-            "ema50": 0.078617,
-            "ema200": 0.078735,
-            "price": 0.07843,
+            "ema50": 0.078609,
+            "ema200": 0.078733,
+            "price": 0.07838,
             "direction": "DOWN",
             "timeframe": "m15_fallback"
           }
         },
         "local_alignment": {
-          "status": "FAIL",
-          "reason": "local_structure_not_aligned",
+          "status": "PASS",
+          "reason": "local_aligned_with_htf",
           "metrics": {
             "htf": "DOWN",
-            "price": 0.07843,
-            "ema20": 0.078525,
+            "price": 0.07838,
+            "ema20": 0.078511,
             "bias": "NEUTRAL"
+          }
+        },
+        "pressure_confirmation": {
+          "status": "PASS",
+          "reason": "pressure_confirmed",
+          "metrics": {
+            "delta_norm": -0.2333,
+            "cvd_slope": -0.00015
+          }
+        },
+        "participation": {
+          "status": "FAIL",
+          "reason": "thin_market",
+          "metrics": {
+            "rel_vol": 0.059,
+            "atr": 0.000133
           }
         },
         "publish_learn": {
           "status": "FAIL",
-          "reason": "rejected_at_gate3",
+          "reason": "rejected_at_gate5",
           "metrics": {}
         }
       },
-      "delta_norm": 0.0,
-      "speed": 0.0,
-      "accel": 1.0,
-      "atr": 0.00013964,
-      "rel_vol": 1.0,
-      "price": 0.0784,
+      "delta_norm": -0.2333,
+      "speed": 0.075,
+      "accel": 0.1667,
+      "atr": 0.00013324,
+      "rel_vol": 0.059,
+      "price": 0.07841,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "APT/USD",
       "symbol": "APT",
-      "ts": "2026-08-17T21:45:44.955650+00:00",
-      "htf_direction": "NONE",
+      "ts": "2026-08-17T21:51:54.919698+00:00",
+      "htf_direction": "UP",
       "side": "NONE",
       "score": 0,
       "eligibility": "REJECTED",
-      "rejected_at": "gate1",
+      "rejected_at": "gate5",
       "geometry": null,
       "gates": {
         "data_integrity": {
+          "status": "PASS",
+          "reason": "valid_completed_candles",
+          "metrics": {
+            "bar_count": 100
+          }
+        },
+        "higher_timeframe_direction": {
+          "status": "PASS",
+          "reason": "htf_up",
+          "metrics": {
+            "ema50": 0.525382,
+            "ema200": 0.522807,
+            "price": 0.5327,
+            "direction": "UP",
+            "timeframe": "m15_fallback"
+          }
+        },
+        "local_alignment": {
+          "status": "PASS",
+          "reason": "local_aligned_with_htf",
+          "metrics": {
+            "htf": "UP",
+            "price": 0.5327,
+            "ema20": 0.528675,
+            "bias": "NEUTRAL"
+          }
+        },
+        "pressure_confirmation": {
+          "status": "PASS",
+          "reason": "pressure_balanced_not_confirmed",
+          "metrics": {
+            "delta_norm": -0.0667,
+            "cvd_slope": 0.0019,
+            "warning": "pressure_weak"
+          }
+        },
+        "participation": {
           "status": "FAIL",
-          "reason": "zero_volume_last_bar",
-          "metrics": {}
+          "reason": "thin_market",
+          "metrics": {
+            "rel_vol": 0.083,
+            "atr": 0.001376
+          }
         },
         "publish_learn": {
           "status": "FAIL",
-          "reason": "rejected_at_gate1",
+          "reason": "rejected_at_gate5",
           "metrics": {}
         }
       },
-      "delta_norm": 0.0,
-      "speed": 0.0,
+      "delta_norm": -0.0667,
+      "speed": 0.9812,
       "accel": 1.0,
-      "atr": null,
-      "rel_vol": 1.0,
-      "price": 0.5326,
+      "atr": 0.00137591,
+      "rel_vol": 0.083,
+      "price": 0.5325,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "ARB/USD",
       "symbol": "ARB",
-      "ts": "2026-08-17T21:45:44.956282+00:00",
+      "ts": "2026-08-17T21:51:54.920088+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -371,70 +454,30 @@
       "schema_version": 4,
       "pair": "ASTER/USD",
       "symbol": "ASTER",
-      "ts": "2026-08-17T21:45:44.965750+00:00",
-      "htf_direction": "UP",
+      "ts": "2026-08-17T21:51:54.920158+00:00",
+      "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
       "eligibility": "REJECTED",
-      "rejected_at": "gate5",
+      "rejected_at": "gate1",
       "geometry": null,
       "gates": {
         "data_integrity": {
-          "status": "PASS",
-          "reason": "valid_completed_candles",
-          "metrics": {
-            "bar_count": 100
-          }
-        },
-        "higher_timeframe_direction": {
-          "status": "PASS",
-          "reason": "htf_up",
-          "metrics": {
-            "ema50": 0.60065,
-            "ema200": 0.599849,
-            "price": 0.601,
-            "direction": "UP",
-            "timeframe": "m15_fallback"
-          }
-        },
-        "local_alignment": {
-          "status": "PASS",
-          "reason": "local_aligned_with_htf",
-          "metrics": {
-            "htf": "UP",
-            "price": 0.601,
-            "ema20": 0.600952,
-            "bias": "NEUTRAL"
-          }
-        },
-        "pressure_confirmation": {
-          "status": "PASS",
-          "reason": "pressure_balanced_not_confirmed",
-          "metrics": {
-            "delta_norm": 0.0,
-            "cvd_slope": 5e-05,
-            "warning": "pressure_weak"
-          }
-        },
-        "participation": {
           "status": "FAIL",
-          "reason": "thin_market",
-          "metrics": {
-            "rel_vol": 0.025,
-            "atr": 0.000255
-          }
+          "reason": "invalid_ohlc_last_bar",
+          "metrics": {}
         },
         "publish_learn": {
           "status": "FAIL",
-          "reason": "rejected_at_gate5",
+          "reason": "rejected_at_gate1",
           "metrics": {}
         }
       },
       "delta_norm": 0.0,
-      "speed": 0.9985,
+      "speed": 0.0,
       "accel": 1.0,
-      "atr": 0.00025539,
-      "rel_vol": 0.025,
+      "atr": null,
+      "rel_vol": 1.0,
       "price": 0.60002,
       "quarantined": false
     },
@@ -442,7 +485,7 @@
       "schema_version": 4,
       "pair": "ATOM/USD",
       "symbol": "ATOM",
-      "ts": "2026-08-17T21:45:44.968777+00:00",
+      "ts": "2026-08-17T21:51:54.920699+00:00",
       "htf_direction": "DOWN",
       "side": "NONE",
       "score": 0,
@@ -461,9 +504,9 @@
           "status": "PASS",
           "reason": "htf_down",
           "metrics": {
-            "ema50": 1.42346,
-            "ema200": 1.438925,
-            "price": 1.4177,
+            "ema50": 1.423216,
+            "ema200": 1.438448,
+            "price": 1.417,
             "direction": "DOWN",
             "timeframe": "m15_fallback"
           }
@@ -473,8 +516,8 @@
           "reason": "local_structure_not_aligned",
           "metrics": {
             "htf": "DOWN",
-            "price": 1.4177,
-            "ema20": 1.416754,
+            "price": 1.417,
+            "ema20": 1.416778,
             "bias": "NEUTRAL"
           }
         },
@@ -487,16 +530,16 @@
       "delta_norm": 0.0,
       "speed": 0.0,
       "accel": 1.0,
-      "atr": 0.00533131,
+      "atr": 0.00510077,
       "rel_vol": 1.0,
-      "price": 1.417,
+      "price": 1.4221,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "AVAX/USD",
       "symbol": "AVAX",
-      "ts": "2026-08-17T21:45:44.970965+00:00",
+      "ts": "2026-08-17T21:51:54.920882+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -515,9 +558,9 @@
           "status": "FAIL",
           "reason": "no_clear_htf_direction",
           "metrics": {
-            "ema50": 6.327071,
-            "ema200": 6.33018,
-            "price": 6.335,
+            "ema50": 6.327764,
+            "ema200": 6.33029,
+            "price": 6.343,
             "timeframe": "m15_fallback"
           }
         },
@@ -530,7 +573,7 @@
       "delta_norm": 0.0,
       "speed": 0.0,
       "accel": 1.0,
-      "atr": 0.01476919,
+      "atr": 0.01435651,
       "rel_vol": 1.0,
       "price": 6.343,
       "quarantined": false
@@ -539,61 +582,38 @@
       "schema_version": 4,
       "pair": "BCH/USD",
       "symbol": "BCH",
-      "ts": "2026-08-17T21:45:44.974170+00:00",
-      "htf_direction": "UP",
+      "ts": "2026-08-17T21:51:54.921113+00:00",
+      "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
       "eligibility": "REJECTED",
-      "rejected_at": "gate3",
+      "rejected_at": "gate1",
       "geometry": null,
       "gates": {
         "data_integrity": {
-          "status": "PASS",
-          "reason": "valid_completed_candles",
-          "metrics": {
-            "bar_count": 100
-          }
-        },
-        "higher_timeframe_direction": {
-          "status": "PASS",
-          "reason": "htf_up",
-          "metrics": {
-            "ema50": 204.41717,
-            "ema200": 204.3025,
-            "price": 204.45,
-            "direction": "UP",
-            "timeframe": "m15_fallback"
-          }
-        },
-        "local_alignment": {
           "status": "FAIL",
-          "reason": "local_structure_not_aligned",
-          "metrics": {
-            "htf": "UP",
-            "price": 204.45,
-            "ema20": 204.454182,
-            "bias": "NEUTRAL"
-          }
+          "reason": "invalid_ohlc_last_bar",
+          "metrics": {}
         },
         "publish_learn": {
           "status": "FAIL",
-          "reason": "rejected_at_gate3",
+          "reason": "rejected_at_gate1",
           "metrics": {}
         }
       },
       "delta_norm": 0.0,
       "speed": 0.0,
       "accel": 1.0,
-      "atr": 0.22584209,
+      "atr": null,
       "rel_vol": 1.0,
-      "price": 204.54,
+      "price": 204.68,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "BNB/USD",
       "symbol": "BNB",
-      "ts": "2026-08-17T21:45:44.975757+00:00",
+      "ts": "2026-08-17T21:51:54.921291+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -612,9 +632,9 @@
           "status": "FAIL",
           "reason": "no_clear_htf_direction",
           "metrics": {
-            "ema50": 605.005951,
-            "ema200": 604.3581,
-            "price": 604.8,
+            "ema50": 604.995856,
+            "ema200": 604.3611,
+            "price": 604.83,
             "timeframe": "m15_fallback"
           }
         },
@@ -627,16 +647,16 @@
       "delta_norm": 0.0,
       "speed": 0.0,
       "accel": 1.0,
-      "atr": 0.64579648,
+      "atr": 0.63615627,
       "rel_vol": 1.0,
-      "price": 604.83,
+      "price": 604.69,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "BTC/USD",
       "symbol": "BTC",
-      "ts": "2026-08-17T21:45:44.976916+00:00",
+      "ts": "2026-08-17T21:51:54.921486+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -672,14 +692,14 @@
       "accel": 1.0,
       "atr": 102.80048052,
       "rel_vol": 1.0,
-      "price": 64293.9,
+      "price": 64314.4,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "CRV/USD",
       "symbol": "CRV",
-      "ts": "2026-08-17T21:45:44.980100+00:00",
+      "ts": "2026-08-17T21:51:54.921721+00:00",
       "htf_direction": "DOWN",
       "side": "NONE",
       "score": 0,
@@ -749,7 +769,7 @@
       "schema_version": 4,
       "pair": "DOGE/USD",
       "symbol": "DOGE",
-      "ts": "2026-08-17T21:45:44.981649+00:00",
+      "ts": "2026-08-17T21:51:54.921951+00:00",
       "htf_direction": "UP",
       "side": "NONE",
       "score": 0,
@@ -796,14 +816,14 @@
       "accel": 1.0,
       "atr": 0.00011135,
       "rel_vol": 1.0,
-      "price": 0.0703804,
+      "price": 0.0703693,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "DOT/USD",
       "symbol": "DOT",
-      "ts": "2026-08-17T21:45:44.985424+00:00",
+      "ts": "2026-08-17T21:51:54.922332+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -846,7 +866,7 @@
       "schema_version": 4,
       "pair": "ETC/USD",
       "symbol": "ETC",
-      "ts": "2026-08-17T21:45:44.985563+00:00",
+      "ts": "2026-08-17T21:51:54.922543+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -877,7 +897,7 @@
       "schema_version": 4,
       "pair": "ETH/USD",
       "symbol": "ETH",
-      "ts": "2026-08-17T21:45:44.986268+00:00",
+      "ts": "2026-08-17T21:51:54.922767+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -913,14 +933,14 @@
       "accel": 1.0,
       "atr": 3.30700714,
       "rel_vol": 1.0,
-      "price": 1904.6,
+      "price": 1904.61,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "FARTCOIN/USD",
       "symbol": "FARTCOIN",
-      "ts": "2026-08-17T21:45:44.986509+00:00",
+      "ts": "2026-08-17T21:51:54.922895+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -951,7 +971,7 @@
       "schema_version": 4,
       "pair": "FIL/USD",
       "symbol": "FIL",
-      "ts": "2026-08-17T21:45:44.986957+00:00",
+      "ts": "2026-08-17T21:51:54.922967+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -982,7 +1002,7 @@
       "schema_version": 4,
       "pair": "GRASS/USD",
       "symbol": "GRASS",
-      "ts": "2026-08-17T21:45:44.987181+00:00",
+      "ts": "2026-08-17T21:51:54.923073+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -1013,7 +1033,7 @@
       "schema_version": 4,
       "pair": "HBAR/USD",
       "symbol": "HBAR",
-      "ts": "2026-08-17T21:45:44.987591+00:00",
+      "ts": "2026-08-17T21:51:54.923276+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -1049,14 +1069,14 @@
       "accel": 1.0,
       "atr": 0.00012081,
       "rel_vol": 1.0,
-      "price": 0.06576,
+      "price": 0.06577,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "HYPE/USD",
       "symbol": "HYPE",
-      "ts": "2026-08-17T21:45:44.990928+00:00",
+      "ts": "2026-08-17T21:51:54.924837+00:00",
       "htf_direction": "UP",
       "side": "LONG",
       "score": 77,
@@ -1064,17 +1084,17 @@
       "rejected_at": null,
       "geometry": {
         "side": "LONG",
-        "entry": 58.95,
+        "entry": 58.91,
         "entry_zone": [
-          58.89105,
-          59.00895
+          58.85109,
+          58.96891
         ],
         "sl": 58.20117153,
-        "tp1": 60.0732427,
-        "tp2": 60.82207117,
+        "tp1": 59.9732427,
+        "tp2": 60.68207117,
         "invalidation": 58.20117153,
         "atr": 0.18882847,
-        "risk_pct": 1.2703,
+        "risk_pct": 1.2032,
         "room_to_risk": 1.5,
         "reclaim_confirmed": false
       },
@@ -1122,7 +1142,7 @@
           "metrics": {
             "rel_vol": 1.616,
             "atr": 0.188828,
-            "atr_pct": 0.3203
+            "atr_pct": 0.3205
           }
         },
         "noise_no_chase": {
@@ -1136,7 +1156,7 @@
           "metrics": {
             "side": "LONG",
             "sl": 58.20117153,
-            "tp1": 60.0732427,
+            "tp1": 59.9732427,
             "room_to_risk": 1.5,
             "speed": 0.5561,
             "accel": 15.0
@@ -1156,14 +1176,14 @@
       "accel": 15.0,
       "atr": 0.18882847,
       "rel_vol": 1.616,
-      "price": 58.95,
+      "price": 58.91,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "INJ/USD",
       "symbol": "INJ",
-      "ts": "2026-08-17T21:45:44.995058+00:00",
+      "ts": "2026-08-17T21:51:54.926443+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -1199,14 +1219,14 @@
       "accel": 1.0,
       "atr": 0.0087387,
       "rel_vol": 1.0,
-      "price": 4.092,
+      "price": 4.089,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "JTO/USD",
       "symbol": "JTO",
-      "ts": "2026-08-17T21:45:44.996572+00:00",
+      "ts": "2026-08-17T21:51:54.927045+00:00",
       "htf_direction": "DOWN",
       "side": "NONE",
       "score": 0,
@@ -1291,7 +1311,7 @@
       "schema_version": 4,
       "pair": "JUP/USD",
       "symbol": "JUP",
-      "ts": "2026-08-17T21:45:44.996928+00:00",
+      "ts": "2026-08-17T21:51:54.927113+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -1315,14 +1335,14 @@
       "accel": 1.0,
       "atr": null,
       "rel_vol": 1.0,
-      "price": 0.16792,
+      "price": 0.16788,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "NEAR/USD",
       "symbol": "NEAR",
-      "ts": "2026-08-17T21:45:44.998237+00:00",
+      "ts": "2026-08-17T21:51:54.927374+00:00",
       "htf_direction": "UP",
       "side": "NONE",
       "score": 0,
@@ -1372,7 +1392,7 @@
           "metrics": {
             "rel_vol": 1.285,
             "atr": 0.005699,
-            "atr_pct": 0.3482
+            "atr_pct": 0.3479
           }
         },
         "noise_no_chase": {
@@ -1399,14 +1419,14 @@
       "accel": 0.0519,
       "atr": 0.00569924,
       "rel_vol": 1.285,
-      "price": 1.6366,
+      "price": 1.6383,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "ONDO/USD",
       "symbol": "ONDO",
-      "ts": "2026-08-17T21:45:44.999511+00:00",
+      "ts": "2026-08-17T21:51:54.927541+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -1442,14 +1462,14 @@
       "accel": 1.0,
       "atr": 0.00096255,
       "rel_vol": 1.0,
-      "price": 0.33385,
+      "price": 0.33391,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "OP/USD",
       "symbol": "OP",
-      "ts": "2026-08-17T21:45:45.000353+00:00",
+      "ts": "2026-08-17T21:51:54.927601+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -1480,7 +1500,7 @@
       "schema_version": 4,
       "pair": "PENGU/USD",
       "symbol": "PENGU",
-      "ts": "2026-08-17T21:45:45.000724+00:00",
+      "ts": "2026-08-17T21:51:54.927794+00:00",
       "htf_direction": "UP",
       "side": "NONE",
       "score": 0,
@@ -1534,7 +1554,7 @@
       "schema_version": 4,
       "pair": "PNUT/USD",
       "symbol": "PNUT",
-      "ts": "2026-08-17T21:45:45.000900+00:00",
+      "ts": "2026-08-17T21:51:54.927848+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -1565,7 +1585,7 @@
       "schema_version": 4,
       "pair": "POL/USD",
       "symbol": "POL",
-      "ts": "2026-08-17T21:45:45.001066+00:00",
+      "ts": "2026-08-17T21:51:54.928022+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -1601,14 +1621,14 @@
       "accel": 1.0,
       "atr": 0.00066562,
       "rel_vol": 1.0,
-      "price": 0.07992,
+      "price": 0.07991,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "POPCAT/USD",
       "symbol": "POPCAT",
-      "ts": "2026-08-17T21:45:45.001228+00:00",
+      "ts": "2026-08-17T21:51:54.928091+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -1632,14 +1652,14 @@
       "accel": 1.0,
       "atr": null,
       "rel_vol": 1.0,
-      "price": 0.0411,
+      "price": 0.0413,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "PUMP/USD",
       "symbol": "PUMP",
-      "ts": "2026-08-17T21:45:45.001457+00:00",
+      "ts": "2026-08-17T21:51:54.928930+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -1682,7 +1702,7 @@
       "schema_version": 4,
       "pair": "RENDER/USD",
       "symbol": "RENDER",
-      "ts": "2026-08-17T21:45:45.002008+00:00",
+      "ts": "2026-08-17T21:51:54.929483+00:00",
       "htf_direction": "UP",
       "side": "NONE",
       "score": 0,
@@ -1730,7 +1750,7 @@
           "status": "FAIL",
           "reason": "atr_compression",
           "metrics": {
-            "atr_pct": 0.2545,
+            "atr_pct": 0.2549,
             "atr": 0.003243
           }
         },
@@ -1745,14 +1765,14 @@
       "accel": 0.3333,
       "atr": 0.00324293,
       "rel_vol": 1.518,
-      "price": 1.274,
+      "price": 1.272,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "S/USD",
       "symbol": "S",
-      "ts": "2026-08-17T21:45:45.002159+00:00",
+      "ts": "2026-08-17T21:51:54.930198+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -1783,7 +1803,7 @@
       "schema_version": 4,
       "pair": "SOL/USD",
       "symbol": "SOL",
-      "ts": "2026-08-17T21:45:45.002580+00:00",
+      "ts": "2026-08-17T21:51:54.930466+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -1826,7 +1846,7 @@
       "schema_version": 4,
       "pair": "STX/USD",
       "symbol": "STX",
-      "ts": "2026-08-17T21:45:45.002653+00:00",
+      "ts": "2026-08-17T21:51:54.930731+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -1857,7 +1877,7 @@
       "schema_version": 4,
       "pair": "SUI/USD",
       "symbol": "SUI",
-      "ts": "2026-08-17T21:45:45.003340+00:00",
+      "ts": "2026-08-17T21:51:54.930930+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -1900,7 +1920,7 @@
       "schema_version": 4,
       "pair": "TAO/USD",
       "symbol": "TAO",
-      "ts": "2026-08-17T21:45:45.003544+00:00",
+      "ts": "2026-08-17T21:51:54.931084+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -1936,14 +1956,14 @@
       "accel": 1.0,
       "atr": 0.4844866,
       "rel_vol": 1.0,
-      "price": 196.3502,
+      "price": 196.2226,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "TIA/USD",
       "symbol": "TIA",
-      "ts": "2026-08-17T21:45:45.003866+00:00",
+      "ts": "2026-08-17T21:51:54.931657+00:00",
       "htf_direction": "UP",
       "side": "NONE",
       "score": 0,
@@ -2014,7 +2034,7 @@
       "schema_version": 4,
       "pair": "TRUMP/USD",
       "symbol": "TRUMP",
-      "ts": "2026-08-17T21:45:45.003957+00:00",
+      "ts": "2026-08-17T21:51:54.931743+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -2038,14 +2058,14 @@
       "accel": 1.0,
       "atr": null,
       "rel_vol": 1.0,
-      "price": 1.4,
+      "price": 1.402,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "TRX/USD",
       "symbol": "TRX",
-      "ts": "2026-08-17T21:45:45.004155+00:00",
+      "ts": "2026-08-17T21:51:54.932012+00:00",
       "htf_direction": "DOWN",
       "side": "NONE",
       "score": 0,
@@ -2092,14 +2112,14 @@
       "accel": 1.0,
       "atr": 0.00027529,
       "rel_vol": 1.0,
-      "price": 0.331036,
+      "price": 0.33109,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "UNI/USD",
       "symbol": "UNI",
-      "ts": "2026-08-17T21:45:45.004789+00:00",
+      "ts": "2026-08-17T21:51:54.932622+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -2135,14 +2155,14 @@
       "accel": 1.0,
       "atr": 0.0086351,
       "rel_vol": 1.0,
-      "price": 3.2866,
+      "price": 3.2828,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "VIRTUAL/USD",
       "symbol": "VIRTUAL",
-      "ts": "2026-08-17T21:45:45.005067+00:00",
+      "ts": "2026-08-17T21:51:54.932873+00:00",
       "htf_direction": "UP",
       "side": "NONE",
       "score": 0,
@@ -2213,7 +2233,7 @@
       "schema_version": 4,
       "pair": "WIF/USD",
       "symbol": "WIF",
-      "ts": "2026-08-17T21:45:45.005286+00:00",
+      "ts": "2026-08-17T21:51:54.933097+00:00",
       "htf_direction": "UP",
       "side": "NONE",
       "score": 0,
@@ -2262,7 +2282,7 @@
           "status": "FAIL",
           "reason": "atr_compression",
           "metrics": {
-            "atr_pct": 0.1975,
+            "atr_pct": 0.1973,
             "atr": 0.000274
           }
         },
@@ -2277,14 +2297,14 @@
       "accel": 1.0,
       "atr": 0.0002741,
       "rel_vol": 3.523,
-      "price": 0.1388,
+      "price": 0.1389,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "WLD/USD",
       "symbol": "WLD",
-      "ts": "2026-08-17T21:45:45.005499+00:00",
+      "ts": "2026-08-17T21:51:54.933335+00:00",
       "htf_direction": "DOWN",
       "side": "NONE",
       "score": 0,
@@ -2331,14 +2351,14 @@
       "accel": 1.0,
       "atr": 0.00169831,
       "rel_vol": 1.0,
-      "price": 0.3496,
+      "price": 0.3494,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "XPL/USD",
       "symbol": "XPL",
-      "ts": "2026-08-17T21:45:45.005725+00:00",
+      "ts": "2026-08-17T21:51:54.933460+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -2369,7 +2389,7 @@
       "schema_version": 4,
       "pair": "XRP/USD",
       "symbol": "XRP",
-      "ts": "2026-08-17T21:45:45.008366+00:00",
+      "ts": "2026-08-17T21:51:54.933884+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -2405,14 +2425,14 @@
       "accel": 1.0,
       "atr": 0.00183151,
       "rel_vol": 1.0,
-      "price": 1.00201,
+      "price": 1.00188,
       "quarantined": false
     },
     {
       "schema_version": 4,
       "pair": "ZEC/USD",
       "symbol": "ZEC",
-      "ts": "2026-08-17T21:45:45.009943+00:00",
+      "ts": "2026-08-17T21:51:54.934165+00:00",
       "htf_direction": "NONE",
       "side": "NONE",
       "score": 0,
@@ -2448,7 +2468,7 @@
       "accel": 1.0,
       "atr": 2.30698469,
       "rel_vol": 1.0,
-      "price": 515.53,
+      "price": 515.83,
       "quarantined": false
     }
   ]
