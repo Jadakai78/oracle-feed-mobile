@@ -1,8 +1,8 @@
 {
   "recordtype": "ORACLEPROPFEED",
-  "generated_at_utc": "2026-08-25T21:45:58Z",
-  "context_generated_at_utc": "2026-08-25T21:41:08Z",
-  "context_age_seconds": 290,
+  "generated_at_utc": "2026-08-25T21:51:05Z",
+  "context_generated_at_utc": "2026-08-25T21:46:35Z",
+  "context_age_seconds": 270,
   "venue": "PROP",
   "universe": "APRIL_12_FIXED",
   "manual_review_only": true,
@@ -16,36 +16,79 @@
   },
   "health": {
     "pair_count": 49,
-    "best_now_count": 0,
+    "best_now_count": 2,
     "watch_needs_trigger_count": 0,
-    "shielded_count": 47,
+    "shielded_count": 45,
     "rejected_context_count": 2,
-    "micro_watchlist_count": 0,
+    "micro_watchlist_count": 1,
     "review_state_counts": {
-      "ARMED": 1,
+      "ARMED": 2,
       "BLOCK": 2,
-      "WATCH": 46
+      "WATCH": 45
     }
   },
   "tiers": {
-    "best_now": [],
+    "best_now": [
+      {
+        "pair": "DYDX/USD",
+        "directional_context": "SHORT",
+        "market_type": "PULSE",
+        "structure": "ALIGNED",
+        "tempo": "FADING",
+        "flow": "CONFIRMS",
+        "shield": "CLEAR",
+        "location": "RETEST",
+        "review_state": "ARMED",
+        "reason_codes": [
+          "CONTEXT_CLEAR"
+        ],
+        "context_claim": "CONTEXT_CLEAR",
+        "context_score": 85,
+        "tier": "BEST_NOW",
+        "correlation_group": "SHORT:PULSE",
+        "correlation_role": "PRIMARY",
+        "micro_watchlist": true,
+        "micro_state": "ARMED"
+      },
+      {
+        "pair": "ZRX/USD",
+        "directional_context": "SHORT",
+        "market_type": "PULSE",
+        "structure": "ALIGNED",
+        "tempo": "FADING",
+        "flow": "CONFIRMS",
+        "shield": "CLEAR",
+        "location": "RETEST",
+        "review_state": "ARMED",
+        "reason_codes": [
+          "CONTEXT_CLEAR"
+        ],
+        "context_claim": "CONTEXT_CLEAR",
+        "context_score": 85,
+        "tier": "BEST_NOW",
+        "correlation_group": "SHORT:PULSE",
+        "correlation_role": "DUPLICATE",
+        "micro_watchlist": false,
+        "micro_state": "OFF"
+      }
+    ],
     "watch_needs_trigger": [],
     "shielded": [
       {
-        "pair": "OP/USD",
+        "pair": "INJ/USD",
         "directional_context": "SHORT",
         "market_type": "DRIVE",
         "structure": "ALIGNED",
         "tempo": "EXPANDING",
-        "flow": "CONFIRMS",
+        "flow": "OPPOSES",
         "shield": "CAUTION",
-        "location": "EXTENDED",
-        "review_state": "ARMED",
+        "location": "RETEST",
+        "review_state": "WATCH",
         "reason_codes": [
-          "LOCATION_EXTENDED"
+          "FLOW_OPPOSES_CONTEXT"
         ],
-        "context_claim": "LOCATION_EXTENDED",
-        "context_score": 65,
+        "context_claim": "FLOW_OPPOSES_CONTEXT",
+        "context_score": 62,
         "tier": "SHIELDED",
         "correlation_group": "SHORT:DRIVE",
         "correlation_role": "PRIMARY",
@@ -53,9 +96,9 @@
         "micro_state": "OFF"
       },
       {
-        "pair": "ATOM/USD",
+        "pair": "OP/USD",
         "directional_context": "SHORT",
-        "market_type": "PULSE",
+        "market_type": "TREND",
         "structure": "ALIGNED",
         "tempo": "EXPANDING",
         "flow": "OPPOSES",
@@ -68,17 +111,17 @@
         "context_claim": "FLOW_OPPOSES_CONTEXT",
         "context_score": 62,
         "tier": "SHIELDED",
-        "correlation_group": "SHORT:PULSE",
+        "correlation_group": "SHORT:TREND",
         "correlation_role": "PRIMARY",
         "micro_watchlist": false,
         "micro_state": "OFF"
       },
       {
-        "pair": "LTC/USD",
+        "pair": "ADA/USD",
         "directional_context": "SHORT",
         "market_type": "PULSE",
         "structure": "ALIGNED",
-        "tempo": "EXPANDING",
+        "tempo": "STABLE",
         "flow": "OPPOSES",
         "shield": "CAUTION",
         "location": "RETEST",
@@ -87,7 +130,7 @@
           "FLOW_OPPOSES_CONTEXT"
         ],
         "context_claim": "FLOW_OPPOSES_CONTEXT",
-        "context_score": 62,
+        "context_score": 55,
         "tier": "SHIELDED",
         "correlation_group": "SHORT:PULSE",
         "correlation_role": "DUPLICATE",
@@ -95,11 +138,11 @@
         "micro_state": "OFF"
       },
       {
-        "pair": "TON/USD",
+        "pair": "ATOM/USD",
         "directional_context": "SHORT",
-        "market_type": "DRIVE",
+        "market_type": "RANGE",
         "structure": "ALIGNED",
-        "tempo": "EXPANDING",
+        "tempo": "STABLE",
         "flow": "OPPOSES",
         "shield": "CAUTION",
         "location": "RETEST",
@@ -108,9 +151,51 @@
           "FLOW_OPPOSES_CONTEXT"
         ],
         "context_claim": "FLOW_OPPOSES_CONTEXT",
-        "context_score": 62,
+        "context_score": 55,
         "tier": "SHIELDED",
-        "correlation_group": "SHORT:DRIVE",
+        "correlation_group": "SHORT:RANGE",
+        "correlation_role": "PRIMARY",
+        "micro_watchlist": false,
+        "micro_state": "OFF"
+      },
+      {
+        "pair": "AVAX/USD",
+        "directional_context": "SHORT",
+        "market_type": "TREND",
+        "structure": "ALIGNED",
+        "tempo": "STABLE",
+        "flow": "OPPOSES",
+        "shield": "CAUTION",
+        "location": "RETEST",
+        "review_state": "WATCH",
+        "reason_codes": [
+          "FLOW_OPPOSES_CONTEXT"
+        ],
+        "context_claim": "FLOW_OPPOSES_CONTEXT",
+        "context_score": 55,
+        "tier": "SHIELDED",
+        "correlation_group": "SHORT:TREND",
+        "correlation_role": "DUPLICATE",
+        "micro_watchlist": false,
+        "micro_state": "OFF"
+      },
+      {
+        "pair": "BCH/USD",
+        "directional_context": "SHORT",
+        "market_type": "TREND",
+        "structure": "ALIGNED",
+        "tempo": "STABLE",
+        "flow": "OPPOSES",
+        "shield": "CAUTION",
+        "location": "RETEST",
+        "review_state": "WATCH",
+        "reason_codes": [
+          "FLOW_OPPOSES_CONTEXT"
+        ],
+        "context_claim": "FLOW_OPPOSES_CONTEXT",
+        "context_score": 55,
+        "tier": "SHIELDED",
+        "correlation_group": "SHORT:TREND",
         "correlation_role": "DUPLICATE",
         "micro_watchlist": false,
         "micro_state": "OFF"
@@ -118,7 +203,7 @@
       {
         "pair": "BTC/USD",
         "directional_context": "SHORT",
-        "market_type": "PULSE",
+        "market_type": "TREND",
         "structure": "ALIGNED",
         "tempo": "STABLE",
         "flow": "OPPOSES",
@@ -131,15 +216,15 @@
         "context_claim": "FLOW_OPPOSES_CONTEXT",
         "context_score": 55,
         "tier": "SHIELDED",
-        "correlation_group": "SHORT:PULSE",
+        "correlation_group": "SHORT:TREND",
         "correlation_role": "DUPLICATE",
         "micro_watchlist": false,
         "micro_state": "OFF"
       },
       {
-        "pair": "ICP/USD",
+        "pair": "DOGE/USD",
         "directional_context": "SHORT",
-        "market_type": "PULSE",
+        "market_type": "TREND",
         "structure": "ALIGNED",
         "tempo": "STABLE",
         "flow": "OPPOSES",
@@ -152,7 +237,133 @@
         "context_claim": "FLOW_OPPOSES_CONTEXT",
         "context_score": 55,
         "tier": "SHIELDED",
-        "correlation_group": "SHORT:PULSE",
+        "correlation_group": "SHORT:TREND",
+        "correlation_role": "DUPLICATE",
+        "micro_watchlist": false,
+        "micro_state": "OFF"
+      },
+      {
+        "pair": "DOT/USD",
+        "directional_context": "SHORT",
+        "market_type": "RANGE",
+        "structure": "ALIGNED",
+        "tempo": "STABLE",
+        "flow": "OPPOSES",
+        "shield": "CAUTION",
+        "location": "RETEST",
+        "review_state": "WATCH",
+        "reason_codes": [
+          "FLOW_OPPOSES_CONTEXT"
+        ],
+        "context_claim": "FLOW_OPPOSES_CONTEXT",
+        "context_score": 55,
+        "tier": "SHIELDED",
+        "correlation_group": "SHORT:RANGE",
+        "correlation_role": "DUPLICATE",
+        "micro_watchlist": false,
+        "micro_state": "OFF"
+      },
+      {
+        "pair": "ETC/USD",
+        "directional_context": "SHORT",
+        "market_type": "TREND",
+        "structure": "ALIGNED",
+        "tempo": "STABLE",
+        "flow": "OPPOSES",
+        "shield": "CAUTION",
+        "location": "RETEST",
+        "review_state": "WATCH",
+        "reason_codes": [
+          "FLOW_OPPOSES_CONTEXT"
+        ],
+        "context_claim": "FLOW_OPPOSES_CONTEXT",
+        "context_score": 55,
+        "tier": "SHIELDED",
+        "correlation_group": "SHORT:TREND",
+        "correlation_role": "DUPLICATE",
+        "micro_watchlist": false,
+        "micro_state": "OFF"
+      },
+      {
+        "pair": "ETH/USD",
+        "directional_context": "SHORT",
+        "market_type": "TREND",
+        "structure": "ALIGNED",
+        "tempo": "STABLE",
+        "flow": "OPPOSES",
+        "shield": "CAUTION",
+        "location": "RETEST",
+        "review_state": "WATCH",
+        "reason_codes": [
+          "FLOW_OPPOSES_CONTEXT"
+        ],
+        "context_claim": "FLOW_OPPOSES_CONTEXT",
+        "context_score": 55,
+        "tier": "SHIELDED",
+        "correlation_group": "SHORT:TREND",
+        "correlation_role": "DUPLICATE",
+        "micro_watchlist": false,
+        "micro_state": "OFF"
+      },
+      {
+        "pair": "KAS/USD",
+        "directional_context": "SHORT",
+        "market_type": "TREND",
+        "structure": "ALIGNED",
+        "tempo": "STABLE",
+        "flow": "OPPOSES",
+        "shield": "CAUTION",
+        "location": "RETEST",
+        "review_state": "WATCH",
+        "reason_codes": [
+          "FLOW_OPPOSES_CONTEXT"
+        ],
+        "context_claim": "FLOW_OPPOSES_CONTEXT",
+        "context_score": 55,
+        "tier": "SHIELDED",
+        "correlation_group": "SHORT:TREND",
+        "correlation_role": "DUPLICATE",
+        "micro_watchlist": false,
+        "micro_state": "OFF"
+      },
+      {
+        "pair": "LINK/USD",
+        "directional_context": "SHORT",
+        "market_type": "TREND",
+        "structure": "ALIGNED",
+        "tempo": "STABLE",
+        "flow": "OPPOSES",
+        "shield": "CAUTION",
+        "location": "RETEST",
+        "review_state": "WATCH",
+        "reason_codes": [
+          "FLOW_OPPOSES_CONTEXT"
+        ],
+        "context_claim": "FLOW_OPPOSES_CONTEXT",
+        "context_score": 55,
+        "tier": "SHIELDED",
+        "correlation_group": "SHORT:TREND",
+        "correlation_role": "DUPLICATE",
+        "micro_watchlist": false,
+        "micro_state": "OFF"
+      },
+      {
+        "pair": "LTC/USD",
+        "directional_context": "SHORT",
+        "market_type": "TREND",
+        "structure": "ALIGNED",
+        "tempo": "STABLE",
+        "flow": "OPPOSES",
+        "shield": "CAUTION",
+        "location": "RETEST",
+        "review_state": "WATCH",
+        "reason_codes": [
+          "FLOW_OPPOSES_CONTEXT"
+        ],
+        "context_claim": "FLOW_OPPOSES_CONTEXT",
+        "context_score": 55,
+        "tier": "SHIELDED",
+        "correlation_group": "SHORT:TREND",
         "correlation_role": "DUPLICATE",
         "micro_watchlist": false,
         "micro_state": "OFF"
@@ -179,7 +390,49 @@
         "micro_state": "OFF"
       },
       {
-        "pair": "SOL/USD",
+        "pair": "PEPE/USD",
+        "directional_context": "SHORT",
+        "market_type": "TREND",
+        "structure": "ALIGNED",
+        "tempo": "STABLE",
+        "flow": "OPPOSES",
+        "shield": "CAUTION",
+        "location": "RETEST",
+        "review_state": "WATCH",
+        "reason_codes": [
+          "FLOW_OPPOSES_CONTEXT"
+        ],
+        "context_claim": "FLOW_OPPOSES_CONTEXT",
+        "context_score": 55,
+        "tier": "SHIELDED",
+        "correlation_group": "SHORT:TREND",
+        "correlation_role": "DUPLICATE",
+        "micro_watchlist": false,
+        "micro_state": "OFF"
+      },
+      {
+        "pair": "SEI/USD",
+        "directional_context": "SHORT",
+        "market_type": "TREND",
+        "structure": "ALIGNED",
+        "tempo": "STABLE",
+        "flow": "OPPOSES",
+        "shield": "CAUTION",
+        "location": "RETEST",
+        "review_state": "WATCH",
+        "reason_codes": [
+          "FLOW_OPPOSES_CONTEXT"
+        ],
+        "context_claim": "FLOW_OPPOSES_CONTEXT",
+        "context_score": 55,
+        "tier": "SHIELDED",
+        "correlation_group": "SHORT:TREND",
+        "correlation_role": "DUPLICATE",
+        "micro_watchlist": false,
+        "micro_state": "OFF"
+      },
+      {
+        "pair": "SHIB/USD",
         "directional_context": "SHORT",
         "market_type": "PULSE",
         "structure": "ALIGNED",
@@ -200,14 +453,14 @@
         "micro_state": "OFF"
       },
       {
-        "pair": "STX/USD",
+        "pair": "SOL/USD",
         "directional_context": "SHORT",
         "market_type": "RANGE",
         "structure": "ALIGNED",
         "tempo": "STABLE",
         "flow": "OPPOSES",
         "shield": "CAUTION",
-        "location": "BASE",
+        "location": "RETEST",
         "review_state": "WATCH",
         "reason_codes": [
           "FLOW_OPPOSES_CONTEXT"
@@ -216,12 +469,54 @@
         "context_score": 55,
         "tier": "SHIELDED",
         "correlation_group": "SHORT:RANGE",
-        "correlation_role": "PRIMARY",
+        "correlation_role": "DUPLICATE",
+        "micro_watchlist": false,
+        "micro_state": "OFF"
+      },
+      {
+        "pair": "SUI/USD",
+        "directional_context": "SHORT",
+        "market_type": "TREND",
+        "structure": "ALIGNED",
+        "tempo": "STABLE",
+        "flow": "OPPOSES",
+        "shield": "CAUTION",
+        "location": "RETEST",
+        "review_state": "WATCH",
+        "reason_codes": [
+          "FLOW_OPPOSES_CONTEXT"
+        ],
+        "context_claim": "FLOW_OPPOSES_CONTEXT",
+        "context_score": 55,
+        "tier": "SHIELDED",
+        "correlation_group": "SHORT:TREND",
+        "correlation_role": "DUPLICATE",
         "micro_watchlist": false,
         "micro_state": "OFF"
       },
       {
         "pair": "TAO/USD",
+        "directional_context": "SHORT",
+        "market_type": "TREND",
+        "structure": "ALIGNED",
+        "tempo": "STABLE",
+        "flow": "OPPOSES",
+        "shield": "CAUTION",
+        "location": "RETEST",
+        "review_state": "WATCH",
+        "reason_codes": [
+          "FLOW_OPPOSES_CONTEXT"
+        ],
+        "context_claim": "FLOW_OPPOSES_CONTEXT",
+        "context_score": 55,
+        "tier": "SHIELDED",
+        "correlation_group": "SHORT:TREND",
+        "correlation_role": "DUPLICATE",
+        "micro_watchlist": false,
+        "micro_state": "OFF"
+      },
+      {
+        "pair": "TON/USD",
         "directional_context": "SHORT",
         "market_type": "PULSE",
         "structure": "ALIGNED",
@@ -263,7 +558,49 @@
         "micro_state": "OFF"
       },
       {
-        "pair": "DYDX/USD",
+        "pair": "WLD/USD",
+        "directional_context": "SHORT",
+        "market_type": "TREND",
+        "structure": "ALIGNED",
+        "tempo": "STABLE",
+        "flow": "OPPOSES",
+        "shield": "CAUTION",
+        "location": "RETEST",
+        "review_state": "WATCH",
+        "reason_codes": [
+          "FLOW_OPPOSES_CONTEXT"
+        ],
+        "context_claim": "FLOW_OPPOSES_CONTEXT",
+        "context_score": 55,
+        "tier": "SHIELDED",
+        "correlation_group": "SHORT:TREND",
+        "correlation_role": "DUPLICATE",
+        "micro_watchlist": false,
+        "micro_state": "OFF"
+      },
+      {
+        "pair": "XRP/USD",
+        "directional_context": "SHORT",
+        "market_type": "PULSE",
+        "structure": "ALIGNED",
+        "tempo": "STABLE",
+        "flow": "OPPOSES",
+        "shield": "CAUTION",
+        "location": "RETEST",
+        "review_state": "WATCH",
+        "reason_codes": [
+          "FLOW_OPPOSES_CONTEXT"
+        ],
+        "context_claim": "FLOW_OPPOSES_CONTEXT",
+        "context_score": 55,
+        "tier": "SHIELDED",
+        "correlation_group": "SHORT:PULSE",
+        "correlation_role": "DUPLICATE",
+        "micro_watchlist": false,
+        "micro_state": "OFF"
+      },
+      {
+        "pair": "EGLD/USD",
         "directional_context": "SHORT",
         "market_type": "PULSE",
         "structure": "ALIGNED",
@@ -284,7 +621,7 @@
         "micro_state": "OFF"
       },
       {
-        "pair": "ETC/USD",
+        "pair": "IMX/USD",
         "directional_context": "SHORT",
         "market_type": "PULSE",
         "structure": "ALIGNED",
@@ -305,9 +642,9 @@
         "micro_state": "OFF"
       },
       {
-        "pair": "RUNE/USD",
+        "pair": "LDO/USD",
         "directional_context": "SHORT",
-        "market_type": "PULSE",
+        "market_type": "TREND",
         "structure": "ALIGNED",
         "tempo": "FADING",
         "flow": "CONFIRMS",
@@ -320,34 +657,13 @@
         "context_claim": "LOCATION_EXTENDED",
         "context_score": 50,
         "tier": "SHIELDED",
-        "correlation_group": "SHORT:PULSE",
+        "correlation_group": "SHORT:TREND",
         "correlation_role": "DUPLICATE",
         "micro_watchlist": false,
         "micro_state": "OFF"
       },
       {
-        "pair": "WIF/USD",
-        "directional_context": "SHORT",
-        "market_type": "PULSE",
-        "structure": "ALIGNED",
-        "tempo": "FADING",
-        "flow": "CONFIRMS",
-        "shield": "CAUTION",
-        "location": "EXTENDED",
-        "review_state": "WATCH",
-        "reason_codes": [
-          "LOCATION_EXTENDED"
-        ],
-        "context_claim": "LOCATION_EXTENDED",
-        "context_score": 50,
-        "tier": "SHIELDED",
-        "correlation_group": "SHORT:PULSE",
-        "correlation_role": "DUPLICATE",
-        "micro_watchlist": false,
-        "micro_state": "OFF"
-      },
-      {
-        "pair": "ZRX/USD",
+        "pair": "XTZ/USD",
         "directional_context": "SHORT",
         "market_type": "PULSE",
         "structure": "ALIGNED",
@@ -370,7 +686,7 @@
       {
         "pair": "AAVE/USD",
         "directional_context": "SHORT",
-        "market_type": "PULSE",
+        "market_type": "TREND",
         "structure": "ALIGNED",
         "tempo": "FADING",
         "flow": "OPPOSES",
@@ -383,79 +699,13 @@
         "context_claim": "FLOW_OPPOSES_CONTEXT",
         "context_score": 47,
         "tier": "SHIELDED",
-        "correlation_group": "SHORT:PULSE",
+        "correlation_group": "SHORT:TREND",
         "correlation_role": "DUPLICATE",
         "micro_watchlist": false,
         "micro_state": "OFF"
       },
       {
         "pair": "ALGO/USD",
-        "directional_context": "SHORT",
-        "market_type": "DRIVE",
-        "structure": "ALIGNED",
-        "tempo": "EXPANDING",
-        "flow": "OPPOSES",
-        "shield": "CAUTION",
-        "location": "EXTENDED",
-        "review_state": "WATCH",
-        "reason_codes": [
-          "FLOW_OPPOSES_CONTEXT",
-          "LOCATION_EXTENDED"
-        ],
-        "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-        "context_score": 47,
-        "tier": "SHIELDED",
-        "correlation_group": "SHORT:DRIVE",
-        "correlation_role": "DUPLICATE",
-        "micro_watchlist": false,
-        "micro_state": "OFF"
-      },
-      {
-        "pair": "APT/USD",
-        "directional_context": "SHORT",
-        "market_type": "DRIVE",
-        "structure": "ALIGNED",
-        "tempo": "EXPANDING",
-        "flow": "OPPOSES",
-        "shield": "CAUTION",
-        "location": "EXTENDED",
-        "review_state": "WATCH",
-        "reason_codes": [
-          "FLOW_OPPOSES_CONTEXT",
-          "LOCATION_EXTENDED"
-        ],
-        "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-        "context_score": 47,
-        "tier": "SHIELDED",
-        "correlation_group": "SHORT:DRIVE",
-        "correlation_role": "DUPLICATE",
-        "micro_watchlist": false,
-        "micro_state": "OFF"
-      },
-      {
-        "pair": "ARB/USD",
-        "directional_context": "SHORT",
-        "market_type": "DRIVE",
-        "structure": "ALIGNED",
-        "tempo": "EXPANDING",
-        "flow": "OPPOSES",
-        "shield": "CAUTION",
-        "location": "EXTENDED",
-        "review_state": "WATCH",
-        "reason_codes": [
-          "FLOW_OPPOSES_CONTEXT",
-          "LOCATION_EXTENDED"
-        ],
-        "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-        "context_score": 47,
-        "tier": "SHIELDED",
-        "correlation_group": "SHORT:DRIVE",
-        "correlation_role": "DUPLICATE",
-        "micro_watchlist": false,
-        "micro_state": "OFF"
-      },
-      {
-        "pair": "CRV/USD",
         "directional_context": "SHORT",
         "market_type": "TREND",
         "structure": "ALIGNED",
@@ -471,28 +721,6 @@
         "context_score": 47,
         "tier": "SHIELDED",
         "correlation_group": "SHORT:TREND",
-        "correlation_role": "PRIMARY",
-        "micro_watchlist": false,
-        "micro_state": "OFF"
-      },
-      {
-        "pair": "EGLD/USD",
-        "directional_context": "SHORT",
-        "market_type": "DRIVE",
-        "structure": "ALIGNED",
-        "tempo": "EXPANDING",
-        "flow": "OPPOSES",
-        "shield": "CAUTION",
-        "location": "EXTENDED",
-        "review_state": "WATCH",
-        "reason_codes": [
-          "FLOW_OPPOSES_CONTEXT",
-          "LOCATION_EXTENDED"
-        ],
-        "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-        "context_score": 47,
-        "tier": "SHIELDED",
-        "correlation_group": "SHORT:DRIVE",
         "correlation_role": "DUPLICATE",
         "micro_watchlist": false,
         "micro_state": "OFF"
@@ -519,7 +747,92 @@
         "micro_state": "OFF"
       },
       {
-        "pair": "ADA/USD",
+        "pair": "ICP/USD",
+        "directional_context": "SHORT",
+        "market_type": "TREND",
+        "structure": "ALIGNED",
+        "tempo": "FADING",
+        "flow": "OPPOSES",
+        "shield": "CAUTION",
+        "location": "RETEST",
+        "review_state": "WATCH",
+        "reason_codes": [
+          "FLOW_OPPOSES_CONTEXT"
+        ],
+        "context_claim": "FLOW_OPPOSES_CONTEXT",
+        "context_score": 47,
+        "tier": "SHIELDED",
+        "correlation_group": "SHORT:TREND",
+        "correlation_role": "DUPLICATE",
+        "micro_watchlist": false,
+        "micro_state": "OFF"
+      },
+      {
+        "pair": "POL/USD",
+        "directional_context": "LONG",
+        "market_type": "PULSE",
+        "structure": "ALIGNED",
+        "tempo": "FADING",
+        "flow": "OPPOSES",
+        "shield": "CAUTION",
+        "location": "BASE",
+        "review_state": "WATCH",
+        "reason_codes": [
+          "FLOW_OPPOSES_CONTEXT"
+        ],
+        "context_claim": "FLOW_OPPOSES_CONTEXT",
+        "context_score": 47,
+        "tier": "SHIELDED",
+        "correlation_group": "LONG:PULSE",
+        "correlation_role": "PRIMARY",
+        "micro_watchlist": false,
+        "micro_state": "OFF"
+      },
+      {
+        "pair": "RUNE/USD",
+        "directional_context": "SHORT",
+        "market_type": "TREND",
+        "structure": "ALIGNED",
+        "tempo": "EXPANDING",
+        "flow": "OPPOSES",
+        "shield": "CAUTION",
+        "location": "EXTENDED",
+        "review_state": "WATCH",
+        "reason_codes": [
+          "FLOW_OPPOSES_CONTEXT",
+          "LOCATION_EXTENDED"
+        ],
+        "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
+        "context_score": 47,
+        "tier": "SHIELDED",
+        "correlation_group": "SHORT:TREND",
+        "correlation_role": "DUPLICATE",
+        "micro_watchlist": false,
+        "micro_state": "OFF"
+      },
+      {
+        "pair": "CRV/USD",
+        "directional_context": "SHORT",
+        "market_type": "PULSE",
+        "structure": "CONTESTED",
+        "tempo": "FADING",
+        "flow": "CONFIRMS",
+        "shield": "CAUTION",
+        "location": "BASE",
+        "review_state": "WATCH",
+        "reason_codes": [
+          "STRUCTURE_CONTESTED"
+        ],
+        "context_claim": "STRUCTURE_CONTESTED",
+        "context_score": 41,
+        "tier": "SHIELDED",
+        "correlation_group": "SHORT:PULSE",
+        "correlation_role": "DUPLICATE",
+        "micro_watchlist": false,
+        "micro_state": "OFF"
+      },
+      {
+        "pair": "APT/USD",
         "directional_context": "SHORT",
         "market_type": "PULSE",
         "structure": "ALIGNED",
@@ -541,139 +854,7 @@
         "micro_state": "OFF"
       },
       {
-        "pair": "AVAX/USD",
-        "directional_context": "SHORT",
-        "market_type": "DRIVE",
-        "structure": "ALIGNED",
-        "tempo": "STABLE",
-        "flow": "OPPOSES",
-        "shield": "CAUTION",
-        "location": "EXTENDED",
-        "review_state": "WATCH",
-        "reason_codes": [
-          "FLOW_OPPOSES_CONTEXT",
-          "LOCATION_EXTENDED"
-        ],
-        "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-        "context_score": 40,
-        "tier": "SHIELDED",
-        "correlation_group": "SHORT:DRIVE",
-        "correlation_role": "DUPLICATE",
-        "micro_watchlist": false,
-        "micro_state": "OFF"
-      },
-      {
-        "pair": "BCH/USD",
-        "directional_context": "SHORT",
-        "market_type": "PULSE",
-        "structure": "ALIGNED",
-        "tempo": "STABLE",
-        "flow": "OPPOSES",
-        "shield": "CAUTION",
-        "location": "EXTENDED",
-        "review_state": "WATCH",
-        "reason_codes": [
-          "FLOW_OPPOSES_CONTEXT",
-          "LOCATION_EXTENDED"
-        ],
-        "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-        "context_score": 40,
-        "tier": "SHIELDED",
-        "correlation_group": "SHORT:PULSE",
-        "correlation_role": "DUPLICATE",
-        "micro_watchlist": false,
-        "micro_state": "OFF"
-      },
-      {
-        "pair": "DOGE/USD",
-        "directional_context": "SHORT",
-        "market_type": "DRIVE",
-        "structure": "ALIGNED",
-        "tempo": "STABLE",
-        "flow": "OPPOSES",
-        "shield": "CAUTION",
-        "location": "EXTENDED",
-        "review_state": "WATCH",
-        "reason_codes": [
-          "FLOW_OPPOSES_CONTEXT",
-          "LOCATION_EXTENDED"
-        ],
-        "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-        "context_score": 40,
-        "tier": "SHIELDED",
-        "correlation_group": "SHORT:DRIVE",
-        "correlation_role": "DUPLICATE",
-        "micro_watchlist": false,
-        "micro_state": "OFF"
-      },
-      {
-        "pair": "DOT/USD",
-        "directional_context": "SHORT",
-        "market_type": "PULSE",
-        "structure": "ALIGNED",
-        "tempo": "STABLE",
-        "flow": "OPPOSES",
-        "shield": "CAUTION",
-        "location": "EXTENDED",
-        "review_state": "WATCH",
-        "reason_codes": [
-          "FLOW_OPPOSES_CONTEXT",
-          "LOCATION_EXTENDED"
-        ],
-        "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-        "context_score": 40,
-        "tier": "SHIELDED",
-        "correlation_group": "SHORT:PULSE",
-        "correlation_role": "DUPLICATE",
-        "micro_watchlist": false,
-        "micro_state": "OFF"
-      },
-      {
-        "pair": "ETH/USD",
-        "directional_context": "SHORT",
-        "market_type": "PULSE",
-        "structure": "ALIGNED",
-        "tempo": "STABLE",
-        "flow": "OPPOSES",
-        "shield": "CAUTION",
-        "location": "EXTENDED",
-        "review_state": "WATCH",
-        "reason_codes": [
-          "FLOW_OPPOSES_CONTEXT",
-          "LOCATION_EXTENDED"
-        ],
-        "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-        "context_score": 40,
-        "tier": "SHIELDED",
-        "correlation_group": "SHORT:PULSE",
-        "correlation_role": "DUPLICATE",
-        "micro_watchlist": false,
-        "micro_state": "OFF"
-      },
-      {
-        "pair": "INJ/USD",
-        "directional_context": "SHORT",
-        "market_type": "PULSE",
-        "structure": "ALIGNED",
-        "tempo": "STABLE",
-        "flow": "OPPOSES",
-        "shield": "CAUTION",
-        "location": "EXTENDED",
-        "review_state": "WATCH",
-        "reason_codes": [
-          "FLOW_OPPOSES_CONTEXT",
-          "LOCATION_EXTENDED"
-        ],
-        "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-        "context_score": 40,
-        "tier": "SHIELDED",
-        "correlation_group": "SHORT:PULSE",
-        "correlation_role": "DUPLICATE",
-        "micro_watchlist": false,
-        "micro_state": "OFF"
-      },
-      {
-        "pair": "KAS/USD",
+        "pair": "ARB/USD",
         "directional_context": "SHORT",
         "market_type": "TREND",
         "structure": "ALIGNED",
@@ -695,139 +876,7 @@
         "micro_state": "OFF"
       },
       {
-        "pair": "LINK/USD",
-        "directional_context": "SHORT",
-        "market_type": "DRIVE",
-        "structure": "ALIGNED",
-        "tempo": "STABLE",
-        "flow": "OPPOSES",
-        "shield": "CAUTION",
-        "location": "EXTENDED",
-        "review_state": "WATCH",
-        "reason_codes": [
-          "FLOW_OPPOSES_CONTEXT",
-          "LOCATION_EXTENDED"
-        ],
-        "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-        "context_score": 40,
-        "tier": "SHIELDED",
-        "correlation_group": "SHORT:DRIVE",
-        "correlation_role": "DUPLICATE",
-        "micro_watchlist": false,
-        "micro_state": "OFF"
-      },
-      {
-        "pair": "PEPE/USD",
-        "directional_context": "SHORT",
-        "market_type": "PULSE",
-        "structure": "ALIGNED",
-        "tempo": "STABLE",
-        "flow": "OPPOSES",
-        "shield": "CAUTION",
-        "location": "EXTENDED",
-        "review_state": "WATCH",
-        "reason_codes": [
-          "FLOW_OPPOSES_CONTEXT",
-          "LOCATION_EXTENDED"
-        ],
-        "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-        "context_score": 40,
-        "tier": "SHIELDED",
-        "correlation_group": "SHORT:PULSE",
-        "correlation_role": "DUPLICATE",
-        "micro_watchlist": false,
-        "micro_state": "OFF"
-      },
-      {
-        "pair": "SEI/USD",
-        "directional_context": "SHORT",
-        "market_type": "PULSE",
-        "structure": "ALIGNED",
-        "tempo": "STABLE",
-        "flow": "OPPOSES",
-        "shield": "CAUTION",
-        "location": "EXTENDED",
-        "review_state": "WATCH",
-        "reason_codes": [
-          "FLOW_OPPOSES_CONTEXT",
-          "LOCATION_EXTENDED"
-        ],
-        "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-        "context_score": 40,
-        "tier": "SHIELDED",
-        "correlation_group": "SHORT:PULSE",
-        "correlation_role": "DUPLICATE",
-        "micro_watchlist": false,
-        "micro_state": "OFF"
-      },
-      {
-        "pair": "SHIB/USD",
-        "directional_context": "SHORT",
-        "market_type": "DRIVE",
-        "structure": "ALIGNED",
-        "tempo": "STABLE",
-        "flow": "OPPOSES",
-        "shield": "CAUTION",
-        "location": "EXTENDED",
-        "review_state": "WATCH",
-        "reason_codes": [
-          "FLOW_OPPOSES_CONTEXT",
-          "LOCATION_EXTENDED"
-        ],
-        "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-        "context_score": 40,
-        "tier": "SHIELDED",
-        "correlation_group": "SHORT:DRIVE",
-        "correlation_role": "DUPLICATE",
-        "micro_watchlist": false,
-        "micro_state": "OFF"
-      },
-      {
-        "pair": "SUI/USD",
-        "directional_context": "SHORT",
-        "market_type": "PULSE",
-        "structure": "ALIGNED",
-        "tempo": "STABLE",
-        "flow": "OPPOSES",
-        "shield": "CAUTION",
-        "location": "EXTENDED",
-        "review_state": "WATCH",
-        "reason_codes": [
-          "FLOW_OPPOSES_CONTEXT",
-          "LOCATION_EXTENDED"
-        ],
-        "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-        "context_score": 40,
-        "tier": "SHIELDED",
-        "correlation_group": "SHORT:PULSE",
-        "correlation_role": "DUPLICATE",
-        "micro_watchlist": false,
-        "micro_state": "OFF"
-      },
-      {
         "pair": "TIA/USD",
-        "directional_context": "SHORT",
-        "market_type": "DRIVE",
-        "structure": "ALIGNED",
-        "tempo": "STABLE",
-        "flow": "OPPOSES",
-        "shield": "CAUTION",
-        "location": "EXTENDED",
-        "review_state": "WATCH",
-        "reason_codes": [
-          "FLOW_OPPOSES_CONTEXT",
-          "LOCATION_EXTENDED"
-        ],
-        "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-        "context_score": 40,
-        "tier": "SHIELDED",
-        "correlation_group": "SHORT:DRIVE",
-        "correlation_role": "DUPLICATE",
-        "micro_watchlist": false,
-        "micro_state": "OFF"
-      },
-      {
-        "pair": "WLD/USD",
         "directional_context": "SHORT",
         "market_type": "PULSE",
         "structure": "ALIGNED",
@@ -851,50 +900,6 @@
       {
         "pair": "XLM/USD",
         "directional_context": "SHORT",
-        "market_type": "DRIVE",
-        "structure": "ALIGNED",
-        "tempo": "STABLE",
-        "flow": "OPPOSES",
-        "shield": "CAUTION",
-        "location": "EXTENDED",
-        "review_state": "WATCH",
-        "reason_codes": [
-          "FLOW_OPPOSES_CONTEXT",
-          "LOCATION_EXTENDED"
-        ],
-        "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-        "context_score": 40,
-        "tier": "SHIELDED",
-        "correlation_group": "SHORT:DRIVE",
-        "correlation_role": "DUPLICATE",
-        "micro_watchlist": false,
-        "micro_state": "OFF"
-      },
-      {
-        "pair": "XRP/USD",
-        "directional_context": "SHORT",
-        "market_type": "DRIVE",
-        "structure": "ALIGNED",
-        "tempo": "STABLE",
-        "flow": "OPPOSES",
-        "shield": "CAUTION",
-        "location": "EXTENDED",
-        "review_state": "WATCH",
-        "reason_codes": [
-          "FLOW_OPPOSES_CONTEXT",
-          "LOCATION_EXTENDED"
-        ],
-        "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-        "context_score": 40,
-        "tier": "SHIELDED",
-        "correlation_group": "SHORT:DRIVE",
-        "correlation_role": "DUPLICATE",
-        "micro_watchlist": false,
-        "micro_state": "OFF"
-      },
-      {
-        "pair": "XTZ/USD",
-        "directional_context": "SHORT",
         "market_type": "PULSE",
         "structure": "ALIGNED",
         "tempo": "STABLE",
@@ -908,6 +913,28 @@
         ],
         "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
         "context_score": 40,
+        "tier": "SHIELDED",
+        "correlation_group": "SHORT:PULSE",
+        "correlation_role": "DUPLICATE",
+        "micro_watchlist": false,
+        "micro_state": "OFF"
+      },
+      {
+        "pair": "WIF/USD",
+        "directional_context": "SHORT",
+        "market_type": "PULSE",
+        "structure": "CONTESTED",
+        "tempo": "EXPANDING",
+        "flow": "OPPOSES",
+        "shield": "CAUTION",
+        "location": "RETEST",
+        "review_state": "WATCH",
+        "reason_codes": [
+          "STRUCTURE_CONTESTED",
+          "FLOW_OPPOSES_CONTEXT"
+        ],
+        "context_claim": "STRUCTURE_CONTESTED, FLOW_OPPOSES_CONTEXT",
+        "context_score": 38,
         "tier": "SHIELDED",
         "correlation_group": "SHORT:PULSE",
         "correlation_role": "DUPLICATE",
@@ -917,7 +944,7 @@
       {
         "pair": "BONK/USD",
         "directional_context": "SHORT",
-        "market_type": "PULSE",
+        "market_type": "TREND",
         "structure": "ALIGNED",
         "tempo": "FADING",
         "flow": "OPPOSES",
@@ -931,57 +958,13 @@
         "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
         "context_score": 32,
         "tier": "SHIELDED",
-        "correlation_group": "SHORT:PULSE",
+        "correlation_group": "SHORT:TREND",
         "correlation_role": "DUPLICATE",
         "micro_watchlist": false,
         "micro_state": "OFF"
       },
       {
         "pair": "FIL/USD",
-        "directional_context": "SHORT",
-        "market_type": "PULSE",
-        "structure": "ALIGNED",
-        "tempo": "FADING",
-        "flow": "OPPOSES",
-        "shield": "CAUTION",
-        "location": "EXTENDED",
-        "review_state": "WATCH",
-        "reason_codes": [
-          "FLOW_OPPOSES_CONTEXT",
-          "LOCATION_EXTENDED"
-        ],
-        "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-        "context_score": 32,
-        "tier": "SHIELDED",
-        "correlation_group": "SHORT:PULSE",
-        "correlation_role": "DUPLICATE",
-        "micro_watchlist": false,
-        "micro_state": "OFF"
-      },
-      {
-        "pair": "IMX/USD",
-        "directional_context": "SHORT",
-        "market_type": "DRIVE",
-        "structure": "ALIGNED",
-        "tempo": "FADING",
-        "flow": "OPPOSES",
-        "shield": "CAUTION",
-        "location": "EXTENDED",
-        "review_state": "WATCH",
-        "reason_codes": [
-          "FLOW_OPPOSES_CONTEXT",
-          "LOCATION_EXTENDED"
-        ],
-        "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-        "context_score": 32,
-        "tier": "SHIELDED",
-        "correlation_group": "SHORT:DRIVE",
-        "correlation_role": "DUPLICATE",
-        "micro_watchlist": false,
-        "micro_state": "OFF"
-      },
-      {
-        "pair": "LDO/USD",
         "directional_context": "SHORT",
         "market_type": "PULSE",
         "structure": "ALIGNED",
@@ -1025,23 +1008,24 @@
         "micro_state": "OFF"
       },
       {
-        "pair": "POL/USD",
-        "directional_context": "NEUTRAL",
-        "market_type": "TREND",
+        "pair": "STX/USD",
+        "directional_context": "SHORT",
+        "market_type": "PULSE",
         "structure": "CONTESTED",
         "tempo": "FADING",
-        "flow": "NEUTRAL",
+        "flow": "OPPOSES",
         "shield": "CAUTION",
         "location": "BASE",
         "review_state": "WATCH",
         "reason_codes": [
-          "STRUCTURE_CONTESTED"
+          "STRUCTURE_CONTESTED",
+          "FLOW_OPPOSES_CONTEXT"
         ],
-        "context_claim": "STRUCTURE_CONTESTED",
-        "context_score": 0,
+        "context_claim": "STRUCTURE_CONTESTED, FLOW_OPPOSES_CONTEXT",
+        "context_score": 23,
         "tier": "SHIELDED",
-        "correlation_group": "NEUTRAL:TREND",
-        "correlation_role": "PRIMARY",
+        "correlation_group": "SHORT:PULSE",
+        "correlation_role": "DUPLICATE",
         "micro_watchlist": false,
         "micro_state": "OFF"
       }
@@ -1091,23 +1075,87 @@
       }
     ]
   },
-  "micro_watchlist": [],
+  "micro_watchlist": [
+    {
+      "pair": "DYDX/USD",
+      "directional_context": "SHORT",
+      "market_type": "PULSE",
+      "structure": "ALIGNED",
+      "tempo": "FADING",
+      "flow": "CONFIRMS",
+      "shield": "CLEAR",
+      "location": "RETEST",
+      "review_state": "ARMED",
+      "reason_codes": [
+        "CONTEXT_CLEAR"
+      ],
+      "context_claim": "CONTEXT_CLEAR",
+      "context_score": 85,
+      "tier": "BEST_NOW",
+      "correlation_group": "SHORT:PULSE",
+      "correlation_role": "PRIMARY",
+      "micro_watchlist": true,
+      "micro_state": "ARMED"
+    }
+  ],
   "cards": [
     {
-      "pair": "OP/USD",
+      "pair": "DYDX/USD",
+      "directional_context": "SHORT",
+      "market_type": "PULSE",
+      "structure": "ALIGNED",
+      "tempo": "FADING",
+      "flow": "CONFIRMS",
+      "shield": "CLEAR",
+      "location": "RETEST",
+      "review_state": "ARMED",
+      "reason_codes": [
+        "CONTEXT_CLEAR"
+      ],
+      "context_claim": "CONTEXT_CLEAR",
+      "context_score": 85,
+      "tier": "BEST_NOW",
+      "correlation_group": "SHORT:PULSE",
+      "correlation_role": "PRIMARY",
+      "micro_watchlist": true,
+      "micro_state": "ARMED"
+    },
+    {
+      "pair": "ZRX/USD",
+      "directional_context": "SHORT",
+      "market_type": "PULSE",
+      "structure": "ALIGNED",
+      "tempo": "FADING",
+      "flow": "CONFIRMS",
+      "shield": "CLEAR",
+      "location": "RETEST",
+      "review_state": "ARMED",
+      "reason_codes": [
+        "CONTEXT_CLEAR"
+      ],
+      "context_claim": "CONTEXT_CLEAR",
+      "context_score": 85,
+      "tier": "BEST_NOW",
+      "correlation_group": "SHORT:PULSE",
+      "correlation_role": "DUPLICATE",
+      "micro_watchlist": false,
+      "micro_state": "OFF"
+    },
+    {
+      "pair": "INJ/USD",
       "directional_context": "SHORT",
       "market_type": "DRIVE",
       "structure": "ALIGNED",
       "tempo": "EXPANDING",
-      "flow": "CONFIRMS",
+      "flow": "OPPOSES",
       "shield": "CAUTION",
-      "location": "EXTENDED",
-      "review_state": "ARMED",
+      "location": "RETEST",
+      "review_state": "WATCH",
       "reason_codes": [
-        "LOCATION_EXTENDED"
+        "FLOW_OPPOSES_CONTEXT"
       ],
-      "context_claim": "LOCATION_EXTENDED",
-      "context_score": 65,
+      "context_claim": "FLOW_OPPOSES_CONTEXT",
+      "context_score": 62,
       "tier": "SHIELDED",
       "correlation_group": "SHORT:DRIVE",
       "correlation_role": "PRIMARY",
@@ -1115,9 +1163,9 @@
       "micro_state": "OFF"
     },
     {
-      "pair": "ATOM/USD",
+      "pair": "OP/USD",
       "directional_context": "SHORT",
-      "market_type": "PULSE",
+      "market_type": "TREND",
       "structure": "ALIGNED",
       "tempo": "EXPANDING",
       "flow": "OPPOSES",
@@ -1130,17 +1178,17 @@
       "context_claim": "FLOW_OPPOSES_CONTEXT",
       "context_score": 62,
       "tier": "SHIELDED",
-      "correlation_group": "SHORT:PULSE",
+      "correlation_group": "SHORT:TREND",
       "correlation_role": "PRIMARY",
       "micro_watchlist": false,
       "micro_state": "OFF"
     },
     {
-      "pair": "LTC/USD",
+      "pair": "ADA/USD",
       "directional_context": "SHORT",
       "market_type": "PULSE",
       "structure": "ALIGNED",
-      "tempo": "EXPANDING",
+      "tempo": "STABLE",
       "flow": "OPPOSES",
       "shield": "CAUTION",
       "location": "RETEST",
@@ -1149,7 +1197,7 @@
         "FLOW_OPPOSES_CONTEXT"
       ],
       "context_claim": "FLOW_OPPOSES_CONTEXT",
-      "context_score": 62,
+      "context_score": 55,
       "tier": "SHIELDED",
       "correlation_group": "SHORT:PULSE",
       "correlation_role": "DUPLICATE",
@@ -1157,11 +1205,11 @@
       "micro_state": "OFF"
     },
     {
-      "pair": "TON/USD",
+      "pair": "ATOM/USD",
       "directional_context": "SHORT",
-      "market_type": "DRIVE",
+      "market_type": "RANGE",
       "structure": "ALIGNED",
-      "tempo": "EXPANDING",
+      "tempo": "STABLE",
       "flow": "OPPOSES",
       "shield": "CAUTION",
       "location": "RETEST",
@@ -1170,9 +1218,51 @@
         "FLOW_OPPOSES_CONTEXT"
       ],
       "context_claim": "FLOW_OPPOSES_CONTEXT",
-      "context_score": 62,
+      "context_score": 55,
       "tier": "SHIELDED",
-      "correlation_group": "SHORT:DRIVE",
+      "correlation_group": "SHORT:RANGE",
+      "correlation_role": "PRIMARY",
+      "micro_watchlist": false,
+      "micro_state": "OFF"
+    },
+    {
+      "pair": "AVAX/USD",
+      "directional_context": "SHORT",
+      "market_type": "TREND",
+      "structure": "ALIGNED",
+      "tempo": "STABLE",
+      "flow": "OPPOSES",
+      "shield": "CAUTION",
+      "location": "RETEST",
+      "review_state": "WATCH",
+      "reason_codes": [
+        "FLOW_OPPOSES_CONTEXT"
+      ],
+      "context_claim": "FLOW_OPPOSES_CONTEXT",
+      "context_score": 55,
+      "tier": "SHIELDED",
+      "correlation_group": "SHORT:TREND",
+      "correlation_role": "DUPLICATE",
+      "micro_watchlist": false,
+      "micro_state": "OFF"
+    },
+    {
+      "pair": "BCH/USD",
+      "directional_context": "SHORT",
+      "market_type": "TREND",
+      "structure": "ALIGNED",
+      "tempo": "STABLE",
+      "flow": "OPPOSES",
+      "shield": "CAUTION",
+      "location": "RETEST",
+      "review_state": "WATCH",
+      "reason_codes": [
+        "FLOW_OPPOSES_CONTEXT"
+      ],
+      "context_claim": "FLOW_OPPOSES_CONTEXT",
+      "context_score": 55,
+      "tier": "SHIELDED",
+      "correlation_group": "SHORT:TREND",
       "correlation_role": "DUPLICATE",
       "micro_watchlist": false,
       "micro_state": "OFF"
@@ -1180,7 +1270,7 @@
     {
       "pair": "BTC/USD",
       "directional_context": "SHORT",
-      "market_type": "PULSE",
+      "market_type": "TREND",
       "structure": "ALIGNED",
       "tempo": "STABLE",
       "flow": "OPPOSES",
@@ -1193,15 +1283,15 @@
       "context_claim": "FLOW_OPPOSES_CONTEXT",
       "context_score": 55,
       "tier": "SHIELDED",
-      "correlation_group": "SHORT:PULSE",
+      "correlation_group": "SHORT:TREND",
       "correlation_role": "DUPLICATE",
       "micro_watchlist": false,
       "micro_state": "OFF"
     },
     {
-      "pair": "ICP/USD",
+      "pair": "DOGE/USD",
       "directional_context": "SHORT",
-      "market_type": "PULSE",
+      "market_type": "TREND",
       "structure": "ALIGNED",
       "tempo": "STABLE",
       "flow": "OPPOSES",
@@ -1214,7 +1304,133 @@
       "context_claim": "FLOW_OPPOSES_CONTEXT",
       "context_score": 55,
       "tier": "SHIELDED",
-      "correlation_group": "SHORT:PULSE",
+      "correlation_group": "SHORT:TREND",
+      "correlation_role": "DUPLICATE",
+      "micro_watchlist": false,
+      "micro_state": "OFF"
+    },
+    {
+      "pair": "DOT/USD",
+      "directional_context": "SHORT",
+      "market_type": "RANGE",
+      "structure": "ALIGNED",
+      "tempo": "STABLE",
+      "flow": "OPPOSES",
+      "shield": "CAUTION",
+      "location": "RETEST",
+      "review_state": "WATCH",
+      "reason_codes": [
+        "FLOW_OPPOSES_CONTEXT"
+      ],
+      "context_claim": "FLOW_OPPOSES_CONTEXT",
+      "context_score": 55,
+      "tier": "SHIELDED",
+      "correlation_group": "SHORT:RANGE",
+      "correlation_role": "DUPLICATE",
+      "micro_watchlist": false,
+      "micro_state": "OFF"
+    },
+    {
+      "pair": "ETC/USD",
+      "directional_context": "SHORT",
+      "market_type": "TREND",
+      "structure": "ALIGNED",
+      "tempo": "STABLE",
+      "flow": "OPPOSES",
+      "shield": "CAUTION",
+      "location": "RETEST",
+      "review_state": "WATCH",
+      "reason_codes": [
+        "FLOW_OPPOSES_CONTEXT"
+      ],
+      "context_claim": "FLOW_OPPOSES_CONTEXT",
+      "context_score": 55,
+      "tier": "SHIELDED",
+      "correlation_group": "SHORT:TREND",
+      "correlation_role": "DUPLICATE",
+      "micro_watchlist": false,
+      "micro_state": "OFF"
+    },
+    {
+      "pair": "ETH/USD",
+      "directional_context": "SHORT",
+      "market_type": "TREND",
+      "structure": "ALIGNED",
+      "tempo": "STABLE",
+      "flow": "OPPOSES",
+      "shield": "CAUTION",
+      "location": "RETEST",
+      "review_state": "WATCH",
+      "reason_codes": [
+        "FLOW_OPPOSES_CONTEXT"
+      ],
+      "context_claim": "FLOW_OPPOSES_CONTEXT",
+      "context_score": 55,
+      "tier": "SHIELDED",
+      "correlation_group": "SHORT:TREND",
+      "correlation_role": "DUPLICATE",
+      "micro_watchlist": false,
+      "micro_state": "OFF"
+    },
+    {
+      "pair": "KAS/USD",
+      "directional_context": "SHORT",
+      "market_type": "TREND",
+      "structure": "ALIGNED",
+      "tempo": "STABLE",
+      "flow": "OPPOSES",
+      "shield": "CAUTION",
+      "location": "RETEST",
+      "review_state": "WATCH",
+      "reason_codes": [
+        "FLOW_OPPOSES_CONTEXT"
+      ],
+      "context_claim": "FLOW_OPPOSES_CONTEXT",
+      "context_score": 55,
+      "tier": "SHIELDED",
+      "correlation_group": "SHORT:TREND",
+      "correlation_role": "DUPLICATE",
+      "micro_watchlist": false,
+      "micro_state": "OFF"
+    },
+    {
+      "pair": "LINK/USD",
+      "directional_context": "SHORT",
+      "market_type": "TREND",
+      "structure": "ALIGNED",
+      "tempo": "STABLE",
+      "flow": "OPPOSES",
+      "shield": "CAUTION",
+      "location": "RETEST",
+      "review_state": "WATCH",
+      "reason_codes": [
+        "FLOW_OPPOSES_CONTEXT"
+      ],
+      "context_claim": "FLOW_OPPOSES_CONTEXT",
+      "context_score": 55,
+      "tier": "SHIELDED",
+      "correlation_group": "SHORT:TREND",
+      "correlation_role": "DUPLICATE",
+      "micro_watchlist": false,
+      "micro_state": "OFF"
+    },
+    {
+      "pair": "LTC/USD",
+      "directional_context": "SHORT",
+      "market_type": "TREND",
+      "structure": "ALIGNED",
+      "tempo": "STABLE",
+      "flow": "OPPOSES",
+      "shield": "CAUTION",
+      "location": "RETEST",
+      "review_state": "WATCH",
+      "reason_codes": [
+        "FLOW_OPPOSES_CONTEXT"
+      ],
+      "context_claim": "FLOW_OPPOSES_CONTEXT",
+      "context_score": 55,
+      "tier": "SHIELDED",
+      "correlation_group": "SHORT:TREND",
       "correlation_role": "DUPLICATE",
       "micro_watchlist": false,
       "micro_state": "OFF"
@@ -1241,7 +1457,49 @@
       "micro_state": "OFF"
     },
     {
-      "pair": "SOL/USD",
+      "pair": "PEPE/USD",
+      "directional_context": "SHORT",
+      "market_type": "TREND",
+      "structure": "ALIGNED",
+      "tempo": "STABLE",
+      "flow": "OPPOSES",
+      "shield": "CAUTION",
+      "location": "RETEST",
+      "review_state": "WATCH",
+      "reason_codes": [
+        "FLOW_OPPOSES_CONTEXT"
+      ],
+      "context_claim": "FLOW_OPPOSES_CONTEXT",
+      "context_score": 55,
+      "tier": "SHIELDED",
+      "correlation_group": "SHORT:TREND",
+      "correlation_role": "DUPLICATE",
+      "micro_watchlist": false,
+      "micro_state": "OFF"
+    },
+    {
+      "pair": "SEI/USD",
+      "directional_context": "SHORT",
+      "market_type": "TREND",
+      "structure": "ALIGNED",
+      "tempo": "STABLE",
+      "flow": "OPPOSES",
+      "shield": "CAUTION",
+      "location": "RETEST",
+      "review_state": "WATCH",
+      "reason_codes": [
+        "FLOW_OPPOSES_CONTEXT"
+      ],
+      "context_claim": "FLOW_OPPOSES_CONTEXT",
+      "context_score": 55,
+      "tier": "SHIELDED",
+      "correlation_group": "SHORT:TREND",
+      "correlation_role": "DUPLICATE",
+      "micro_watchlist": false,
+      "micro_state": "OFF"
+    },
+    {
+      "pair": "SHIB/USD",
       "directional_context": "SHORT",
       "market_type": "PULSE",
       "structure": "ALIGNED",
@@ -1262,14 +1520,14 @@
       "micro_state": "OFF"
     },
     {
-      "pair": "STX/USD",
+      "pair": "SOL/USD",
       "directional_context": "SHORT",
       "market_type": "RANGE",
       "structure": "ALIGNED",
       "tempo": "STABLE",
       "flow": "OPPOSES",
       "shield": "CAUTION",
-      "location": "BASE",
+      "location": "RETEST",
       "review_state": "WATCH",
       "reason_codes": [
         "FLOW_OPPOSES_CONTEXT"
@@ -1278,12 +1536,54 @@
       "context_score": 55,
       "tier": "SHIELDED",
       "correlation_group": "SHORT:RANGE",
-      "correlation_role": "PRIMARY",
+      "correlation_role": "DUPLICATE",
+      "micro_watchlist": false,
+      "micro_state": "OFF"
+    },
+    {
+      "pair": "SUI/USD",
+      "directional_context": "SHORT",
+      "market_type": "TREND",
+      "structure": "ALIGNED",
+      "tempo": "STABLE",
+      "flow": "OPPOSES",
+      "shield": "CAUTION",
+      "location": "RETEST",
+      "review_state": "WATCH",
+      "reason_codes": [
+        "FLOW_OPPOSES_CONTEXT"
+      ],
+      "context_claim": "FLOW_OPPOSES_CONTEXT",
+      "context_score": 55,
+      "tier": "SHIELDED",
+      "correlation_group": "SHORT:TREND",
+      "correlation_role": "DUPLICATE",
       "micro_watchlist": false,
       "micro_state": "OFF"
     },
     {
       "pair": "TAO/USD",
+      "directional_context": "SHORT",
+      "market_type": "TREND",
+      "structure": "ALIGNED",
+      "tempo": "STABLE",
+      "flow": "OPPOSES",
+      "shield": "CAUTION",
+      "location": "RETEST",
+      "review_state": "WATCH",
+      "reason_codes": [
+        "FLOW_OPPOSES_CONTEXT"
+      ],
+      "context_claim": "FLOW_OPPOSES_CONTEXT",
+      "context_score": 55,
+      "tier": "SHIELDED",
+      "correlation_group": "SHORT:TREND",
+      "correlation_role": "DUPLICATE",
+      "micro_watchlist": false,
+      "micro_state": "OFF"
+    },
+    {
+      "pair": "TON/USD",
       "directional_context": "SHORT",
       "market_type": "PULSE",
       "structure": "ALIGNED",
@@ -1325,7 +1625,49 @@
       "micro_state": "OFF"
     },
     {
-      "pair": "DYDX/USD",
+      "pair": "WLD/USD",
+      "directional_context": "SHORT",
+      "market_type": "TREND",
+      "structure": "ALIGNED",
+      "tempo": "STABLE",
+      "flow": "OPPOSES",
+      "shield": "CAUTION",
+      "location": "RETEST",
+      "review_state": "WATCH",
+      "reason_codes": [
+        "FLOW_OPPOSES_CONTEXT"
+      ],
+      "context_claim": "FLOW_OPPOSES_CONTEXT",
+      "context_score": 55,
+      "tier": "SHIELDED",
+      "correlation_group": "SHORT:TREND",
+      "correlation_role": "DUPLICATE",
+      "micro_watchlist": false,
+      "micro_state": "OFF"
+    },
+    {
+      "pair": "XRP/USD",
+      "directional_context": "SHORT",
+      "market_type": "PULSE",
+      "structure": "ALIGNED",
+      "tempo": "STABLE",
+      "flow": "OPPOSES",
+      "shield": "CAUTION",
+      "location": "RETEST",
+      "review_state": "WATCH",
+      "reason_codes": [
+        "FLOW_OPPOSES_CONTEXT"
+      ],
+      "context_claim": "FLOW_OPPOSES_CONTEXT",
+      "context_score": 55,
+      "tier": "SHIELDED",
+      "correlation_group": "SHORT:PULSE",
+      "correlation_role": "DUPLICATE",
+      "micro_watchlist": false,
+      "micro_state": "OFF"
+    },
+    {
+      "pair": "EGLD/USD",
       "directional_context": "SHORT",
       "market_type": "PULSE",
       "structure": "ALIGNED",
@@ -1346,7 +1688,7 @@
       "micro_state": "OFF"
     },
     {
-      "pair": "ETC/USD",
+      "pair": "IMX/USD",
       "directional_context": "SHORT",
       "market_type": "PULSE",
       "structure": "ALIGNED",
@@ -1367,9 +1709,9 @@
       "micro_state": "OFF"
     },
     {
-      "pair": "RUNE/USD",
+      "pair": "LDO/USD",
       "directional_context": "SHORT",
-      "market_type": "PULSE",
+      "market_type": "TREND",
       "structure": "ALIGNED",
       "tempo": "FADING",
       "flow": "CONFIRMS",
@@ -1382,34 +1724,13 @@
       "context_claim": "LOCATION_EXTENDED",
       "context_score": 50,
       "tier": "SHIELDED",
-      "correlation_group": "SHORT:PULSE",
+      "correlation_group": "SHORT:TREND",
       "correlation_role": "DUPLICATE",
       "micro_watchlist": false,
       "micro_state": "OFF"
     },
     {
-      "pair": "WIF/USD",
-      "directional_context": "SHORT",
-      "market_type": "PULSE",
-      "structure": "ALIGNED",
-      "tempo": "FADING",
-      "flow": "CONFIRMS",
-      "shield": "CAUTION",
-      "location": "EXTENDED",
-      "review_state": "WATCH",
-      "reason_codes": [
-        "LOCATION_EXTENDED"
-      ],
-      "context_claim": "LOCATION_EXTENDED",
-      "context_score": 50,
-      "tier": "SHIELDED",
-      "correlation_group": "SHORT:PULSE",
-      "correlation_role": "DUPLICATE",
-      "micro_watchlist": false,
-      "micro_state": "OFF"
-    },
-    {
-      "pair": "ZRX/USD",
+      "pair": "XTZ/USD",
       "directional_context": "SHORT",
       "market_type": "PULSE",
       "structure": "ALIGNED",
@@ -1432,7 +1753,7 @@
     {
       "pair": "AAVE/USD",
       "directional_context": "SHORT",
-      "market_type": "PULSE",
+      "market_type": "TREND",
       "structure": "ALIGNED",
       "tempo": "FADING",
       "flow": "OPPOSES",
@@ -1445,79 +1766,13 @@
       "context_claim": "FLOW_OPPOSES_CONTEXT",
       "context_score": 47,
       "tier": "SHIELDED",
-      "correlation_group": "SHORT:PULSE",
+      "correlation_group": "SHORT:TREND",
       "correlation_role": "DUPLICATE",
       "micro_watchlist": false,
       "micro_state": "OFF"
     },
     {
       "pair": "ALGO/USD",
-      "directional_context": "SHORT",
-      "market_type": "DRIVE",
-      "structure": "ALIGNED",
-      "tempo": "EXPANDING",
-      "flow": "OPPOSES",
-      "shield": "CAUTION",
-      "location": "EXTENDED",
-      "review_state": "WATCH",
-      "reason_codes": [
-        "FLOW_OPPOSES_CONTEXT",
-        "LOCATION_EXTENDED"
-      ],
-      "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-      "context_score": 47,
-      "tier": "SHIELDED",
-      "correlation_group": "SHORT:DRIVE",
-      "correlation_role": "DUPLICATE",
-      "micro_watchlist": false,
-      "micro_state": "OFF"
-    },
-    {
-      "pair": "APT/USD",
-      "directional_context": "SHORT",
-      "market_type": "DRIVE",
-      "structure": "ALIGNED",
-      "tempo": "EXPANDING",
-      "flow": "OPPOSES",
-      "shield": "CAUTION",
-      "location": "EXTENDED",
-      "review_state": "WATCH",
-      "reason_codes": [
-        "FLOW_OPPOSES_CONTEXT",
-        "LOCATION_EXTENDED"
-      ],
-      "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-      "context_score": 47,
-      "tier": "SHIELDED",
-      "correlation_group": "SHORT:DRIVE",
-      "correlation_role": "DUPLICATE",
-      "micro_watchlist": false,
-      "micro_state": "OFF"
-    },
-    {
-      "pair": "ARB/USD",
-      "directional_context": "SHORT",
-      "market_type": "DRIVE",
-      "structure": "ALIGNED",
-      "tempo": "EXPANDING",
-      "flow": "OPPOSES",
-      "shield": "CAUTION",
-      "location": "EXTENDED",
-      "review_state": "WATCH",
-      "reason_codes": [
-        "FLOW_OPPOSES_CONTEXT",
-        "LOCATION_EXTENDED"
-      ],
-      "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-      "context_score": 47,
-      "tier": "SHIELDED",
-      "correlation_group": "SHORT:DRIVE",
-      "correlation_role": "DUPLICATE",
-      "micro_watchlist": false,
-      "micro_state": "OFF"
-    },
-    {
-      "pair": "CRV/USD",
       "directional_context": "SHORT",
       "market_type": "TREND",
       "structure": "ALIGNED",
@@ -1533,28 +1788,6 @@
       "context_score": 47,
       "tier": "SHIELDED",
       "correlation_group": "SHORT:TREND",
-      "correlation_role": "PRIMARY",
-      "micro_watchlist": false,
-      "micro_state": "OFF"
-    },
-    {
-      "pair": "EGLD/USD",
-      "directional_context": "SHORT",
-      "market_type": "DRIVE",
-      "structure": "ALIGNED",
-      "tempo": "EXPANDING",
-      "flow": "OPPOSES",
-      "shield": "CAUTION",
-      "location": "EXTENDED",
-      "review_state": "WATCH",
-      "reason_codes": [
-        "FLOW_OPPOSES_CONTEXT",
-        "LOCATION_EXTENDED"
-      ],
-      "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-      "context_score": 47,
-      "tier": "SHIELDED",
-      "correlation_group": "SHORT:DRIVE",
       "correlation_role": "DUPLICATE",
       "micro_watchlist": false,
       "micro_state": "OFF"
@@ -1581,7 +1814,92 @@
       "micro_state": "OFF"
     },
     {
-      "pair": "ADA/USD",
+      "pair": "ICP/USD",
+      "directional_context": "SHORT",
+      "market_type": "TREND",
+      "structure": "ALIGNED",
+      "tempo": "FADING",
+      "flow": "OPPOSES",
+      "shield": "CAUTION",
+      "location": "RETEST",
+      "review_state": "WATCH",
+      "reason_codes": [
+        "FLOW_OPPOSES_CONTEXT"
+      ],
+      "context_claim": "FLOW_OPPOSES_CONTEXT",
+      "context_score": 47,
+      "tier": "SHIELDED",
+      "correlation_group": "SHORT:TREND",
+      "correlation_role": "DUPLICATE",
+      "micro_watchlist": false,
+      "micro_state": "OFF"
+    },
+    {
+      "pair": "POL/USD",
+      "directional_context": "LONG",
+      "market_type": "PULSE",
+      "structure": "ALIGNED",
+      "tempo": "FADING",
+      "flow": "OPPOSES",
+      "shield": "CAUTION",
+      "location": "BASE",
+      "review_state": "WATCH",
+      "reason_codes": [
+        "FLOW_OPPOSES_CONTEXT"
+      ],
+      "context_claim": "FLOW_OPPOSES_CONTEXT",
+      "context_score": 47,
+      "tier": "SHIELDED",
+      "correlation_group": "LONG:PULSE",
+      "correlation_role": "PRIMARY",
+      "micro_watchlist": false,
+      "micro_state": "OFF"
+    },
+    {
+      "pair": "RUNE/USD",
+      "directional_context": "SHORT",
+      "market_type": "TREND",
+      "structure": "ALIGNED",
+      "tempo": "EXPANDING",
+      "flow": "OPPOSES",
+      "shield": "CAUTION",
+      "location": "EXTENDED",
+      "review_state": "WATCH",
+      "reason_codes": [
+        "FLOW_OPPOSES_CONTEXT",
+        "LOCATION_EXTENDED"
+      ],
+      "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
+      "context_score": 47,
+      "tier": "SHIELDED",
+      "correlation_group": "SHORT:TREND",
+      "correlation_role": "DUPLICATE",
+      "micro_watchlist": false,
+      "micro_state": "OFF"
+    },
+    {
+      "pair": "CRV/USD",
+      "directional_context": "SHORT",
+      "market_type": "PULSE",
+      "structure": "CONTESTED",
+      "tempo": "FADING",
+      "flow": "CONFIRMS",
+      "shield": "CAUTION",
+      "location": "BASE",
+      "review_state": "WATCH",
+      "reason_codes": [
+        "STRUCTURE_CONTESTED"
+      ],
+      "context_claim": "STRUCTURE_CONTESTED",
+      "context_score": 41,
+      "tier": "SHIELDED",
+      "correlation_group": "SHORT:PULSE",
+      "correlation_role": "DUPLICATE",
+      "micro_watchlist": false,
+      "micro_state": "OFF"
+    },
+    {
+      "pair": "APT/USD",
       "directional_context": "SHORT",
       "market_type": "PULSE",
       "structure": "ALIGNED",
@@ -1603,139 +1921,7 @@
       "micro_state": "OFF"
     },
     {
-      "pair": "AVAX/USD",
-      "directional_context": "SHORT",
-      "market_type": "DRIVE",
-      "structure": "ALIGNED",
-      "tempo": "STABLE",
-      "flow": "OPPOSES",
-      "shield": "CAUTION",
-      "location": "EXTENDED",
-      "review_state": "WATCH",
-      "reason_codes": [
-        "FLOW_OPPOSES_CONTEXT",
-        "LOCATION_EXTENDED"
-      ],
-      "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-      "context_score": 40,
-      "tier": "SHIELDED",
-      "correlation_group": "SHORT:DRIVE",
-      "correlation_role": "DUPLICATE",
-      "micro_watchlist": false,
-      "micro_state": "OFF"
-    },
-    {
-      "pair": "BCH/USD",
-      "directional_context": "SHORT",
-      "market_type": "PULSE",
-      "structure": "ALIGNED",
-      "tempo": "STABLE",
-      "flow": "OPPOSES",
-      "shield": "CAUTION",
-      "location": "EXTENDED",
-      "review_state": "WATCH",
-      "reason_codes": [
-        "FLOW_OPPOSES_CONTEXT",
-        "LOCATION_EXTENDED"
-      ],
-      "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-      "context_score": 40,
-      "tier": "SHIELDED",
-      "correlation_group": "SHORT:PULSE",
-      "correlation_role": "DUPLICATE",
-      "micro_watchlist": false,
-      "micro_state": "OFF"
-    },
-    {
-      "pair": "DOGE/USD",
-      "directional_context": "SHORT",
-      "market_type": "DRIVE",
-      "structure": "ALIGNED",
-      "tempo": "STABLE",
-      "flow": "OPPOSES",
-      "shield": "CAUTION",
-      "location": "EXTENDED",
-      "review_state": "WATCH",
-      "reason_codes": [
-        "FLOW_OPPOSES_CONTEXT",
-        "LOCATION_EXTENDED"
-      ],
-      "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-      "context_score": 40,
-      "tier": "SHIELDED",
-      "correlation_group": "SHORT:DRIVE",
-      "correlation_role": "DUPLICATE",
-      "micro_watchlist": false,
-      "micro_state": "OFF"
-    },
-    {
-      "pair": "DOT/USD",
-      "directional_context": "SHORT",
-      "market_type": "PULSE",
-      "structure": "ALIGNED",
-      "tempo": "STABLE",
-      "flow": "OPPOSES",
-      "shield": "CAUTION",
-      "location": "EXTENDED",
-      "review_state": "WATCH",
-      "reason_codes": [
-        "FLOW_OPPOSES_CONTEXT",
-        "LOCATION_EXTENDED"
-      ],
-      "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-      "context_score": 40,
-      "tier": "SHIELDED",
-      "correlation_group": "SHORT:PULSE",
-      "correlation_role": "DUPLICATE",
-      "micro_watchlist": false,
-      "micro_state": "OFF"
-    },
-    {
-      "pair": "ETH/USD",
-      "directional_context": "SHORT",
-      "market_type": "PULSE",
-      "structure": "ALIGNED",
-      "tempo": "STABLE",
-      "flow": "OPPOSES",
-      "shield": "CAUTION",
-      "location": "EXTENDED",
-      "review_state": "WATCH",
-      "reason_codes": [
-        "FLOW_OPPOSES_CONTEXT",
-        "LOCATION_EXTENDED"
-      ],
-      "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-      "context_score": 40,
-      "tier": "SHIELDED",
-      "correlation_group": "SHORT:PULSE",
-      "correlation_role": "DUPLICATE",
-      "micro_watchlist": false,
-      "micro_state": "OFF"
-    },
-    {
-      "pair": "INJ/USD",
-      "directional_context": "SHORT",
-      "market_type": "PULSE",
-      "structure": "ALIGNED",
-      "tempo": "STABLE",
-      "flow": "OPPOSES",
-      "shield": "CAUTION",
-      "location": "EXTENDED",
-      "review_state": "WATCH",
-      "reason_codes": [
-        "FLOW_OPPOSES_CONTEXT",
-        "LOCATION_EXTENDED"
-      ],
-      "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-      "context_score": 40,
-      "tier": "SHIELDED",
-      "correlation_group": "SHORT:PULSE",
-      "correlation_role": "DUPLICATE",
-      "micro_watchlist": false,
-      "micro_state": "OFF"
-    },
-    {
-      "pair": "KAS/USD",
+      "pair": "ARB/USD",
       "directional_context": "SHORT",
       "market_type": "TREND",
       "structure": "ALIGNED",
@@ -1757,139 +1943,7 @@
       "micro_state": "OFF"
     },
     {
-      "pair": "LINK/USD",
-      "directional_context": "SHORT",
-      "market_type": "DRIVE",
-      "structure": "ALIGNED",
-      "tempo": "STABLE",
-      "flow": "OPPOSES",
-      "shield": "CAUTION",
-      "location": "EXTENDED",
-      "review_state": "WATCH",
-      "reason_codes": [
-        "FLOW_OPPOSES_CONTEXT",
-        "LOCATION_EXTENDED"
-      ],
-      "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-      "context_score": 40,
-      "tier": "SHIELDED",
-      "correlation_group": "SHORT:DRIVE",
-      "correlation_role": "DUPLICATE",
-      "micro_watchlist": false,
-      "micro_state": "OFF"
-    },
-    {
-      "pair": "PEPE/USD",
-      "directional_context": "SHORT",
-      "market_type": "PULSE",
-      "structure": "ALIGNED",
-      "tempo": "STABLE",
-      "flow": "OPPOSES",
-      "shield": "CAUTION",
-      "location": "EXTENDED",
-      "review_state": "WATCH",
-      "reason_codes": [
-        "FLOW_OPPOSES_CONTEXT",
-        "LOCATION_EXTENDED"
-      ],
-      "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-      "context_score": 40,
-      "tier": "SHIELDED",
-      "correlation_group": "SHORT:PULSE",
-      "correlation_role": "DUPLICATE",
-      "micro_watchlist": false,
-      "micro_state": "OFF"
-    },
-    {
-      "pair": "SEI/USD",
-      "directional_context": "SHORT",
-      "market_type": "PULSE",
-      "structure": "ALIGNED",
-      "tempo": "STABLE",
-      "flow": "OPPOSES",
-      "shield": "CAUTION",
-      "location": "EXTENDED",
-      "review_state": "WATCH",
-      "reason_codes": [
-        "FLOW_OPPOSES_CONTEXT",
-        "LOCATION_EXTENDED"
-      ],
-      "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-      "context_score": 40,
-      "tier": "SHIELDED",
-      "correlation_group": "SHORT:PULSE",
-      "correlation_role": "DUPLICATE",
-      "micro_watchlist": false,
-      "micro_state": "OFF"
-    },
-    {
-      "pair": "SHIB/USD",
-      "directional_context": "SHORT",
-      "market_type": "DRIVE",
-      "structure": "ALIGNED",
-      "tempo": "STABLE",
-      "flow": "OPPOSES",
-      "shield": "CAUTION",
-      "location": "EXTENDED",
-      "review_state": "WATCH",
-      "reason_codes": [
-        "FLOW_OPPOSES_CONTEXT",
-        "LOCATION_EXTENDED"
-      ],
-      "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-      "context_score": 40,
-      "tier": "SHIELDED",
-      "correlation_group": "SHORT:DRIVE",
-      "correlation_role": "DUPLICATE",
-      "micro_watchlist": false,
-      "micro_state": "OFF"
-    },
-    {
-      "pair": "SUI/USD",
-      "directional_context": "SHORT",
-      "market_type": "PULSE",
-      "structure": "ALIGNED",
-      "tempo": "STABLE",
-      "flow": "OPPOSES",
-      "shield": "CAUTION",
-      "location": "EXTENDED",
-      "review_state": "WATCH",
-      "reason_codes": [
-        "FLOW_OPPOSES_CONTEXT",
-        "LOCATION_EXTENDED"
-      ],
-      "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-      "context_score": 40,
-      "tier": "SHIELDED",
-      "correlation_group": "SHORT:PULSE",
-      "correlation_role": "DUPLICATE",
-      "micro_watchlist": false,
-      "micro_state": "OFF"
-    },
-    {
       "pair": "TIA/USD",
-      "directional_context": "SHORT",
-      "market_type": "DRIVE",
-      "structure": "ALIGNED",
-      "tempo": "STABLE",
-      "flow": "OPPOSES",
-      "shield": "CAUTION",
-      "location": "EXTENDED",
-      "review_state": "WATCH",
-      "reason_codes": [
-        "FLOW_OPPOSES_CONTEXT",
-        "LOCATION_EXTENDED"
-      ],
-      "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-      "context_score": 40,
-      "tier": "SHIELDED",
-      "correlation_group": "SHORT:DRIVE",
-      "correlation_role": "DUPLICATE",
-      "micro_watchlist": false,
-      "micro_state": "OFF"
-    },
-    {
-      "pair": "WLD/USD",
       "directional_context": "SHORT",
       "market_type": "PULSE",
       "structure": "ALIGNED",
@@ -1913,50 +1967,6 @@
     {
       "pair": "XLM/USD",
       "directional_context": "SHORT",
-      "market_type": "DRIVE",
-      "structure": "ALIGNED",
-      "tempo": "STABLE",
-      "flow": "OPPOSES",
-      "shield": "CAUTION",
-      "location": "EXTENDED",
-      "review_state": "WATCH",
-      "reason_codes": [
-        "FLOW_OPPOSES_CONTEXT",
-        "LOCATION_EXTENDED"
-      ],
-      "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-      "context_score": 40,
-      "tier": "SHIELDED",
-      "correlation_group": "SHORT:DRIVE",
-      "correlation_role": "DUPLICATE",
-      "micro_watchlist": false,
-      "micro_state": "OFF"
-    },
-    {
-      "pair": "XRP/USD",
-      "directional_context": "SHORT",
-      "market_type": "DRIVE",
-      "structure": "ALIGNED",
-      "tempo": "STABLE",
-      "flow": "OPPOSES",
-      "shield": "CAUTION",
-      "location": "EXTENDED",
-      "review_state": "WATCH",
-      "reason_codes": [
-        "FLOW_OPPOSES_CONTEXT",
-        "LOCATION_EXTENDED"
-      ],
-      "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-      "context_score": 40,
-      "tier": "SHIELDED",
-      "correlation_group": "SHORT:DRIVE",
-      "correlation_role": "DUPLICATE",
-      "micro_watchlist": false,
-      "micro_state": "OFF"
-    },
-    {
-      "pair": "XTZ/USD",
-      "directional_context": "SHORT",
       "market_type": "PULSE",
       "structure": "ALIGNED",
       "tempo": "STABLE",
@@ -1970,6 +1980,28 @@
       ],
       "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
       "context_score": 40,
+      "tier": "SHIELDED",
+      "correlation_group": "SHORT:PULSE",
+      "correlation_role": "DUPLICATE",
+      "micro_watchlist": false,
+      "micro_state": "OFF"
+    },
+    {
+      "pair": "WIF/USD",
+      "directional_context": "SHORT",
+      "market_type": "PULSE",
+      "structure": "CONTESTED",
+      "tempo": "EXPANDING",
+      "flow": "OPPOSES",
+      "shield": "CAUTION",
+      "location": "RETEST",
+      "review_state": "WATCH",
+      "reason_codes": [
+        "STRUCTURE_CONTESTED",
+        "FLOW_OPPOSES_CONTEXT"
+      ],
+      "context_claim": "STRUCTURE_CONTESTED, FLOW_OPPOSES_CONTEXT",
+      "context_score": 38,
       "tier": "SHIELDED",
       "correlation_group": "SHORT:PULSE",
       "correlation_role": "DUPLICATE",
@@ -1979,7 +2011,7 @@
     {
       "pair": "BONK/USD",
       "directional_context": "SHORT",
-      "market_type": "PULSE",
+      "market_type": "TREND",
       "structure": "ALIGNED",
       "tempo": "FADING",
       "flow": "OPPOSES",
@@ -1993,57 +2025,13 @@
       "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
       "context_score": 32,
       "tier": "SHIELDED",
-      "correlation_group": "SHORT:PULSE",
+      "correlation_group": "SHORT:TREND",
       "correlation_role": "DUPLICATE",
       "micro_watchlist": false,
       "micro_state": "OFF"
     },
     {
       "pair": "FIL/USD",
-      "directional_context": "SHORT",
-      "market_type": "PULSE",
-      "structure": "ALIGNED",
-      "tempo": "FADING",
-      "flow": "OPPOSES",
-      "shield": "CAUTION",
-      "location": "EXTENDED",
-      "review_state": "WATCH",
-      "reason_codes": [
-        "FLOW_OPPOSES_CONTEXT",
-        "LOCATION_EXTENDED"
-      ],
-      "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-      "context_score": 32,
-      "tier": "SHIELDED",
-      "correlation_group": "SHORT:PULSE",
-      "correlation_role": "DUPLICATE",
-      "micro_watchlist": false,
-      "micro_state": "OFF"
-    },
-    {
-      "pair": "IMX/USD",
-      "directional_context": "SHORT",
-      "market_type": "DRIVE",
-      "structure": "ALIGNED",
-      "tempo": "FADING",
-      "flow": "OPPOSES",
-      "shield": "CAUTION",
-      "location": "EXTENDED",
-      "review_state": "WATCH",
-      "reason_codes": [
-        "FLOW_OPPOSES_CONTEXT",
-        "LOCATION_EXTENDED"
-      ],
-      "context_claim": "FLOW_OPPOSES_CONTEXT, LOCATION_EXTENDED",
-      "context_score": 32,
-      "tier": "SHIELDED",
-      "correlation_group": "SHORT:DRIVE",
-      "correlation_role": "DUPLICATE",
-      "micro_watchlist": false,
-      "micro_state": "OFF"
-    },
-    {
-      "pair": "LDO/USD",
       "directional_context": "SHORT",
       "market_type": "PULSE",
       "structure": "ALIGNED",
@@ -2087,23 +2075,24 @@
       "micro_state": "OFF"
     },
     {
-      "pair": "POL/USD",
-      "directional_context": "NEUTRAL",
-      "market_type": "TREND",
+      "pair": "STX/USD",
+      "directional_context": "SHORT",
+      "market_type": "PULSE",
       "structure": "CONTESTED",
       "tempo": "FADING",
-      "flow": "NEUTRAL",
+      "flow": "OPPOSES",
       "shield": "CAUTION",
       "location": "BASE",
       "review_state": "WATCH",
       "reason_codes": [
-        "STRUCTURE_CONTESTED"
+        "STRUCTURE_CONTESTED",
+        "FLOW_OPPOSES_CONTEXT"
       ],
-      "context_claim": "STRUCTURE_CONTESTED",
-      "context_score": 0,
+      "context_claim": "STRUCTURE_CONTESTED, FLOW_OPPOSES_CONTEXT",
+      "context_score": 23,
       "tier": "SHIELDED",
-      "correlation_group": "NEUTRAL:TREND",
-      "correlation_role": "PRIMARY",
+      "correlation_group": "SHORT:PULSE",
+      "correlation_role": "DUPLICATE",
       "micro_watchlist": false,
       "micro_state": "OFF"
     },
