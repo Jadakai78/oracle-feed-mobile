@@ -57,3 +57,19 @@ class DecayFixtureTests(unittest.TestCase):
         self.assert_fixture(
             "short_impulse_decay_pullback_volume_excessive.json"
         )
+
+
+    def test_long_decay_precedence_structure_over_expiry(self) -> None:
+        self.assert_fixture(
+            "long_decay_precedence_structure_over_expiry.json"
+        )
+
+    def test_long_decay_precedence_depth_over_expiry(self) -> None:
+        self.assert_fixture(
+            "long_decay_precedence_depth_over_expiry.json"
+        )
+
+    def test_long_decay_precedence_volume_over_expiry(self) -> None:
+        self.assert_fixture(
+            "long_decay_precedence_volume_over_expiry.json"
+        )
