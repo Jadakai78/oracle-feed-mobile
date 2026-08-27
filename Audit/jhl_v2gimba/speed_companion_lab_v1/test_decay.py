@@ -73,3 +73,28 @@ class DecayFixtureTests(unittest.TestCase):
         self.assert_fixture(
             "long_decay_precedence_volume_over_expiry.json"
         )
+
+
+    def test_long_boundary_depth_exact(self) -> None:
+        self.assert_fixture("long_boundary_depth_exact.json")
+
+    def test_long_boundary_depth_just_over(self) -> None:
+        self.assert_fixture("long_boundary_depth_just_over.json")
+
+    def test_short_boundary_depth_exact(self) -> None:
+        self.assert_fixture("short_boundary_depth_exact.json")
+
+    def test_short_boundary_depth_just_over(self) -> None:
+        self.assert_fixture("short_boundary_depth_just_over.json")
+
+    def test_long_boundary_volume_exact(self) -> None:
+        self.assert_fixture("long_boundary_volume_exact.json")
+
+    def test_long_boundary_volume_just_over(self) -> None:
+        self.assert_fixture("long_boundary_volume_just_over.json")
+
+    def test_short_boundary_volume_exact(self) -> None:
+        self.assert_fixture("short_boundary_volume_exact.json")
+
+    def test_short_boundary_volume_just_over(self) -> None:
+        self.assert_fixture("short_boundary_volume_just_over.json")
