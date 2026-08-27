@@ -1,8 +1,8 @@
 {
   "recordtype": "ORACLEPROPFEED",
-  "generated_at_utc": "2026-08-27T14:25:03Z",
-  "context_generated_at_utc": "2026-08-27T14:24:41Z",
-  "context_age_seconds": 22,
+  "generated_at_utc": "2026-08-27T14:30:13Z",
+  "context_generated_at_utc": "2026-08-27T14:30:01Z",
+  "context_age_seconds": 12,
   "venue": "PROP",
   "universe": "APRIL_12_FIXED",
   "manual_review_only": true,
@@ -16,15 +16,15 @@
   },
   "health": {
     "pair_count": 49,
-    "best_now_count": 5,
+    "best_now_count": 7,
     "watch_needs_trigger_count": 0,
-    "shielded_count": 41,
+    "shielded_count": 39,
     "rejected_context_count": 3,
-    "micro_watchlist_count": 4,
+    "micro_watchlist_count": 5,
     "review_state_counts": {
-      "ARMED": 6,
+      "ARMED": 8,
       "BLOCK": 3,
-      "WATCH": 40
+      "WATCH": 38
     }
   },
   "tiers": {
@@ -72,14 +72,14 @@
         "micro_state": "ARMED"
       },
       {
-        "pair": "STX/USD",
-        "directional_context": "SHORT",
-        "market_type": "PULSE",
+        "pair": "TAO/USD",
+        "directional_context": "LONG",
+        "market_type": "TREND",
         "structure": "ALIGNED",
         "tempo": "STABLE",
         "flow": "CONFIRMS",
         "shield": "CLEAR",
-        "location": "BASE",
+        "location": "RETEST",
         "review_state": "ARMED",
         "reason_codes": [
           "CONTEXT_CLEAR"
@@ -87,7 +87,7 @@
         "context_claim": "CONTEXT_CLEAR",
         "context_score": 93,
         "tier": "BEST_NOW",
-        "correlation_group": "SHORT:PULSE",
+        "correlation_group": "LONG:TREND",
         "correlation_role": "PRIMARY",
         "micro_watchlist": true,
         "micro_state": "ARMED"
@@ -109,6 +109,27 @@
         "context_score": 93,
         "tier": "BEST_NOW",
         "correlation_group": "LONG:TREND",
+        "correlation_role": "DUPLICATE",
+        "micro_watchlist": false,
+        "micro_state": "OFF"
+      },
+      {
+        "pair": "WLD/USD",
+        "directional_context": "LONG",
+        "market_type": "PULSE",
+        "structure": "ALIGNED",
+        "tempo": "STABLE",
+        "flow": "CONFIRMS",
+        "shield": "CLEAR",
+        "location": "RETEST",
+        "review_state": "ARMED",
+        "reason_codes": [
+          "CONTEXT_CLEAR"
+        ],
+        "context_claim": "CONTEXT_CLEAR",
+        "context_score": 93,
+        "tier": "BEST_NOW",
+        "correlation_group": "LONG:PULSE",
         "correlation_role": "PRIMARY",
         "micro_watchlist": true,
         "micro_state": "ARMED"
@@ -133,6 +154,27 @@
         "correlation_role": "DUPLICATE",
         "micro_watchlist": false,
         "micro_state": "OFF"
+      },
+      {
+        "pair": "STX/USD",
+        "directional_context": "SHORT",
+        "market_type": "PULSE",
+        "structure": "ALIGNED",
+        "tempo": "FADING",
+        "flow": "CONFIRMS",
+        "shield": "CLEAR",
+        "location": "BASE",
+        "review_state": "ARMED",
+        "reason_codes": [
+          "CONTEXT_CLEAR"
+        ],
+        "context_claim": "CONTEXT_CLEAR",
+        "context_score": 85,
+        "tier": "BEST_NOW",
+        "correlation_group": "SHORT:PULSE",
+        "correlation_role": "PRIMARY",
+        "micro_watchlist": true,
+        "micro_state": "ARMED"
       }
     ],
     "watch_needs_trigger": [],
@@ -181,27 +223,6 @@
       },
       {
         "pair": "TIA/USD",
-        "directional_context": "LONG",
-        "market_type": "TREND",
-        "structure": "ALIGNED",
-        "tempo": "EXPANDING",
-        "flow": "OPPOSES",
-        "shield": "CAUTION",
-        "location": "BASE",
-        "review_state": "WATCH",
-        "reason_codes": [
-          "FLOW_OPPOSES_CONTEXT"
-        ],
-        "context_claim": "FLOW_OPPOSES_CONTEXT",
-        "context_score": 62,
-        "tier": "SHIELDED",
-        "correlation_group": "LONG:TREND",
-        "correlation_role": "DUPLICATE",
-        "micro_watchlist": false,
-        "micro_state": "OFF"
-      },
-      {
-        "pair": "WLD/USD",
         "directional_context": "LONG",
         "market_type": "TREND",
         "structure": "ALIGNED",
@@ -280,7 +301,7 @@
         "context_score": 55,
         "tier": "SHIELDED",
         "correlation_group": "LONG:PULSE",
-        "correlation_role": "PRIMARY",
+        "correlation_role": "DUPLICATE",
         "micro_watchlist": false,
         "micro_state": "OFF"
       },
@@ -453,27 +474,6 @@
         "micro_state": "OFF"
       },
       {
-        "pair": "TAO/USD",
-        "directional_context": "LONG",
-        "market_type": "PULSE",
-        "structure": "ALIGNED",
-        "tempo": "STABLE",
-        "flow": "OPPOSES",
-        "shield": "CAUTION",
-        "location": "RETEST",
-        "review_state": "WATCH",
-        "reason_codes": [
-          "FLOW_OPPOSES_CONTEXT"
-        ],
-        "context_claim": "FLOW_OPPOSES_CONTEXT",
-        "context_score": 55,
-        "tier": "SHIELDED",
-        "correlation_group": "LONG:PULSE",
-        "correlation_role": "DUPLICATE",
-        "micro_watchlist": false,
-        "micro_state": "OFF"
-      },
-      {
         "pair": "UNI/USD",
         "directional_context": "LONG",
         "market_type": "RANGE",
@@ -622,6 +622,27 @@
       },
       {
         "pair": "IMX/USD",
+        "directional_context": "LONG",
+        "market_type": "PULSE",
+        "structure": "ALIGNED",
+        "tempo": "FADING",
+        "flow": "OPPOSES",
+        "shield": "CAUTION",
+        "location": "BASE",
+        "review_state": "WATCH",
+        "reason_codes": [
+          "FLOW_OPPOSES_CONTEXT"
+        ],
+        "context_claim": "FLOW_OPPOSES_CONTEXT",
+        "context_score": 47,
+        "tier": "SHIELDED",
+        "correlation_group": "LONG:PULSE",
+        "correlation_role": "DUPLICATE",
+        "micro_watchlist": false,
+        "micro_state": "OFF"
+      },
+      {
+        "pair": "ZRX/USD",
         "directional_context": "LONG",
         "market_type": "PULSE",
         "structure": "ALIGNED",
@@ -978,27 +999,6 @@
         "correlation_role": "DUPLICATE",
         "micro_watchlist": false,
         "micro_state": "OFF"
-      },
-      {
-        "pair": "ZRX/USD",
-        "directional_context": "NEUTRAL",
-        "market_type": "PULSE",
-        "structure": "CONTESTED",
-        "tempo": "FADING",
-        "flow": "NEUTRAL",
-        "shield": "CAUTION",
-        "location": "RETEST",
-        "review_state": "WATCH",
-        "reason_codes": [
-          "STRUCTURE_CONTESTED"
-        ],
-        "context_claim": "STRUCTURE_CONTESTED",
-        "context_score": 0,
-        "tier": "SHIELDED",
-        "correlation_group": "NEUTRAL:PULSE",
-        "correlation_role": "DUPLICATE",
-        "micro_watchlist": false,
-        "micro_state": "OFF"
       }
     ],
     "rejected_context": [
@@ -1112,28 +1112,7 @@
       "micro_state": "ARMED"
     },
     {
-      "pair": "STX/USD",
-      "directional_context": "SHORT",
-      "market_type": "PULSE",
-      "structure": "ALIGNED",
-      "tempo": "STABLE",
-      "flow": "CONFIRMS",
-      "shield": "CLEAR",
-      "location": "BASE",
-      "review_state": "ARMED",
-      "reason_codes": [
-        "CONTEXT_CLEAR"
-      ],
-      "context_claim": "CONTEXT_CLEAR",
-      "context_score": 93,
-      "tier": "BEST_NOW",
-      "correlation_group": "SHORT:PULSE",
-      "correlation_role": "PRIMARY",
-      "micro_watchlist": true,
-      "micro_state": "ARMED"
-    },
-    {
-      "pair": "TRX/USD",
+      "pair": "TAO/USD",
       "directional_context": "LONG",
       "market_type": "TREND",
       "structure": "ALIGNED",
@@ -1149,6 +1128,48 @@
       "context_score": 93,
       "tier": "BEST_NOW",
       "correlation_group": "LONG:TREND",
+      "correlation_role": "PRIMARY",
+      "micro_watchlist": true,
+      "micro_state": "ARMED"
+    },
+    {
+      "pair": "WLD/USD",
+      "directional_context": "LONG",
+      "market_type": "PULSE",
+      "structure": "ALIGNED",
+      "tempo": "STABLE",
+      "flow": "CONFIRMS",
+      "shield": "CLEAR",
+      "location": "RETEST",
+      "review_state": "ARMED",
+      "reason_codes": [
+        "CONTEXT_CLEAR"
+      ],
+      "context_claim": "CONTEXT_CLEAR",
+      "context_score": 93,
+      "tier": "BEST_NOW",
+      "correlation_group": "LONG:PULSE",
+      "correlation_role": "PRIMARY",
+      "micro_watchlist": true,
+      "micro_state": "ARMED"
+    },
+    {
+      "pair": "STX/USD",
+      "directional_context": "SHORT",
+      "market_type": "PULSE",
+      "structure": "ALIGNED",
+      "tempo": "FADING",
+      "flow": "CONFIRMS",
+      "shield": "CLEAR",
+      "location": "BASE",
+      "review_state": "ARMED",
+      "reason_codes": [
+        "CONTEXT_CLEAR"
+      ],
+      "context_claim": "CONTEXT_CLEAR",
+      "context_score": 85,
+      "tier": "BEST_NOW",
+      "correlation_group": "SHORT:PULSE",
       "correlation_role": "PRIMARY",
       "micro_watchlist": true,
       "micro_state": "ARMED"
@@ -1198,14 +1219,14 @@
       "micro_state": "ARMED"
     },
     {
-      "pair": "STX/USD",
-      "directional_context": "SHORT",
-      "market_type": "PULSE",
+      "pair": "TAO/USD",
+      "directional_context": "LONG",
+      "market_type": "TREND",
       "structure": "ALIGNED",
       "tempo": "STABLE",
       "flow": "CONFIRMS",
       "shield": "CLEAR",
-      "location": "BASE",
+      "location": "RETEST",
       "review_state": "ARMED",
       "reason_codes": [
         "CONTEXT_CLEAR"
@@ -1213,7 +1234,7 @@
       "context_claim": "CONTEXT_CLEAR",
       "context_score": 93,
       "tier": "BEST_NOW",
-      "correlation_group": "SHORT:PULSE",
+      "correlation_group": "LONG:TREND",
       "correlation_role": "PRIMARY",
       "micro_watchlist": true,
       "micro_state": "ARMED"
@@ -1235,6 +1256,27 @@
       "context_score": 93,
       "tier": "BEST_NOW",
       "correlation_group": "LONG:TREND",
+      "correlation_role": "DUPLICATE",
+      "micro_watchlist": false,
+      "micro_state": "OFF"
+    },
+    {
+      "pair": "WLD/USD",
+      "directional_context": "LONG",
+      "market_type": "PULSE",
+      "structure": "ALIGNED",
+      "tempo": "STABLE",
+      "flow": "CONFIRMS",
+      "shield": "CLEAR",
+      "location": "RETEST",
+      "review_state": "ARMED",
+      "reason_codes": [
+        "CONTEXT_CLEAR"
+      ],
+      "context_claim": "CONTEXT_CLEAR",
+      "context_score": 93,
+      "tier": "BEST_NOW",
+      "correlation_group": "LONG:PULSE",
       "correlation_role": "PRIMARY",
       "micro_watchlist": true,
       "micro_state": "ARMED"
@@ -1259,6 +1301,27 @@
       "correlation_role": "DUPLICATE",
       "micro_watchlist": false,
       "micro_state": "OFF"
+    },
+    {
+      "pair": "STX/USD",
+      "directional_context": "SHORT",
+      "market_type": "PULSE",
+      "structure": "ALIGNED",
+      "tempo": "FADING",
+      "flow": "CONFIRMS",
+      "shield": "CLEAR",
+      "location": "BASE",
+      "review_state": "ARMED",
+      "reason_codes": [
+        "CONTEXT_CLEAR"
+      ],
+      "context_claim": "CONTEXT_CLEAR",
+      "context_score": 85,
+      "tier": "BEST_NOW",
+      "correlation_group": "SHORT:PULSE",
+      "correlation_role": "PRIMARY",
+      "micro_watchlist": true,
+      "micro_state": "ARMED"
     },
     {
       "pair": "XTZ/USD",
@@ -1304,27 +1367,6 @@
     },
     {
       "pair": "TIA/USD",
-      "directional_context": "LONG",
-      "market_type": "TREND",
-      "structure": "ALIGNED",
-      "tempo": "EXPANDING",
-      "flow": "OPPOSES",
-      "shield": "CAUTION",
-      "location": "BASE",
-      "review_state": "WATCH",
-      "reason_codes": [
-        "FLOW_OPPOSES_CONTEXT"
-      ],
-      "context_claim": "FLOW_OPPOSES_CONTEXT",
-      "context_score": 62,
-      "tier": "SHIELDED",
-      "correlation_group": "LONG:TREND",
-      "correlation_role": "DUPLICATE",
-      "micro_watchlist": false,
-      "micro_state": "OFF"
-    },
-    {
-      "pair": "WLD/USD",
       "directional_context": "LONG",
       "market_type": "TREND",
       "structure": "ALIGNED",
@@ -1403,7 +1445,7 @@
       "context_score": 55,
       "tier": "SHIELDED",
       "correlation_group": "LONG:PULSE",
-      "correlation_role": "PRIMARY",
+      "correlation_role": "DUPLICATE",
       "micro_watchlist": false,
       "micro_state": "OFF"
     },
@@ -1576,27 +1618,6 @@
       "micro_state": "OFF"
     },
     {
-      "pair": "TAO/USD",
-      "directional_context": "LONG",
-      "market_type": "PULSE",
-      "structure": "ALIGNED",
-      "tempo": "STABLE",
-      "flow": "OPPOSES",
-      "shield": "CAUTION",
-      "location": "RETEST",
-      "review_state": "WATCH",
-      "reason_codes": [
-        "FLOW_OPPOSES_CONTEXT"
-      ],
-      "context_claim": "FLOW_OPPOSES_CONTEXT",
-      "context_score": 55,
-      "tier": "SHIELDED",
-      "correlation_group": "LONG:PULSE",
-      "correlation_role": "DUPLICATE",
-      "micro_watchlist": false,
-      "micro_state": "OFF"
-    },
-    {
       "pair": "UNI/USD",
       "directional_context": "LONG",
       "market_type": "RANGE",
@@ -1745,6 +1766,27 @@
     },
     {
       "pair": "IMX/USD",
+      "directional_context": "LONG",
+      "market_type": "PULSE",
+      "structure": "ALIGNED",
+      "tempo": "FADING",
+      "flow": "OPPOSES",
+      "shield": "CAUTION",
+      "location": "BASE",
+      "review_state": "WATCH",
+      "reason_codes": [
+        "FLOW_OPPOSES_CONTEXT"
+      ],
+      "context_claim": "FLOW_OPPOSES_CONTEXT",
+      "context_score": 47,
+      "tier": "SHIELDED",
+      "correlation_group": "LONG:PULSE",
+      "correlation_role": "DUPLICATE",
+      "micro_watchlist": false,
+      "micro_state": "OFF"
+    },
+    {
+      "pair": "ZRX/USD",
       "directional_context": "LONG",
       "market_type": "PULSE",
       "structure": "ALIGNED",
@@ -2098,27 +2140,6 @@
       "context_score": 0,
       "tier": "SHIELDED",
       "correlation_group": "NEUTRAL:TREND",
-      "correlation_role": "DUPLICATE",
-      "micro_watchlist": false,
-      "micro_state": "OFF"
-    },
-    {
-      "pair": "ZRX/USD",
-      "directional_context": "NEUTRAL",
-      "market_type": "PULSE",
-      "structure": "CONTESTED",
-      "tempo": "FADING",
-      "flow": "NEUTRAL",
-      "shield": "CAUTION",
-      "location": "RETEST",
-      "review_state": "WATCH",
-      "reason_codes": [
-        "STRUCTURE_CONTESTED"
-      ],
-      "context_claim": "STRUCTURE_CONTESTED",
-      "context_score": 0,
-      "tier": "SHIELDED",
-      "correlation_group": "NEUTRAL:PULSE",
       "correlation_role": "DUPLICATE",
       "micro_watchlist": false,
       "micro_state": "OFF"
