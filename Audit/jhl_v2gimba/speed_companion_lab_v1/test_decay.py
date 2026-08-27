@@ -98,3 +98,16 @@ class DecayFixtureTests(unittest.TestCase):
 
     def test_short_boundary_volume_just_over(self) -> None:
         self.assert_fixture("short_boundary_volume_just_over.json")
+
+
+    def test_long_structural_close_equal_low(self) -> None:
+        self.assert_fixture("long_structural_close_equal_low.json")
+
+    def test_short_structural_close_equal_high(self) -> None:
+        self.assert_fixture("short_structural_close_equal_high.json")
+
+    def test_long_watch_age_exact(self) -> None:
+        self.assert_fixture("long_watch_age_exact.json")
+
+    def test_short_watch_age_exact(self) -> None:
+        self.assert_fixture("short_watch_age_exact.json")
