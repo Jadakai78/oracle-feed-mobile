@@ -1,0 +1,309 @@
+﻿=== PYTHON FILES ===
+speed_phase.py
+staging.py
+test_speed_phase.py
+
+=== PHASE SEARCH ===
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:7: V1 implements long impulse, WATCH, and CONTROLLED_PULLBACK states.
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:17: IMPULSE_MIN_ATR = 1.5
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:18: IMPULSE_MIN_BODY_FRACTION = 0.60
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:21: MAX_WATCH_BARS = 12
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:26: PHASE_NONE = "NONE"
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:27: PHASE_IMPULSE = "IMPULSE"
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:28: PHASE_WATCH = "WATCH"
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:29: PHASE_CONTROLLED_PULLBACK = "CONTROLLED_PULLBACK"
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:30: PHASE_REACCELERATION = "REACCELERATION"
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:31: PHASE_DECAY = "DECAY"
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:37: "phase": PHASE_NONE,
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:38: "impulse_age_bars": None,
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:39: "impulse_size_atr": None,
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:42: "pullback_volume_vs_impulse": None,
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:94: def _find_latest_long_impulse(
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:106: has_strong_body = _body_fraction(candle) >= IMPULSE_MIN_BODY_FRACTION
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:107: has_large_range = candle_range >= atr * IMPULSE_MIN_ATR
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:118: def _long_controlled_pullback(
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:120: impulse_index: int,
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:123: Return pullback measurements only when all completed post-impulse bars
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:126: impulse = candles[impulse_index]
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:127: pullback = candles[impulse_index + 1:]
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:135: impulse_origin = impulse["open"]
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:136: impulse_high = impulse["high"]
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:137: impulse_distance = impulse_high - impulse_origin
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:138: if impulse_distance <= 0 or impulse["volume"] <= 0:
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:142: if lowest_close <= impulse_origin:
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:145: pullback_depth_fraction = (impulse_high - lowest_close) / impulse_distance
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:152: pullback_volume_vs_impulse = (
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:153: average_pullback_volume / impulse["volume"]
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:155: if pullback_volume_vs_impulse > PULLBACK_VOLUME_MAX_FRACTION:
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:161: "pullback_volume_vs_impulse": round(
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:162: pullback_volume_vs_impulse,
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:175: - Identify the newest qualifying long impulse.
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:176: - Return CONTROLLED_PULLBACK for a valid bounded pullback.
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:177: - Otherwise return WATCH while the impulse remains in its watch window.
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:184: impulse = _find_latest_long_impulse(candles)
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:185: if impulse is None:
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:188: impulse_age_bars = len(candles) - 1 - impulse["index"]
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:189: if impulse_age_bars > MAX_WATCH_BARS:
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:193: result["impulse_age_bars"] = impulse_age_bars
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:194: result["impulse_size_atr"] = round(impulse["size_atr"], 6)
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:196: pullback = _long_controlled_pullback(candles, impulse["index"])
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:198: result["phase"] = PHASE_CONTROLLED_PULLBACK
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\speed_phase.py:202: result["phase"] = PHASE_WATCH
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:7: V1 implements long impulse, WATCH, and CONTROLLED_PULLBACK states.
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:17: IMPULSE_MIN_ATR = 1.5
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:18: IMPULSE_MIN_BODY_FRACTION = 0.60
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:21: MAX_WATCH_BARS = 12
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:26: PHASE_NONE = "NONE"
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:27: PHASE_IMPULSE = "IMPULSE"
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:28: PHASE_WATCH = "WATCH"
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:29: PHASE_CONTROLLED_PULLBACK = "CONTROLLED_PULLBACK"
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:30: PHASE_REACCELERATION = "REACCELERATION"
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:31: PHASE_DECAY = "DECAY"
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:37: "phase": PHASE_NONE,
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:38: "impulse_age_bars": None,
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:39: "impulse_size_atr": None,
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:42: "pullback_volume_vs_impulse": None,
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:94: def _find_latest_long_impulse(
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:106: has_strong_body = _body_fraction(candle) >= IMPULSE_MIN_BODY_FRACTION
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:107: has_large_range = candle_range >= atr * IMPULSE_MIN_ATR
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:118: def _long_controlled_pullback(
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:120: impulse_index: int,
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:123: Return pullback measurements only when all completed post-impulse bars
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:126: impulse = candles[impulse_index]
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:127: pullback = candles[impulse_index + 1:]
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:135: impulse_origin = impulse["open"]
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:136: impulse_high = impulse["high"]
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:137: impulse_distance = impulse_high - impulse_origin
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:138: if impulse_distance <= 0 or impulse["volume"] <= 0:
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:142: if lowest_close <= impulse_origin:
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:145: pullback_depth_fraction = (impulse_high - lowest_close) / impulse_distance
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:152: pullback_volume_vs_impulse = (
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:153: average_pullback_volume / impulse["volume"]
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:155: if pullback_volume_vs_impulse > PULLBACK_VOLUME_MAX_FRACTION:
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:161: "pullback_volume_vs_impulse": round(
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:162: pullback_volume_vs_impulse,
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:175: - Identify the newest qualifying long impulse.
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:176: - Return CONTROLLED_PULLBACK for a valid bounded pullback.
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:177: - Otherwise return WATCH while the impulse remains in its watch window.
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:184: impulse = _find_latest_long_impulse(candles)
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:185: if impulse is None:
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:188: impulse_age_bars = len(candles) - 1 - impulse["index"]
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:189: if impulse_age_bars > MAX_WATCH_BARS:
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:193: result["impulse_age_bars"] = impulse_age_bars
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:194: result["impulse_size_atr"] = round(impulse["size_atr"], 6)
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:196: pullback = _long_controlled_pullback(candles, impulse["index"])
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:198: result["phase"] = PHASE_CONTROLLED_PULLBACK
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\staging.py:202: result["phase"] = PHASE_WATCH
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\test_speed_phase.py:12: from speed_phase import analyze_completed_candles
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\test_speed_phase.py:15: class SpeedPhaseFixtureTests(unittest.TestCase):
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\test_speed_phase.py:34: def test_long_impulse_watch(self) -> None:
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\test_speed_phase.py:35: self.assert_fixture("long_impulse_watch.json")
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\test_speed_phase.py:37: def test_long_controlled_pullback(self) -> None:
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\test_speed_phase.py:38: self.assert_fixture("long_controlled_pullback.json")
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\test_speed_phase.py:40: def test_long_reacceleration_confirmed(self) -> None:
+C:\Users\jason\OneDrive\Desktop\jhl_v2\oracle-feed-mobile\Audit\jhl_v2gimba\speed_companion_lab_v1\test_speed_phase.py:41: self.assert_fixture("long_reacceleration_confirmed.json")
+
+=== speed_phase.py ===
+   1: """
+   2: Deterministic Speed Companion lab contract.
+   3: 
+   4: Completed 5-minute OHLCV candles only.
+   5: No I/O, no live-feed access, no scoring, and no trade execution.
+   6: 
+   7: V1 implements long impulse, WATCH, and CONTROLLED_PULLBACK states.
+   8: """
+   9: 
+  10: from __future__ import annotations
+  11: 
+  12: from typing import Any, Dict, List, Optional
+  13: 
+  14: 
+  15: ATR_PERIOD = 14
+  16: 
+  17: IMPULSE_MIN_ATR = 1.5
+  18: IMPULSE_MIN_BODY_FRACTION = 0.60
+  19: MAX_PULLBACK_FRACTION = 0.50
+  20: MAX_PULLBACK_BARS = 6
+  21: MAX_WATCH_BARS = 12
+  22: PULLBACK_VOLUME_MAX_FRACTION = 0.80
+  23: RECLAIM_MIN_BODY_FRACTION = 0.60
+  24: 
+  25: 
+  26: PHASE_NONE = "NONE"
+  27: PHASE_IMPULSE = "IMPULSE"
+  28: PHASE_WATCH = "WATCH"
+  29: PHASE_CONTROLLED_PULLBACK = "CONTROLLED_PULLBACK"
+  30: PHASE_REACCELERATION = "REACCELERATION"
+  31: PHASE_DECAY = "DECAY"
+  32: 
+  33: 
+  34: def _empty_result() -> Dict[str, Any]:
+  35:     return {
+  36:         "direction": "NONE",
+  37:         "phase": PHASE_NONE,
+  38:         "impulse_age_bars": None,
+  39:         "impulse_size_atr": None,
+  40:         "pullback_depth_fraction": None,
+  41:         "pullback_bars": None,
+  42:         "pullback_volume_vs_impulse": None,
+  43:         "reclaim_confirmed": False,
+  44:         "decay_reason": None,
+  45:     }
+  46: 
+  47: 
+  48: def _true_range(
+  49:     candle: Dict[str, float],
+  50:     previous_close: float,
+  51: ) -> float:
+  52:     return max(
+  53:         candle["high"] - candle["low"],
+  54:         abs(candle["high"] - previous_close),
+  55:         abs(candle["low"] - previous_close),
+  56:     )
+  57: 
+  58: 
+  59: def _atr_before_index(
+  60:     candles: List[Dict[str, float]],
+  61:     index: int,
+  62: ) -> Optional[float]:
+  63:     if index < ATR_PERIOD:
+  64:         return None
+  65: 
+  66:     start = index - ATR_PERIOD
+  67:     true_ranges: List[float] = []
+  68: 
+  69:     for candle_index in range(start, index):
+  70:         if candle_index == 0:
+  71:             continue
+  72: 
+  73:         true_ranges.append(
+  74:             _true_range(
+  75:                 candles[candle_index],
+  76:                 candles[candle_index - 1]["close"],
+  77:             )
+  78:         )
+  79: 
+  80:     if len(true_ranges) < ATR_PERIOD - 1:
+  81:         return None
+  82: 
+  83:     return sum(true_ranges) / len(true_ranges)
+  84: 
+  85: 
+  86: def _body_fraction(candle: Dict[str, float]) -> float:
+  87:     candle_range = candle["high"] - candle["low"]
+  88:     if candle_range <= 0:
+  89:         return 0.0
+  90: 
+  91:     return abs(candle["close"] - candle["open"]) / candle_range
+  92: 
+  93: 
+  94: def _find_latest_long_impulse(
+  95:     candles: List[Dict[str, float]],
+  96: ) -> Optional[Dict[str, Any]]:
+  97:     for index in range(len(candles) - 1, ATR_PERIOD - 1, -1):
+  98:         candle = candles[index]
+  99:         atr = _atr_before_index(candles, index)
+ 100: 
+ 101:         if atr is None or atr <= 0:
+ 102:             continue
+ 103: 
+ 104:         candle_range = candle["high"] - candle["low"]
+ 105:         is_bullish = candle["close"] > candle["open"]
+ 106:         has_strong_body = _body_fraction(candle) >= IMPULSE_MIN_BODY_FRACTION
+ 107:         has_large_range = candle_range >= atr * IMPULSE_MIN_ATR
+ 108: 
+ 109:         if is_bullish and has_strong_body and has_large_range:
+ 110:             return {
+ 111:                 "index": index,
+ 112:                 "size_atr": candle_range / atr,
+ 113:             }
+ 114: 
+ 115:     return None
+ 116: 
+ 117: 
+ 118: def _long_controlled_pullback(
+ 119:     candles: List[Dict[str, float]],
+ 120:     impulse_index: int,
+ 121: ) -> Optional[Dict[str, Any]]:
+ 122:     """
+ 123:     Return pullback measurements only when all completed post-impulse bars
+ 124:     form a bounded, lower-participation, non-bullish pullback.
+ 125:     """
+ 126:     impulse = candles[impulse_index]
+ 127:     pullback = candles[impulse_index + 1:]
+ 128: 
+ 129:     if not pullback or len(pullback) > MAX_PULLBACK_BARS:
+ 130:         return None
+ 131: 
+ 132:     if any(candle["close"] > candle["open"] for candle in pullback):
+ 133:         return None
+ 134: 
+ 135:     impulse_origin = impulse["open"]
+ 136:     impulse_high = impulse["high"]
+ 137:     impulse_distance = impulse_high - impulse_origin
+ 138:     if impulse_distance <= 0 or impulse["volume"] <= 0:
+ 139:         return None
+ 140: 
+ 141:     lowest_close = min(candle["close"] for candle in pullback)
+ 142:     if lowest_close <= impulse_origin:
+ 143:         return None
+ 144: 
+ 145:     pullback_depth_fraction = (impulse_high - lowest_close) / impulse_distance
+ 146:     if pullback_depth_fraction > MAX_PULLBACK_FRACTION:
+ 147:         return None
+ 148: 
+ 149:     average_pullback_volume = (
+ 150:         sum(candle["volume"] for candle in pullback) / len(pullback)
+ 151:     )
+ 152:     pullback_volume_vs_impulse = (
+ 153:         average_pullback_volume / impulse["volume"]
+ 154:     )
+ 155:     if pullback_volume_vs_impulse > PULLBACK_VOLUME_MAX_FRACTION:
+ 156:         return None
+ 157: 
+ 158:     return {
+ 159:         "pullback_depth_fraction": round(pullback_depth_fraction, 6),
+ 160:         "pullback_bars": len(pullback),
+ 161:         "pullback_volume_vs_impulse": round(
+ 162:             pullback_volume_vs_impulse,
+ 163:             6,
+ 164:         ),
+ 165:     }
+ 166: 
+ 167: 
+ 168: def analyze_completed_candles(
+ 169:     candles: List[Dict[str, float]],
+ 170: ) -> Dict[str, Any]:
+ 171:     """
+ 172:     Analyze completed OHLCV candles.
+ 173: 
+ 174:     V1 behavior:
+ 175:     - Identify the newest qualifying long impulse.
+ 176:     - Return CONTROLLED_PULLBACK for a valid bounded pullback.
+ 177:     - Otherwise return WATCH while the impulse remains in its watch window.
+ 178:     """
+ 179:     result = _empty_result()
+ 180: 
+ 181:     if len(candles) < ATR_PERIOD + 1:
+ 182:         return result
+ 183: 
+ 184:     impulse = _find_latest_long_impulse(candles)
+ 185:     if impulse is None:
+ 186:         return result
+ 187: 
+ 188:     impulse_age_bars = len(candles) - 1 - impulse["index"]
+ 189:     if impulse_age_bars > MAX_WATCH_BARS:
+ 190:         return result
+ 191: 
+ 192:     result["direction"] = "LONG"
+ 193:     result["impulse_age_bars"] = impulse_age_bars
+ 194:     result["impulse_size_atr"] = round(impulse["size_atr"], 6)
+ 195: 
+ 196:     pullback = _long_controlled_pullback(candles, impulse["index"])
+ 197:     if pullback is not None:
+ 198:         result["phase"] = PHASE_CONTROLLED_PULLBACK
+ 199:         result.update(pullback)
+ 200:         return result
+ 201: 
+ 202:     result["phase"] = PHASE_WATCH
+ 203:     return result
