@@ -257,6 +257,43 @@ def analyze_completed_candles(
     if len(candles) < ATR_PERIOD + 1:
         return result
 
+    latest_short_impulse = _find_latest_short_impulse(candles)
+    latest_long_impulse = _find_latest_long_impulse(candles)
+
+    if latest_short_impulse is not None:
+        short_index = latest_short_impulse["index"]
+        short_age = len(candles) - 1 - short_index
+        short_candle = candles[short_index]
+
+        if candles[-1]["close"] > short_candle["high"]:
+            result["direction"] = "SHORT"
+            result["phase"] = PHASE_DECAY
+            result["impulse_age_bars"] = short_age
+            result["impulse_size_atr"] = round(
+                latest_short_impulse["size_atr"],
+                6,
+            )
+            result["reclaim_confirmed"] = False
+            result["decay_reason"] = "structure_invalidated"
+            return result
+
+    if latest_long_impulse is not None:
+        long_index = latest_long_impulse["index"]
+        long_age = len(candles) - 1 - long_index
+        long_candle = candles[long_index]
+
+        if candles[-1]["close"] < long_candle["low"]:
+            result["direction"] = "LONG"
+            result["phase"] = PHASE_DECAY
+            result["impulse_age_bars"] = long_age
+            result["impulse_size_atr"] = round(
+                latest_long_impulse["size_atr"],
+                6,
+            )
+            result["reclaim_confirmed"] = False
+            result["decay_reason"] = "structure_invalidated"
+            return result
+
     for impulse_index in range(ATR_PERIOD, len(candles) - 4):
         short_impulse_candle = candles[impulse_index]
         pullback_one = candles[impulse_index + 1]
