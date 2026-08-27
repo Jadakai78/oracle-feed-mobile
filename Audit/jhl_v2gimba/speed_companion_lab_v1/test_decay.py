@@ -29,3 +29,11 @@ class DecayFixtureTests(unittest.TestCase):
 
     def test_short_impulse_decay_watch_expired(self) -> None:
         self.assert_fixture("short_impulse_decay_watch_expired.json")
+    def test_long_impulse_decay_structure_invalidated(self) -> None:
+        self.assert_fixture(
+            "long_impulse_decay_structure_invalidated.json"
+        )
+    def test_short_impulse_decay_structure_invalidated(self) -> None:
+        self.assert_fixture(
+            "short_impulse_decay_structure_invalidated.json"
+        )
