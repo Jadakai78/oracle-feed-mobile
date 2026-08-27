@@ -265,7 +265,10 @@ def analyze_completed_candles(
         short_age = len(candles) - 1 - short_index
         short_candle = candles[short_index]
 
-        if candles[-1]["close"] > short_candle["high"]:
+        if any(
+            candle["close"] > short_candle["high"]
+            for candle in candles[short_index + 1:]
+        ):
             result["direction"] = "SHORT"
             result["phase"] = PHASE_DECAY
             result["impulse_age_bars"] = short_age
@@ -282,7 +285,10 @@ def analyze_completed_candles(
         long_age = len(candles) - 1 - long_index
         long_candle = candles[long_index]
 
-        if candles[-1]["close"] < long_candle["low"]:
+        if any(
+            candle["close"] < long_candle["low"]
+            for candle in candles[long_index + 1:]
+        ):
             result["direction"] = "LONG"
             result["phase"] = PHASE_DECAY
             result["impulse_age_bars"] = long_age
