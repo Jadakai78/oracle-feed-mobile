@@ -37,3 +37,13 @@ class DecayFixtureTests(unittest.TestCase):
         self.assert_fixture(
             "short_impulse_decay_structure_invalidated.json"
         )
+
+    def test_long_impulse_decay_pullback_depth_breached(self) -> None:
+        self.assert_fixture(
+            "long_impulse_decay_pullback_depth_breached.json"
+        )
+
+    def test_short_impulse_decay_pullback_depth_breached(self) -> None:
+        self.assert_fixture(
+            "short_impulse_decay_pullback_depth_breached.json"
+        )

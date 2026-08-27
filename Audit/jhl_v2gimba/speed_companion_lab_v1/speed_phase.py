@@ -293,6 +293,78 @@ def analyze_completed_candles(
             result["reclaim_confirmed"] = False
             result["decay_reason"] = "structure_invalidated"
             return result
+    if latest_short_impulse is not None:
+        short_index = latest_short_impulse["index"]
+        short_age = len(candles) - 1 - short_index
+        short_candle = candles[short_index]
+        short_post_impulse = candles[short_index + 1:]
+        short_distance = short_candle["open"] - short_candle["low"]
+
+        if short_post_impulse and short_distance > 0:
+            short_highest_close = max(
+                candle["close"] for candle in short_post_impulse
+            )
+            short_depth = (
+                (short_highest_close - short_candle["low"])
+                / short_distance
+            )
+
+            if (
+                candles[-1]["close"] < short_candle["high"]
+                and short_depth > MAX_PULLBACK_FRACTION
+            ):
+                result["direction"] = "SHORT"
+                result["phase"] = PHASE_DECAY
+                result["impulse_age_bars"] = short_age
+                result["impulse_size_atr"] = round(
+                    latest_short_impulse["size_atr"],
+                    6,
+                )
+                result["pullback_depth_fraction"] = round(
+                    short_depth,
+                    6,
+                )
+                result["pullback_bars"] = len(short_post_impulse)
+                result["reclaim_confirmed"] = False
+                result["decay_reason"] = "pullback_depth_breached"
+                return result
+
+    if latest_long_impulse is not None:
+        long_index = latest_long_impulse["index"]
+        long_age = len(candles) - 1 - long_index
+        long_candle = candles[long_index]
+        long_post_impulse = candles[long_index + 1:]
+        long_distance = long_candle["high"] - long_candle["open"]
+
+        if long_post_impulse and long_distance > 0:
+            long_lowest_close = min(
+                candle["close"] for candle in long_post_impulse
+            )
+            long_depth = (
+                (long_candle["high"] - long_lowest_close)
+                / long_distance
+            )
+
+            if (
+                candles[-1]["close"] > long_candle["low"]
+                and long_depth > MAX_PULLBACK_FRACTION
+            ):
+                result["direction"] = "LONG"
+                result["phase"] = PHASE_DECAY
+                result["impulse_age_bars"] = long_age
+                result["impulse_size_atr"] = round(
+                    latest_long_impulse["size_atr"],
+                    6,
+                )
+                result["pullback_depth_fraction"] = round(
+                    long_depth,
+                    6,
+                )
+                result["pullback_bars"] = len(long_post_impulse)
+                result["reclaim_confirmed"] = False
+                result["decay_reason"] = "pullback_depth_breached"
+                return result
+
 
     for impulse_index in range(ATR_PERIOD, len(candles) - 4):
         short_impulse_candle = candles[impulse_index]
