@@ -1,8 +1,8 @@
 {
   "recordtype": "ORACLEPROPFEED",
-  "generated_at_utc": "2026-08-31T15:18:24Z",
-  "context_generated_at_utc": "2026-08-31T15:15:31Z",
-  "context_age_seconds": 173,
+  "generated_at_utc": "2026-08-31T15:23:29Z",
+  "context_generated_at_utc": "2026-08-31T15:20:51Z",
+  "context_age_seconds": 158,
   "venue": "PROP",
   "universe": "APRIL_12_FIXED",
   "manual_review_only": true,
@@ -16,15 +16,15 @@
   },
   "health": {
     "pair_count": 49,
-    "best_now_count": 13,
+    "best_now_count": 12,
     "watch_needs_trigger_count": 0,
-    "shielded_count": 33,
+    "shielded_count": 34,
     "rejected_context_count": 3,
-    "micro_watchlist_count": 5,
+    "micro_watchlist_count": 4,
     "review_state_counts": {
-      "ARMED": 14,
+      "ARMED": 13,
       "BLOCK": 3,
-      "WATCH": 32
+      "WATCH": 33
     }
   },
   "tiers": {
@@ -112,27 +112,6 @@
         "correlation_role": "DUPLICATE",
         "micro_watchlist": false,
         "micro_state": "OFF"
-      },
-      {
-        "pair": "BTC/USD",
-        "directional_context": "LONG",
-        "market_type": "DRIVE",
-        "structure": "ALIGNED",
-        "tempo": "STABLE",
-        "flow": "CONFIRMS",
-        "shield": "CLEAR",
-        "location": "RETEST",
-        "review_state": "ARMED",
-        "reason_codes": [
-          "CONTEXT_CLEAR"
-        ],
-        "context_claim": "CONTEXT_CLEAR",
-        "context_score": 93,
-        "tier": "BEST_NOW",
-        "correlation_group": "LONG:DRIVE",
-        "correlation_role": "PRIMARY",
-        "micro_watchlist": true,
-        "micro_state": "ARMED"
       },
       {
         "pair": "ICP/USD",
@@ -320,6 +299,27 @@
         ],
         "context_claim": "LOCATION_EXTENDED",
         "context_score": 65,
+        "tier": "SHIELDED",
+        "correlation_group": "LONG:DRIVE",
+        "correlation_role": "PRIMARY",
+        "micro_watchlist": false,
+        "micro_state": "OFF"
+      },
+      {
+        "pair": "BTC/USD",
+        "directional_context": "LONG",
+        "market_type": "DRIVE",
+        "structure": "ALIGNED",
+        "tempo": "EXPANDING",
+        "flow": "OPPOSES",
+        "shield": "CAUTION",
+        "location": "BASE",
+        "review_state": "WATCH",
+        "reason_codes": [
+          "FLOW_OPPOSES_CONTEXT"
+        ],
+        "context_claim": "FLOW_OPPOSES_CONTEXT",
+        "context_score": 62,
         "tier": "SHIELDED",
         "correlation_group": "LONG:DRIVE",
         "correlation_role": "DUPLICATE",
@@ -647,12 +647,12 @@
       {
         "pair": "AAVE/USD",
         "directional_context": "NEUTRAL",
-        "market_type": "DRIVE",
+        "market_type": "PULSE",
         "structure": "CONTESTED",
         "tempo": "STABLE",
         "flow": "NEUTRAL",
         "shield": "CAUTION",
-        "location": "RETEST",
+        "location": "BASE",
         "review_state": "WATCH",
         "reason_codes": [
           "STRUCTURE_CONTESTED"
@@ -660,7 +660,7 @@
         "context_claim": "STRUCTURE_CONTESTED",
         "context_score": 3,
         "tier": "SHIELDED",
-        "correlation_group": "NEUTRAL:DRIVE",
+        "correlation_group": "NEUTRAL:PULSE",
         "correlation_role": "DUPLICATE",
         "micro_watchlist": false,
         "micro_state": "OFF"
@@ -673,7 +673,7 @@
         "tempo": "STABLE",
         "flow": "NEUTRAL",
         "shield": "CAUTION",
-        "location": "RETEST",
+        "location": "BASE",
         "review_state": "WATCH",
         "reason_codes": [
           "STRUCTURE_CONTESTED"
@@ -694,7 +694,7 @@
         "tempo": "STABLE",
         "flow": "NEUTRAL",
         "shield": "CAUTION",
-        "location": "RETEST",
+        "location": "BASE",
         "review_state": "WATCH",
         "reason_codes": [
           "STRUCTURE_CONTESTED"
@@ -736,7 +736,7 @@
         "tempo": "STABLE",
         "flow": "NEUTRAL",
         "shield": "CAUTION",
-        "location": "RETEST",
+        "location": "BASE",
         "review_state": "WATCH",
         "reason_codes": [
           "STRUCTURE_CONTESTED"
@@ -757,7 +757,7 @@
         "tempo": "STABLE",
         "flow": "NEUTRAL",
         "shield": "CAUTION",
-        "location": "RETEST",
+        "location": "BASE",
         "review_state": "WATCH",
         "reason_codes": [
           "STRUCTURE_CONTESTED"
@@ -1113,27 +1113,6 @@
       "micro_state": "ARMED"
     },
     {
-      "pair": "BTC/USD",
-      "directional_context": "LONG",
-      "market_type": "DRIVE",
-      "structure": "ALIGNED",
-      "tempo": "STABLE",
-      "flow": "CONFIRMS",
-      "shield": "CLEAR",
-      "location": "RETEST",
-      "review_state": "ARMED",
-      "reason_codes": [
-        "CONTEXT_CLEAR"
-      ],
-      "context_claim": "CONTEXT_CLEAR",
-      "context_score": 93,
-      "tier": "BEST_NOW",
-      "correlation_group": "LONG:DRIVE",
-      "correlation_role": "PRIMARY",
-      "micro_watchlist": true,
-      "micro_state": "ARMED"
-    },
-    {
       "pair": "SEI/USD",
       "directional_context": "SHORT",
       "market_type": "TREND",
@@ -1260,27 +1239,6 @@
       "correlation_role": "DUPLICATE",
       "micro_watchlist": false,
       "micro_state": "OFF"
-    },
-    {
-      "pair": "BTC/USD",
-      "directional_context": "LONG",
-      "market_type": "DRIVE",
-      "structure": "ALIGNED",
-      "tempo": "STABLE",
-      "flow": "CONFIRMS",
-      "shield": "CLEAR",
-      "location": "RETEST",
-      "review_state": "ARMED",
-      "reason_codes": [
-        "CONTEXT_CLEAR"
-      ],
-      "context_claim": "CONTEXT_CLEAR",
-      "context_score": 93,
-      "tier": "BEST_NOW",
-      "correlation_group": "LONG:DRIVE",
-      "correlation_role": "PRIMARY",
-      "micro_watchlist": true,
-      "micro_state": "ARMED"
     },
     {
       "pair": "ICP/USD",
@@ -1465,6 +1423,27 @@
       ],
       "context_claim": "LOCATION_EXTENDED",
       "context_score": 65,
+      "tier": "SHIELDED",
+      "correlation_group": "LONG:DRIVE",
+      "correlation_role": "PRIMARY",
+      "micro_watchlist": false,
+      "micro_state": "OFF"
+    },
+    {
+      "pair": "BTC/USD",
+      "directional_context": "LONG",
+      "market_type": "DRIVE",
+      "structure": "ALIGNED",
+      "tempo": "EXPANDING",
+      "flow": "OPPOSES",
+      "shield": "CAUTION",
+      "location": "BASE",
+      "review_state": "WATCH",
+      "reason_codes": [
+        "FLOW_OPPOSES_CONTEXT"
+      ],
+      "context_claim": "FLOW_OPPOSES_CONTEXT",
+      "context_score": 62,
       "tier": "SHIELDED",
       "correlation_group": "LONG:DRIVE",
       "correlation_role": "DUPLICATE",
@@ -1792,12 +1771,12 @@
     {
       "pair": "AAVE/USD",
       "directional_context": "NEUTRAL",
-      "market_type": "DRIVE",
+      "market_type": "PULSE",
       "structure": "CONTESTED",
       "tempo": "STABLE",
       "flow": "NEUTRAL",
       "shield": "CAUTION",
-      "location": "RETEST",
+      "location": "BASE",
       "review_state": "WATCH",
       "reason_codes": [
         "STRUCTURE_CONTESTED"
@@ -1805,7 +1784,7 @@
       "context_claim": "STRUCTURE_CONTESTED",
       "context_score": 3,
       "tier": "SHIELDED",
-      "correlation_group": "NEUTRAL:DRIVE",
+      "correlation_group": "NEUTRAL:PULSE",
       "correlation_role": "DUPLICATE",
       "micro_watchlist": false,
       "micro_state": "OFF"
@@ -1818,7 +1797,7 @@
       "tempo": "STABLE",
       "flow": "NEUTRAL",
       "shield": "CAUTION",
-      "location": "RETEST",
+      "location": "BASE",
       "review_state": "WATCH",
       "reason_codes": [
         "STRUCTURE_CONTESTED"
@@ -1839,7 +1818,7 @@
       "tempo": "STABLE",
       "flow": "NEUTRAL",
       "shield": "CAUTION",
-      "location": "RETEST",
+      "location": "BASE",
       "review_state": "WATCH",
       "reason_codes": [
         "STRUCTURE_CONTESTED"
@@ -1881,7 +1860,7 @@
       "tempo": "STABLE",
       "flow": "NEUTRAL",
       "shield": "CAUTION",
-      "location": "RETEST",
+      "location": "BASE",
       "review_state": "WATCH",
       "reason_codes": [
         "STRUCTURE_CONTESTED"
@@ -1902,7 +1881,7 @@
       "tempo": "STABLE",
       "flow": "NEUTRAL",
       "shield": "CAUTION",
-      "location": "RETEST",
+      "location": "BASE",
       "review_state": "WATCH",
       "reason_codes": [
         "STRUCTURE_CONTESTED"
