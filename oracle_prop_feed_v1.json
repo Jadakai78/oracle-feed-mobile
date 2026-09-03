@@ -1,8 +1,8 @@
 {
   "recordtype": "ORACLEPROPFEED",
-  "generated_at_utc": "2026-09-03T11:00:19Z",
-  "context_generated_at_utc": "2026-09-03T11:00:10Z",
-  "context_age_seconds": 9,
+  "generated_at_utc": "2026-09-03T11:05:25Z",
+  "context_generated_at_utc": "2026-09-03T11:05:21Z",
+  "context_age_seconds": 4,
   "venue": "PROP",
   "universe": "APRIL_12_FIXED",
   "manual_review_only": true,
@@ -16,19 +16,40 @@
   },
   "health": {
     "pair_count": 49,
-    "best_now_count": 19,
+    "best_now_count": 21,
     "watch_needs_trigger_count": 0,
-    "shielded_count": 25,
+    "shielded_count": 23,
     "rejected_context_count": 5,
     "micro_watchlist_count": 4,
     "review_state_counts": {
-      "ARMED": 20,
+      "ARMED": 22,
       "BLOCK": 5,
-      "WATCH": 24
+      "WATCH": 22
     }
   },
   "tiers": {
     "best_now": [
+      {
+        "pair": "ADA/USD",
+        "directional_context": "LONG",
+        "market_type": "PULSE",
+        "structure": "ALIGNED",
+        "tempo": "EXPANDING",
+        "flow": "CONFIRMS",
+        "shield": "CLEAR",
+        "location": "RETEST",
+        "review_state": "ARMED",
+        "reason_codes": [
+          "CONTEXT_CLEAR"
+        ],
+        "context_claim": "CONTEXT_CLEAR",
+        "context_score": 100,
+        "tier": "BEST_NOW",
+        "correlation_group": "LONG:PULSE",
+        "correlation_role": "PRIMARY",
+        "micro_watchlist": true,
+        "micro_state": "ARMED"
+      },
       {
         "pair": "NEAR/USD",
         "directional_context": "LONG",
@@ -88,12 +109,33 @@
         "context_score": 93,
         "tier": "BEST_NOW",
         "correlation_group": "LONG:PULSE",
-        "correlation_role": "PRIMARY",
-        "micro_watchlist": true,
-        "micro_state": "ARMED"
+        "correlation_role": "DUPLICATE",
+        "micro_watchlist": false,
+        "micro_state": "OFF"
       },
       {
         "pair": "AVAX/USD",
+        "directional_context": "LONG",
+        "market_type": "RANGE",
+        "structure": "ALIGNED",
+        "tempo": "STABLE",
+        "flow": "CONFIRMS",
+        "shield": "CLEAR",
+        "location": "BASE",
+        "review_state": "ARMED",
+        "reason_codes": [
+          "CONTEXT_CLEAR"
+        ],
+        "context_claim": "CONTEXT_CLEAR",
+        "context_score": 93,
+        "tier": "BEST_NOW",
+        "correlation_group": "LONG:RANGE",
+        "correlation_role": "DUPLICATE",
+        "micro_watchlist": false,
+        "micro_state": "OFF"
+      },
+      {
+        "pair": "BCH/USD",
         "directional_context": "LONG",
         "market_type": "RANGE",
         "structure": "ALIGNED",
@@ -495,6 +537,27 @@
         "micro_state": "OFF"
       },
       {
+        "pair": "AAVE/USD",
+        "directional_context": "LONG",
+        "market_type": "RANGE",
+        "structure": "CONTESTED",
+        "tempo": "STABLE",
+        "flow": "CONFIRMS",
+        "shield": "CAUTION",
+        "location": "BASE",
+        "review_state": "WATCH",
+        "reason_codes": [
+          "STRUCTURE_CONTESTED"
+        ],
+        "context_claim": "STRUCTURE_CONTESTED",
+        "context_score": 49,
+        "tier": "SHIELDED",
+        "correlation_group": "LONG:RANGE",
+        "correlation_role": "DUPLICATE",
+        "micro_watchlist": false,
+        "micro_state": "OFF"
+      },
+      {
         "pair": "DOT/USD",
         "directional_context": "LONG",
         "market_type": "RANGE",
@@ -727,69 +790,6 @@
         "micro_state": "OFF"
       },
       {
-        "pair": "AAVE/USD",
-        "directional_context": "NEUTRAL",
-        "market_type": "PULSE",
-        "structure": "CONTESTED",
-        "tempo": "STABLE",
-        "flow": "NEUTRAL",
-        "shield": "CAUTION",
-        "location": "BASE",
-        "review_state": "WATCH",
-        "reason_codes": [
-          "STRUCTURE_CONTESTED"
-        ],
-        "context_claim": "STRUCTURE_CONTESTED",
-        "context_score": 3,
-        "tier": "SHIELDED",
-        "correlation_group": "NEUTRAL:PULSE",
-        "correlation_role": "PRIMARY",
-        "micro_watchlist": false,
-        "micro_state": "OFF"
-      },
-      {
-        "pair": "ADA/USD",
-        "directional_context": "NEUTRAL",
-        "market_type": "PULSE",
-        "structure": "CONTESTED",
-        "tempo": "STABLE",
-        "flow": "NEUTRAL",
-        "shield": "CAUTION",
-        "location": "BASE",
-        "review_state": "WATCH",
-        "reason_codes": [
-          "STRUCTURE_CONTESTED"
-        ],
-        "context_claim": "STRUCTURE_CONTESTED",
-        "context_score": 3,
-        "tier": "SHIELDED",
-        "correlation_group": "NEUTRAL:PULSE",
-        "correlation_role": "DUPLICATE",
-        "micro_watchlist": false,
-        "micro_state": "OFF"
-      },
-      {
-        "pair": "BCH/USD",
-        "directional_context": "NEUTRAL",
-        "market_type": "PULSE",
-        "structure": "CONTESTED",
-        "tempo": "STABLE",
-        "flow": "NEUTRAL",
-        "shield": "CAUTION",
-        "location": "RETEST",
-        "review_state": "WATCH",
-        "reason_codes": [
-          "STRUCTURE_CONTESTED"
-        ],
-        "context_claim": "STRUCTURE_CONTESTED",
-        "context_score": 3,
-        "tier": "SHIELDED",
-        "correlation_group": "NEUTRAL:PULSE",
-        "correlation_role": "DUPLICATE",
-        "micro_watchlist": false,
-        "micro_state": "OFF"
-      },
-      {
         "pair": "FET/USD",
         "directional_context": "NEUTRAL",
         "market_type": "PULSE",
@@ -806,7 +806,7 @@
         "context_score": 3,
         "tier": "SHIELDED",
         "correlation_group": "NEUTRAL:PULSE",
-        "correlation_role": "DUPLICATE",
+        "correlation_role": "PRIMARY",
         "micro_watchlist": false,
         "micro_state": "OFF"
       },
@@ -1073,6 +1073,27 @@
   },
   "micro_watchlist": [
     {
+      "pair": "ADA/USD",
+      "directional_context": "LONG",
+      "market_type": "PULSE",
+      "structure": "ALIGNED",
+      "tempo": "EXPANDING",
+      "flow": "CONFIRMS",
+      "shield": "CLEAR",
+      "location": "RETEST",
+      "review_state": "ARMED",
+      "reason_codes": [
+        "CONTEXT_CLEAR"
+      ],
+      "context_claim": "CONTEXT_CLEAR",
+      "context_score": 100,
+      "tier": "BEST_NOW",
+      "correlation_group": "LONG:PULSE",
+      "correlation_role": "PRIMARY",
+      "micro_watchlist": true,
+      "micro_state": "ARMED"
+    },
+    {
       "pair": "NEAR/USD",
       "directional_context": "LONG",
       "market_type": "DRIVE",
@@ -1110,27 +1131,6 @@
       "context_score": 93,
       "tier": "BEST_NOW",
       "correlation_group": "LONG:RANGE",
-      "correlation_role": "PRIMARY",
-      "micro_watchlist": true,
-      "micro_state": "ARMED"
-    },
-    {
-      "pair": "ATOM/USD",
-      "directional_context": "LONG",
-      "market_type": "PULSE",
-      "structure": "ALIGNED",
-      "tempo": "STABLE",
-      "flow": "CONFIRMS",
-      "shield": "CLEAR",
-      "location": "RETEST",
-      "review_state": "ARMED",
-      "reason_codes": [
-        "CONTEXT_CLEAR"
-      ],
-      "context_claim": "CONTEXT_CLEAR",
-      "context_score": 93,
-      "tier": "BEST_NOW",
-      "correlation_group": "LONG:PULSE",
       "correlation_role": "PRIMARY",
       "micro_watchlist": true,
       "micro_state": "ARMED"
@@ -1159,6 +1159,27 @@
   ],
   "cards": [
     {
+      "pair": "ADA/USD",
+      "directional_context": "LONG",
+      "market_type": "PULSE",
+      "structure": "ALIGNED",
+      "tempo": "EXPANDING",
+      "flow": "CONFIRMS",
+      "shield": "CLEAR",
+      "location": "RETEST",
+      "review_state": "ARMED",
+      "reason_codes": [
+        "CONTEXT_CLEAR"
+      ],
+      "context_claim": "CONTEXT_CLEAR",
+      "context_score": 100,
+      "tier": "BEST_NOW",
+      "correlation_group": "LONG:PULSE",
+      "correlation_role": "PRIMARY",
+      "micro_watchlist": true,
+      "micro_state": "ARMED"
+    },
+    {
       "pair": "NEAR/USD",
       "directional_context": "LONG",
       "market_type": "DRIVE",
@@ -1217,12 +1238,33 @@
       "context_score": 93,
       "tier": "BEST_NOW",
       "correlation_group": "LONG:PULSE",
-      "correlation_role": "PRIMARY",
-      "micro_watchlist": true,
-      "micro_state": "ARMED"
+      "correlation_role": "DUPLICATE",
+      "micro_watchlist": false,
+      "micro_state": "OFF"
     },
     {
       "pair": "AVAX/USD",
+      "directional_context": "LONG",
+      "market_type": "RANGE",
+      "structure": "ALIGNED",
+      "tempo": "STABLE",
+      "flow": "CONFIRMS",
+      "shield": "CLEAR",
+      "location": "BASE",
+      "review_state": "ARMED",
+      "reason_codes": [
+        "CONTEXT_CLEAR"
+      ],
+      "context_claim": "CONTEXT_CLEAR",
+      "context_score": 93,
+      "tier": "BEST_NOW",
+      "correlation_group": "LONG:RANGE",
+      "correlation_role": "DUPLICATE",
+      "micro_watchlist": false,
+      "micro_state": "OFF"
+    },
+    {
+      "pair": "BCH/USD",
       "directional_context": "LONG",
       "market_type": "RANGE",
       "structure": "ALIGNED",
@@ -1621,6 +1663,27 @@
       "micro_state": "OFF"
     },
     {
+      "pair": "AAVE/USD",
+      "directional_context": "LONG",
+      "market_type": "RANGE",
+      "structure": "CONTESTED",
+      "tempo": "STABLE",
+      "flow": "CONFIRMS",
+      "shield": "CAUTION",
+      "location": "BASE",
+      "review_state": "WATCH",
+      "reason_codes": [
+        "STRUCTURE_CONTESTED"
+      ],
+      "context_claim": "STRUCTURE_CONTESTED",
+      "context_score": 49,
+      "tier": "SHIELDED",
+      "correlation_group": "LONG:RANGE",
+      "correlation_role": "DUPLICATE",
+      "micro_watchlist": false,
+      "micro_state": "OFF"
+    },
+    {
       "pair": "DOT/USD",
       "directional_context": "LONG",
       "market_type": "RANGE",
@@ -1853,69 +1916,6 @@
       "micro_state": "OFF"
     },
     {
-      "pair": "AAVE/USD",
-      "directional_context": "NEUTRAL",
-      "market_type": "PULSE",
-      "structure": "CONTESTED",
-      "tempo": "STABLE",
-      "flow": "NEUTRAL",
-      "shield": "CAUTION",
-      "location": "BASE",
-      "review_state": "WATCH",
-      "reason_codes": [
-        "STRUCTURE_CONTESTED"
-      ],
-      "context_claim": "STRUCTURE_CONTESTED",
-      "context_score": 3,
-      "tier": "SHIELDED",
-      "correlation_group": "NEUTRAL:PULSE",
-      "correlation_role": "PRIMARY",
-      "micro_watchlist": false,
-      "micro_state": "OFF"
-    },
-    {
-      "pair": "ADA/USD",
-      "directional_context": "NEUTRAL",
-      "market_type": "PULSE",
-      "structure": "CONTESTED",
-      "tempo": "STABLE",
-      "flow": "NEUTRAL",
-      "shield": "CAUTION",
-      "location": "BASE",
-      "review_state": "WATCH",
-      "reason_codes": [
-        "STRUCTURE_CONTESTED"
-      ],
-      "context_claim": "STRUCTURE_CONTESTED",
-      "context_score": 3,
-      "tier": "SHIELDED",
-      "correlation_group": "NEUTRAL:PULSE",
-      "correlation_role": "DUPLICATE",
-      "micro_watchlist": false,
-      "micro_state": "OFF"
-    },
-    {
-      "pair": "BCH/USD",
-      "directional_context": "NEUTRAL",
-      "market_type": "PULSE",
-      "structure": "CONTESTED",
-      "tempo": "STABLE",
-      "flow": "NEUTRAL",
-      "shield": "CAUTION",
-      "location": "RETEST",
-      "review_state": "WATCH",
-      "reason_codes": [
-        "STRUCTURE_CONTESTED"
-      ],
-      "context_claim": "STRUCTURE_CONTESTED",
-      "context_score": 3,
-      "tier": "SHIELDED",
-      "correlation_group": "NEUTRAL:PULSE",
-      "correlation_role": "DUPLICATE",
-      "micro_watchlist": false,
-      "micro_state": "OFF"
-    },
-    {
       "pair": "FET/USD",
       "directional_context": "NEUTRAL",
       "market_type": "PULSE",
@@ -1932,7 +1932,7 @@
       "context_score": 3,
       "tier": "SHIELDED",
       "correlation_group": "NEUTRAL:PULSE",
-      "correlation_role": "DUPLICATE",
+      "correlation_role": "PRIMARY",
       "micro_watchlist": false,
       "micro_state": "OFF"
     },
