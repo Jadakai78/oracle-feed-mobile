@@ -143,7 +143,7 @@
       border: 1px solid rgba(255, 255, 255, 0.05);
       border-radius: 8px;
       padding: 8px;
-      margin: 8px 0;
+      margin: 6px 0;
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 6px;
@@ -151,6 +151,19 @@
     .p-item { font-size: 11px; }
     .p-item .lbl { color: var(--muted); }
     .p-item .val { font-weight: 700; color: var(--text); }
+
+    .targets-box {
+      background: rgba(34, 211, 238, 0.05);
+      border: 1px solid rgba(34, 211, 238, 0.2);
+      border-radius: 8px;
+      padding: 8px;
+      margin: 6px 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .targets-box .val-sl { font-weight: 800; color: var(--bad); }
+    .targets-box .val-tp { font-weight: 800; color: var(--good); }
 
     .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
     .tag {
@@ -192,7 +205,7 @@
   <header>
     <div>
       <div class="brand-title"><span class="dot"></span> Oracle Quantitative Engine</div>
-      <div style="color:var(--muted); font-size:12px; margin-top:2px;" id="timestamp-hdr">Syncing local joined feed artifact...</div>
+      <div style="color:var(--muted); font-size:12px; margin-top:2px;" id="timestamp-hdr">Loading Oracle joined feed...</div>
     </div>
     <div class="status-badge">NO TRADE AUTHORIZATION (MANUAL REVIEW)</div>
   </header>
@@ -222,6 +235,22 @@
 let joinedData = [];
 let currentTab = 'all';
 
+function extractSpeedPhase(speedObj) {
+  if (!speedObj) return 'N/A';
+  if (typeof speedObj === 'string') return speedObj;
+  if (typeof speedObj === 'object') {
+    return speedObj.phase || speedObj.speed_phase || speedObj.name || JSON.stringify(speedObj);
+  }
+  return String(speedObj);
+}
+
+function parsePrice(val) {
+  if (val === undefined || val === null || val === 'N/A') return 'N/A';
+  const num = Number(val);
+  if (isNaN(num)) return 'N/A';
+  return `$${num.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}`;
+}
+
 async function fetchFeed() {
   try {
     const res = await fetch('./oracle_joined_delta_prism_v1.json?ts=' + Date.now());
@@ -231,18 +260,18 @@ async function fetchFeed() {
     joinedData = payload.joined_data || [];
     
     document.getElementById('timestamp-hdr').textContent = 
-      `Joined Feed: ${payload.join_status} | Cards: ${payload.total_cards_evaluated} | Exact Matches: ${payload.exact_timestamp_matches}`;
+      `Joined Feed: ${payload.join_status} | Cards: ${payload.total_cards_evaluated} | Matches: ${payload.exact_timestamp_matches}`;
     
     document.getElementById('st-total').textContent = payload.total_cards_evaluated || 0;
     document.getElementById('st-matched').textContent = payload.exact_timestamp_matches || 0;
-    document.getElementById('st-active').textContent = 0; // Guardrail strictly enforced
+    document.getElementById('st-active').textContent = 0;
     document.getElementById('st-gated').textContent = payload.total_cards_evaluated || 0;
 
     renderCards();
   } catch (err) {
     document.getElementById('timestamp-hdr').textContent = 'Feed unavailable: ' + err.message;
     document.getElementById('cards-grid').innerHTML = 
-      `<div class="empty-state">Unable to load oracle_joined_delta_prism_v1.json.<br>Ensure master pipeline has executed.</div>`;
+      `<div class="empty-state">Unable to load feed artifact.<br>Check pipeline publisher status.</div>`;
   }
 }
 
@@ -285,10 +314,16 @@ function renderCards() {
     const pair = item.pair || 'UNKNOWN';
     const dir = dt.direction || 'NEUTRAL';
     
-    const closePrice = prismBar.close ? `$${Number(prismBar.close).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}` : 'N/A';
-    const highPrice = prismBar.high ? `$${Number(prismBar.high).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}` : 'N/A';
-    const lowPrice = prismBar.low ? `$${Number(prismBar.low).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}` : 'N/A';
+    const speedDisplay = extractSpeedPhase(dt.speed_phase);
+    
+    const closePrice = parsePrice(prismBar.close);
+    const highPrice = parsePrice(prismBar.high);
+    const lowPrice = parsePrice(prismBar.low);
     const volume = prismBar.volume ? Number(prismBar.volume).toFixed(2) : 'N/A';
+
+    // Extraction of Risk Levels (SL / TP)
+    const sl = parsePrice(card.stop_loss || card.sl || (dir === 'SHORT' ? prismBar.high : prismBar.low));
+    const tp = parsePrice(card.take_profit || card.tp || (dir === 'SHORT' ? (prismBar.close * 0.98) : (prismBar.close * 1.02)));
 
     return `
       <article class="card">
@@ -308,16 +343,20 @@ function renderCards() {
             <div class="p-item"><span class="lbl">15m Low:</span> <span class="val">${lowPrice}</span></div>
           </div>
 
+          <div class="targets-box">
+            <div class="p-item"><span class="lbl">Stop Loss (SL):</span> <span class="val-sl">${sl}</span></div>
+            <div class="p-item"><span class="lbl">Take Profit (TP):</span> <span class="val-tp">${tp}</span></div>
+          </div>
+
           <div class="tags">
-            <span class="tag highlight">SPEED: ${dt.speed_phase || 'N/A'}</span>
+            <span class="tag highlight">SPEED: ${speedDisplay}</span>
             <span class="tag">STATE: ${dt.state || 'OK'}</span>
             ${item.timestamp_matched ? '<span class="tag" style="border-color:var(--good); color:var(--good);">EXACT MATCH</span>' : '<span class="tag warn">FALLBACK MATCH</span>'}
-            <span class="tag">EPOCH: ${item.reference_bar_epoch}</span>
           </div>
         </div>
 
         <div class="card-foot">
-          <span>Bar: ${item.reference_bar_raw || 'N/A'}</span>
+          <span>Time: ${item.reference_bar_raw || 'N/A'}</span>
           <span style="color:var(--bad); font-weight:700;">MANUAL REVIEW</span>
         </div>
       </article>
