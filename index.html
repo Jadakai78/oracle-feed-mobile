@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Oracle Quantitative Engine - Mobile Command Center</title>
+  <title>Oracle Quantitative Engine - Execution Center</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
     :root {
@@ -16,7 +16,6 @@
       --warn: #ffc857;
       --bad: #ff5370;
       --blue: #539bf5;
-      --purple: #9d7cd8;
       --accent: #22d3ee;
     }
     * { box-sizing: border-box; }
@@ -45,32 +44,20 @@
     }
     .brand-title { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); display: flex; align-items: center; gap: 8px; }
     .brand-title .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); display: inline-block; box-shadow: 0 0 8px var(--good); }
-    .status-badge {
-      background: rgba(255, 83, 112, 0.15);
-      border: 1px solid var(--bad);
-      color: var(--bad);
-      font-weight: 700;
-      font-size: 11px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .stats-bar {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-    .stat-card {
-      background: var(--panel);
+    
+    .tier-indicator {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 6px 14px;
+      border-radius: 8px;
       border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 10px 12px;
+      font-weight: 700;
+      font-size: 12px;
     }
-    .stat-card .label { font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.04em; }
-    .stat-card .value { font-size: 18px; font-weight: 800; margin-top: 2px; }
+    .tier-stat { display: flex; align-items: center; gap: 6px; }
+    .tier-dot { width: 8px; height: 8px; border-radius: 50%; }
 
     .controls {
       display: flex;
@@ -85,16 +72,19 @@
       background: var(--panel);
       border: 1px solid var(--line);
       color: var(--muted);
-      padding: 6px 14px;
+      padding: 8px 16px;
       border-radius: 20px;
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       white-space: nowrap;
       transition: all 0.15s ease;
     }
     .tab:hover { background: var(--panel-hover); color: var(--text); }
     .tab.active { background: var(--blue); color: #000; border-color: var(--blue); }
+    .tab.execute-tab.active { background: var(--good); color: #000; border-color: var(--good); }
+    .tab.watch-tab.active { background: var(--warn); color: #000; border-color: var(--warn); }
+    .tab.dead-tab.active { background: var(--bad); color: #fff; border-color: var(--bad); }
 
     .search-input {
       background: var(--panel);
@@ -120,14 +110,17 @@
       border-radius: 12px;
       padding: 12px 14px;
       position: relative;
-      transition: transform 0.15s ease, border-color 0.15s ease;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
     }
-    .card:hover { border-color: var(--blue); transform: translateY(-1px); }
+    .card.EXECUTE { border-color: var(--good); box-shadow: 0 0 10px rgba(61, 220, 151, 0.15); }
+    .card.WATCH { border-color: rgba(255, 200, 87, 0.4); }
+    .card.DEAD { opacity: 0.6; }
+
     .card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
     .pair-name { font-size: 16px; font-weight: 800; letter-spacing: -0.01em; }
+    
     .dir-badge {
       font-size: 11px;
       font-weight: 800;
@@ -176,7 +169,6 @@
       color: var(--muted);
     }
     .tag.highlight { border-color: var(--accent); color: var(--accent); }
-    .tag.warn { border-color: var(--warn); color: var(--warn); }
 
     .card-foot {
       margin-top: 8px;
@@ -186,17 +178,21 @@
       justify-content: space-between;
       align-items: center;
       font-size: 11px;
-      color: var(--muted);
     }
+    .tier-tag-execute { color: var(--good); font-weight: 800; }
+    .tier-tag-watch { color: var(--warn); font-weight: 700; }
+    .tier-tag-dead { color: var(--bad); font-weight: 600; }
 
     .empty-state {
       grid-column: 1 / -1;
-      padding: 30px;
+      padding: 50px 20px;
       text-align: center;
       background: var(--panel);
       border: 1px dashed var(--line);
       border-radius: 12px;
       color: var(--muted);
+      font-weight: 600;
+      font-size: 14px;
     }
   </style>
 </head>
@@ -204,28 +200,25 @@
 <div class="wrap">
   <header>
     <div>
-      <div class="brand-title"><span class="dot"></span> Oracle Quantitative Engine</div>
-      <div style="color:var(--muted); font-size:12px; margin-top:2px;" id="timestamp-hdr">Loading Oracle joined feed...</div>
+      <div class="brand-title"><span class="dot"></span> Oracle Trade Execution Hub</div>
+      <div style="color:var(--muted); font-size:12px; margin-top:2px;" id="timestamp-hdr">Syncing PRISM stream...</div>
     </div>
-    <div class="status-badge">NO TRADE AUTHORIZATION (MANUAL REVIEW)</div>
+    
+    <div class="tier-indicator">
+      <div class="tier-stat"><span class="tier-dot" style="background:var(--good)"></span> EXECUTE NOW: <span id="cnt-execute" style="color:var(--good)">0</span></div>
+      <div class="tier-stat"><span class="tier-dot" style="background:var(--warn)"></span> WATCHING: <span id="cnt-watch" style="color:var(--warn)">0</span></div>
+      <div class="tier-stat"><span class="tier-dot" style="background:var(--bad)"></span> INACTIVE: <span id="cnt-dead" style="color:var(--bad)">0</span></div>
+    </div>
   </header>
-
-  <div class="stats-bar" id="stats-bar">
-    <div class="stat-card"><div class="label">Total Cards</div><div class="value" id="st-total">0</div></div>
-    <div class="stat-card"><div class="label">Time Matched</div><div class="value" id="st-matched" style="color:var(--good)">0</div></div>
-    <div class="stat-card"><div class="label">Active Signals</div><div class="value" id="st-active" style="color:var(--warn)">0</div></div>
-    <div class="stat-card"><div class="label">Gated / Deferred</div><div class="value" id="st-gated" style="color:var(--bad)">0</div></div>
-  </div>
 
   <div class="controls">
     <div class="tabs">
-      <button class="tab active" onclick="filterTab('all', this)">All Candidates</button>
-      <button class="tab" onclick="filterTab('matched', this)">Exact Time Match</button>
-      <button class="tab" onclick="filterTab('longs', this)">Long Setup</button>
-      <button class="tab" onclick="filterTab('shorts', this)">Short Setup</button>
-      <button class="tab" onclick="filterTab('unmatched', this)">Unmatched / Fallback</button>
+      <button class="tab execute-tab active" onclick="filterTab('EXECUTE', this)">EXECUTE NOW (<span id="tab-cnt-execute">0</span>)</button>
+      <button class="tab watch-tab" onclick="filterTab('WATCH', this)">WATCH / IMPROVING (<span id="tab-cnt-watch">0</span>)</button>
+      <button class="tab dead-tab" onclick="filterTab('DEAD', this)">DEAD / BAD SETUPS (<span id="tab-cnt-dead">0</span>)</button>
+      <button class="tab" onclick="filterTab('ALL', this)">ALL CANDIDATES</button>
     </div>
-    <input type="text" id="search" class="search-input" placeholder="Search Pair (e.g. SOL)..." oninput="renderCards()">
+    <input type="text" id="search" class="search-input" placeholder="Filter Pair..." oninput="renderCards()">
   </div>
 
   <div class="grid" id="cards-grid"></div>
@@ -233,15 +226,36 @@
 
 <script>
 let joinedData = [];
-let currentTab = 'all';
+let currentTab = 'EXECUTE';
 
 function extractSpeedPhase(speedObj) {
   if (!speedObj) return 'N/A';
   if (typeof speedObj === 'string') return speedObj;
   if (typeof speedObj === 'object') {
-    return speedObj.phase || speedObj.speed_phase || speedObj.name || JSON.stringify(speedObj);
+    return speedObj.phase || speedObj.speed_phase || speedObj.name || 'UNKNOWN';
   }
   return String(speedObj);
+}
+
+function classifyTier(item) {
+  const card = item.card_payload || {};
+  const dt = card.delta_tempo_timing || {};
+  const phase = extractSpeedPhase(dt.speed_phase).toUpperCase();
+  const matched = item.timestamp_matched;
+  const state = (dt.state || '').toUpperCase();
+
+  // Tier 1: EXECUTE NOW - High volume match + Accelerating speed
+  if (matched && (phase === 'ACCELERATING' || phase === 'IMPULSE') && state !== 'GATED') {
+    return 'EXECUTE';
+  }
+  
+  // Tier 2: WATCH / IMPROVING - Matched or forming setup with pullback/decay
+  if (matched || phase === 'IMPULSE_DECAY' || phase === 'PULLBACK' || state === 'AVAILABLE') {
+    return 'WATCH';
+  }
+
+  // Tier 3: DEAD / BAD
+  return 'DEAD';
 }
 
 function parsePrice(val) {
@@ -260,19 +274,36 @@ async function fetchFeed() {
     joinedData = payload.joined_data || [];
     
     document.getElementById('timestamp-hdr').textContent = 
-      `Joined Feed: ${payload.join_status} | Cards: ${payload.total_cards_evaluated} | Matches: ${payload.exact_timestamp_matches}`;
-    
-    document.getElementById('st-total').textContent = payload.total_cards_evaluated || 0;
-    document.getElementById('st-matched').textContent = payload.exact_timestamp_matches || 0;
-    document.getElementById('st-active').textContent = 0;
-    document.getElementById('st-gated').textContent = payload.total_cards_evaluated || 0;
+      `PRISM Feed Active | Evaluated ${payload.total_cards_evaluated} Cards`;
 
+    updateCounters();
     renderCards();
   } catch (err) {
-    document.getElementById('timestamp-hdr').textContent = 'Feed unavailable: ' + err.message;
+    document.getElementById('timestamp-hdr').textContent = 'Feed offline: ' + err.message;
     document.getElementById('cards-grid').innerHTML = 
-      `<div class="empty-state">Unable to load feed artifact.<br>Check pipeline publisher status.</div>`;
+      `<div class="empty-state">Unable to load active trading stream.</div>`;
   }
+}
+
+function updateCounters() {
+  let executeCount = 0;
+  let watchCount = 0;
+  let deadCount = 0;
+
+  joinedData.forEach(item => {
+    const tier = classifyTier(item);
+    if (tier === 'EXECUTE') executeCount++;
+    else if (tier === 'WATCH') watchCount++;
+    else deadCount++;
+  });
+
+  document.getElementById('cnt-execute').textContent = executeCount;
+  document.getElementById('cnt-watch').textContent = watchCount;
+  document.getElementById('cnt-dead').textContent = deadCount;
+
+  document.getElementById('tab-cnt-execute').textContent = executeCount;
+  document.getElementById('tab-cnt-watch').textContent = watchCount;
+  document.getElementById('tab-cnt-dead').textContent = deadCount;
 }
 
 function filterTab(tab, el) {
@@ -287,23 +318,21 @@ function renderCards() {
   const search = document.getElementById('search').value.toUpperCase().trim();
 
   const filtered = joinedData.filter(item => {
-    const card = item.card_payload || {};
     const pair = (item.pair || '').toUpperCase();
-    const dir = (card.delta_tempo_timing?.direction || '').toUpperCase();
-    const matched = item.timestamp_matched;
+    const tier = classifyTier(item);
 
     if (search && !pair.includes(search)) return false;
-
-    if (currentTab === 'matched') return matched;
-    if (currentTab === 'unmatched') return !matched;
-    if (currentTab === 'longs') return dir === 'LONG';
-    if (currentTab === 'shorts') return dir === 'SHORT';
+    if (currentTab !== 'ALL' && tier !== currentTab) return false;
 
     return true;
   });
 
   if (!filtered.length) {
-    grid.innerHTML = `<div class="empty-state">No candidate cards match current filters.</div>`;
+    if (currentTab === 'EXECUTE') {
+      grid.innerHTML = `<div class="empty-state">No Executable Signals Available<br><span style="font-size:12px; font-weight:400; color:var(--muted)">All candidates currently in Watch or Inactive tiers.</span></div>`;
+    } else {
+      grid.innerHTML = `<div class="empty-state">No candidates match current tier filter.</div>`;
+    }
     return;
   }
 
@@ -313,6 +342,7 @@ function renderCards() {
     const dt = card.delta_tempo_timing || {};
     const pair = item.pair || 'UNKNOWN';
     const dir = dt.direction || 'NEUTRAL';
+    const tier = classifyTier(item);
     
     const speedDisplay = extractSpeedPhase(dt.speed_phase);
     
@@ -321,12 +351,16 @@ function renderCards() {
     const lowPrice = parsePrice(prismBar.low);
     const volume = prismBar.volume ? Number(prismBar.volume).toFixed(2) : 'N/A';
 
-    // Extraction of Risk Levels (SL / TP)
+    // Risk targets
     const sl = parsePrice(card.stop_loss || card.sl || (dir === 'SHORT' ? prismBar.high : prismBar.low));
     const tp = parsePrice(card.take_profit || card.tp || (dir === 'SHORT' ? (prismBar.close * 0.98) : (prismBar.close * 1.02)));
 
+    let tierLabel = '<span class="tier-tag-execute">● READY TO EXECUTE</span>';
+    if (tier === 'WATCH') tierLabel = '<span class="tier-tag-watch">▲ WATCHING / FORMING</span>';
+    if (tier === 'DEAD') tierLabel = '<span class="tier-tag-dead">✕ INACTIVE / DEAD</span>';
+
     return `
-      <article class="card">
+      <article class="card ${tier}">
         <div>
           <div class="card-head">
             <div>
@@ -351,13 +385,12 @@ function renderCards() {
           <div class="tags">
             <span class="tag highlight">SPEED: ${speedDisplay}</span>
             <span class="tag">STATE: ${dt.state || 'OK'}</span>
-            ${item.timestamp_matched ? '<span class="tag" style="border-color:var(--good); color:var(--good);">EXACT MATCH</span>' : '<span class="tag warn">FALLBACK MATCH</span>'}
           </div>
         </div>
 
         <div class="card-foot">
-          <span>Time: ${item.reference_bar_raw || 'N/A'}</span>
-          <span style="color:var(--bad); font-weight:700;">MANUAL REVIEW</span>
+          <span>Bar: ${item.reference_bar_raw || 'N/A'}</span>
+          ${tierLabel}
         </div>
       </article>
     `;
