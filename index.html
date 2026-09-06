@@ -2,21 +2,21 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Oracle Quantitative Engine - Execution Center</title>
+  <title>Oracle Terminal - Direct Execution Engine</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
     :root {
-      --bg: #090d14;
-      --panel: #111823;
-      --panel-hover: #172130;
-      --line: #223044;
+      --bg: #070a0f;
+      --panel: #0d131d;
+      --panel-hover: #131b29;
+      --line: #1c283c;
       --text: #e6f0ff;
-      --muted: #8ca0ba;
-      --good: #3ddc97;
-      --warn: #ffc857;
-      --bad: #ff5370;
-      --blue: #539bf5;
-      --accent: #22d3ee;
+      --muted: #7a8fa8;
+      --good: #00e676;
+      --warn: #ffb300;
+      --bad: #ff1744;
+      --blue: #29b6f6;
+      --accent: #00e5ff;
     }
     * { box-sizing: border-box; }
     body {
@@ -41,7 +41,13 @@
       padding: 12px 16px;
       margin-bottom: 12px;
       gap: 10px;
+      transition: border-color 0.3s ease;
     }
+    header.alert-active {
+      border-color: var(--good);
+      box-shadow: 0 0 15px rgba(0, 230, 118, 0.25);
+    }
+    
     .brand-title { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); display: flex; align-items: center; gap: 8px; }
     .brand-title .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); display: inline-block; box-shadow: 0 0 8px var(--good); }
     
@@ -49,7 +55,7 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      background: rgba(0, 0, 0, 0.3);
+      background: rgba(0, 0, 0, 0.4);
       padding: 6px 14px;
       border-radius: 8px;
       border: 1px solid var(--line);
@@ -114,9 +120,9 @@
       flex-direction: column;
       justify-content: space-between;
     }
-    .card.EXECUTE { border-color: var(--good); box-shadow: 0 0 10px rgba(61, 220, 151, 0.15); }
-    .card.WATCH { border-color: rgba(255, 200, 87, 0.4); }
-    .card.DEAD { opacity: 0.6; }
+    .card.EXECUTE { border-color: var(--good); box-shadow: 0 0 12px rgba(0, 230, 118, 0.2); }
+    .card.WATCH { border-color: rgba(255, 179, 0, 0.4); }
+    .card.DEAD { opacity: 0.55; }
 
     .card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
     .pair-name { font-size: 16px; font-weight: 800; letter-spacing: -0.01em; }
@@ -128,11 +134,11 @@
       border-radius: 4px;
       text-transform: uppercase;
     }
-    .dir-badge.LONG { background: rgba(61, 220, 151, 0.15); color: var(--good); border: 1px solid rgba(61, 220, 151, 0.3); }
-    .dir-badge.SHORT { background: rgba(255, 83, 112, 0.15); color: var(--bad); border: 1px solid rgba(255, 83, 112, 0.3); }
+    .dir-badge.LONG { background: rgba(0, 230, 118, 0.15); color: var(--good); border: 1px solid rgba(0, 230, 118, 0.3); }
+    .dir-badge.SHORT { background: rgba(255, 23, 68, 0.15); color: var(--bad); border: 1px solid rgba(255, 23, 68, 0.3); }
 
     .prism-box {
-      background: rgba(0, 0, 0, 0.25);
+      background: rgba(0, 0, 0, 0.3);
       border: 1px solid rgba(255, 255, 255, 0.05);
       border-radius: 8px;
       padding: 8px;
@@ -146,17 +152,19 @@
     .p-item .val { font-weight: 700; color: var(--text); }
 
     .targets-box {
-      background: rgba(34, 211, 238, 0.05);
-      border: 1px solid rgba(34, 211, 238, 0.2);
+      background: rgba(0, 229, 255, 0.04);
+      border: 1px solid rgba(0, 229, 255, 0.2);
       border-radius: 8px;
       padding: 8px;
       margin: 6px 0;
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 4px;
+      align-items: center;
     }
     .targets-box .val-sl { font-weight: 800; color: var(--bad); }
     .targets-box .val-tp { font-weight: 800; color: var(--good); }
+    .targets-box .val-rr { font-weight: 800; color: var(--accent); }
 
     .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
     .tag {
@@ -169,6 +177,8 @@
       color: var(--muted);
     }
     .tag.highlight { border-color: var(--accent); color: var(--accent); }
+    .tag.age-fresh { border-color: var(--good); color: var(--good); }
+    .tag.age-stale { border-color: var(--bad); color: var(--bad); }
 
     .card-foot {
       margin-top: 8px;
@@ -179,9 +189,22 @@
       align-items: center;
       font-size: 11px;
     }
-    .tier-tag-execute { color: var(--good); font-weight: 800; }
-    .tier-tag-watch { color: var(--warn); font-weight: 700; }
-    .tier-tag-dead { color: var(--bad); font-weight: 600; }
+    
+    .btn-exec {
+      background: var(--good);
+      color: #000;
+      border: none;
+      font-weight: 800;
+      font-size: 11px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+    .btn-exec:hover { transform: scale(1.03); box-shadow: 0 0 10px rgba(0, 230, 118, 0.4); }
+    .btn-exec:active { transform: scale(0.97); }
 
     .empty-state {
       grid-column: 1 / -1;
@@ -198,16 +221,16 @@
 </head>
 <body>
 <div class="wrap">
-  <header>
+  <header id="main-header">
     <div>
-      <div class="brand-title"><span class="dot"></span> Oracle Trade Execution Hub</div>
-      <div style="color:var(--muted); font-size:12px; margin-top:2px;" id="timestamp-hdr">Syncing PRISM stream...</div>
+      <div class="brand-title"><span class="dot"></span> Oracle Terminal Engine</div>
+      <div style="color:var(--muted); font-size:12px; margin-top:2px;" id="timestamp-hdr">Connecting feed...</div>
     </div>
     
     <div class="tier-indicator">
-      <div class="tier-stat"><span class="tier-dot" style="background:var(--good)"></span> EXECUTE NOW: <span id="cnt-execute" style="color:var(--good)">0</span></div>
-      <div class="tier-stat"><span class="tier-dot" style="background:var(--warn)"></span> WATCHING: <span id="cnt-watch" style="color:var(--warn)">0</span></div>
-      <div class="tier-stat"><span class="tier-dot" style="background:var(--bad)"></span> INACTIVE: <span id="cnt-dead" style="color:var(--bad)">0</span></div>
+      <div class="tier-stat"><span class="tier-dot" style="background:var(--good)"></span> EXECUTE: <span id="cnt-execute" style="color:var(--good)">0</span></div>
+      <div class="tier-stat"><span class="tier-dot" style="background:var(--warn)"></span> WATCH: <span id="cnt-watch" style="color:var(--warn)">0</span></div>
+      <div class="tier-stat"><span class="tier-dot" style="background:var(--bad)"></span> DEAD: <span id="cnt-dead" style="color:var(--bad)">0</span></div>
     </div>
   </header>
 
@@ -227,6 +250,28 @@
 <script>
 let joinedData = [];
 let currentTab = 'EXECUTE';
+let prevExecuteCount = 0;
+let lastFeedTimestamp = 0;
+
+// Webhook Configuration (Replace with your actual webhook or broker endpoint if desired)
+const WEBHOOK_URL = ""; 
+
+function playAlertSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, ctx.currentTime); // A5 note
+    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.25);
+  } catch (e) {
+    console.log("Audio alert suppressed by browser security policy.");
+  }
+}
 
 function extractSpeedPhase(speedObj) {
   if (!speedObj) return 'N/A';
@@ -244,25 +289,90 @@ function classifyTier(item) {
   const matched = item.timestamp_matched;
   const state = (dt.state || '').toUpperCase();
 
-  // Tier 1: EXECUTE NOW - High volume match + Accelerating speed
   if (matched && (phase === 'ACCELERATING' || phase === 'IMPULSE') && state !== 'GATED') {
     return 'EXECUTE';
   }
-  
-  // Tier 2: WATCH / IMPROVING - Matched or forming setup with pullback/decay
   if (matched || phase === 'IMPULSE_DECAY' || phase === 'PULLBACK' || state === 'AVAILABLE') {
     return 'WATCH';
   }
-
-  // Tier 3: DEAD / BAD
   return 'DEAD';
 }
 
-function parsePrice(val) {
-  if (val === undefined || val === null || val === 'N/A') return 'N/A';
+function parsePriceNum(val) {
+  if (val === undefined || val === null) return 0;
   const num = Number(val);
-  if (isNaN(num)) return 'N/A';
+  return isNaN(num) ? 0 : num;
+}
+
+function parsePrice(val) {
+  const num = parsePriceNum(val);
+  if (num === 0) return 'N/A';
   return `$${num.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}`;
+}
+
+function calcRiskReward(close, sl, tp, dir) {
+  if (!close || !sl || !tp) return 'N/A';
+  let risk = 0, reward = 0;
+  if (dir === 'SHORT') {
+    risk = sl - close;
+    reward = close - tp;
+  } else {
+    risk = close - sl;
+    reward = tp - close;
+  }
+  if (risk <= 0 || reward <= 0) return '1:1.0';
+  const ratio = (reward / risk).toFixed(1);
+  return `1:${ratio}`;
+}
+
+function calculateBarAge(item) {
+  if (!item.reference_bar_raw) return { text: 'N/A', isFresh: false };
+  const barTime = new Date(item.reference_bar_raw).getTime();
+  if (isNaN(barTime)) return { text: 'N/A', isFresh: false };
+  
+  const diffSec = Math.floor((Date.now() - barTime) / 1000);
+  if (diffSec < 0) return { text: '0s ago', isFresh: true };
+  
+  const mins = Math.floor(diffSec / 60);
+  const secs = diffSec % 60;
+  const isFresh = diffSec < 900; // Fresh within 15 minutes
+  
+  return {
+    text: mins > 0 ? `${mins}m ${secs}s ago` : `${secs}s ago`,
+    isFresh
+  };
+}
+
+async function triggerTradeExecution(pair, dir, entry, sl, tp) {
+  const payload = {
+    event: "ORACLE_EXECUTE_SIGNAL",
+    pair,
+    direction: dir,
+    entry_price: entry,
+    stop_loss: sl,
+    take_profit: tp,
+    timestamp: new Date().toISOString()
+  };
+
+  if (!WEBHOOK_URL) {
+    alert(`[SIMULATION] Trade Executed!\n\nPair: ${pair}\nDirection: ${dir}\nEntry: ${entry}\nSL: ${sl}\nTP: ${tp}`);
+    return;
+  }
+
+  try {
+    const res = await fetch(WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      alert(`[SUCCESS] Webhook Order Sent for ${pair}!`);
+    } else {
+      alert(`[ERROR] Execution failed with status ${res.status}`);
+    }
+  } catch (e) {
+    alert(`[ERROR] Webhook target unreachable: ${e.message}`);
+  }
 }
 
 async function fetchFeed() {
@@ -272,16 +382,15 @@ async function fetchFeed() {
     const payload = await res.json();
     
     joinedData = payload.joined_data || [];
+    lastFeedTimestamp = Date.now();
     
     document.getElementById('timestamp-hdr').textContent = 
-      `PRISM Feed Active | Evaluated ${payload.total_cards_evaluated} Cards`;
+      `Stream Active | Evaluated ${payload.total_cards_evaluated} Candidates`;
 
     updateCounters();
     renderCards();
   } catch (err) {
-    document.getElementById('timestamp-hdr').textContent = 'Feed offline: ' + err.message;
-    document.getElementById('cards-grid').innerHTML = 
-      `<div class="empty-state">Unable to load active trading stream.</div>`;
+    document.getElementById('timestamp-hdr').textContent = 'Feed Offline: ' + err.message;
   }
 }
 
@@ -296,6 +405,15 @@ function updateCounters() {
     else if (tier === 'WATCH') watchCount++;
     else deadCount++;
   });
+
+  const header = document.getElementById('main-header');
+  if (executeCount > 0) {
+    header.classList.add('alert-active');
+    if (executeCount > prevExecuteCount) playAlertSound();
+  } else {
+    header.classList.remove('alert-active');
+  }
+  prevExecuteCount = executeCount;
 
   document.getElementById('cnt-execute').textContent = executeCount;
   document.getElementById('cnt-watch').textContent = watchCount;
@@ -328,11 +446,9 @@ function renderCards() {
   });
 
   if (!filtered.length) {
-    if (currentTab === 'EXECUTE') {
-      grid.innerHTML = `<div class="empty-state">No Executable Signals Available<br><span style="font-size:12px; font-weight:400; color:var(--muted)">All candidates currently in Watch or Inactive tiers.</span></div>`;
-    } else {
-      grid.innerHTML = `<div class="empty-state">No candidates match current tier filter.</div>`;
-    }
+    grid.innerHTML = currentTab === 'EXECUTE' 
+      ? `<div class="empty-state">No Executable Signals Available<br><span style="font-size:12px; font-weight:400; color:var(--muted)">All candidates currently in Watch or Inactive tiers.</span></div>`
+      : `<div class="empty-state">No candidates match current tier filter.</div>`;
     return;
   }
 
@@ -345,19 +461,23 @@ function renderCards() {
     const tier = classifyTier(item);
     
     const speedDisplay = extractSpeedPhase(dt.speed_phase);
-    
-    const closePrice = parsePrice(prismBar.close);
-    const highPrice = parsePrice(prismBar.high);
-    const lowPrice = parsePrice(prismBar.low);
+    const closeNum = parsePriceNum(prismBar.close);
+    const highNum = parsePriceNum(prismBar.high);
+    const lowNum = parsePriceNum(prismBar.low);
+
+    const closePrice = parsePrice(closeNum);
+    const highPrice = parsePrice(highNum);
+    const lowPrice = parsePrice(lowNum);
     const volume = prismBar.volume ? Number(prismBar.volume).toFixed(2) : 'N/A';
 
-    // Risk targets
-    const sl = parsePrice(card.stop_loss || card.sl || (dir === 'SHORT' ? prismBar.high : prismBar.low));
-    const tp = parsePrice(card.take_profit || card.tp || (dir === 'SHORT' ? (prismBar.close * 0.98) : (prismBar.close * 1.02)));
+    const rawSl = card.stop_loss || card.sl || (dir === 'SHORT' ? highNum : lowNum);
+    const rawTp = card.take_profit || card.tp || (dir === 'SHORT' ? (closeNum * 0.98) : (closeNum * 1.02));
+    
+    const sl = parsePrice(rawSl);
+    const tp = parsePrice(rawTp);
+    const rrRatio = calcRiskReward(closeNum, parsePriceNum(rawSl), parsePriceNum(rawTp), dir);
 
-    let tierLabel = '<span class="tier-tag-execute">● READY TO EXECUTE</span>';
-    if (tier === 'WATCH') tierLabel = '<span class="tier-tag-watch">▲ WATCHING / FORMING</span>';
-    if (tier === 'DEAD') tierLabel = '<span class="tier-tag-dead">✕ INACTIVE / DEAD</span>';
+    const ageInfo = calculateBarAge(item);
 
     return `
       <article class="card ${tier}">
@@ -378,19 +498,22 @@ function renderCards() {
           </div>
 
           <div class="targets-box">
-            <div class="p-item"><span class="lbl">Stop Loss (SL):</span> <span class="val-sl">${sl}</span></div>
-            <div class="p-item"><span class="lbl">Take Profit (TP):</span> <span class="val-tp">${tp}</span></div>
+            <div class="p-item"><span class="lbl">SL:</span> <br><span class="val-sl">${sl}</span></div>
+            <div class="p-item"><span class="lbl">TP:</span> <br><span class="val-tp">${tp}</span></div>
+            <div class="p-item"><span class="lbl">R:R Ratio:</span> <br><span class="val-rr">${rrRatio}</span></div>
           </div>
 
           <div class="tags">
             <span class="tag highlight">SPEED: ${speedDisplay}</span>
-            <span class="tag">STATE: ${dt.state || 'OK'}</span>
+            <span class="tag ${ageInfo.isFresh ? 'age-fresh' : 'age-stale'}">AGE: ${ageInfo.text}</span>
           </div>
         </div>
 
         <div class="card-foot">
-          <span>Bar: ${item.reference_bar_raw || 'N/A'}</span>
-          ${tierLabel}
+          <span style="font-size:10px; color:var(--muted);">${item.reference_bar_raw || 'N/A'}</span>
+          ${tier === 'EXECUTE' 
+            ? `<button class="btn-exec" onclick="triggerTradeExecution('${pair}', '${dir}', '${closePrice}', '${sl}', '${tp}')">EXECUTE</button>` 
+            : `<span style="font-weight:600; color:var(--muted);">${tier}</span>`}
         </div>
       </article>
     `;
@@ -398,7 +521,8 @@ function renderCards() {
 }
 
 fetchFeed();
-setInterval(fetchFeed, 30000);
+setInterval(fetchFeed, 5000); // 5-second fast check loop
+setInterval(renderCards, 1000); // 1-second UI tick for age countdown timers
 </script>
 </body>
 </html>
