@@ -51,6 +51,20 @@
     .brand-title { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); display: flex; align-items: center; gap: 8px; }
     .brand-title .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); display: inline-block; box-shadow: 0 0 8px var(--good); }
     
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+    
+    .btn-action {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--line);
+      color: var(--text);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-action:hover { background: var(--panel-hover); border-color: var(--accent); }
+
     .tier-indicator {
       display: flex;
       align-items: center;
@@ -227,10 +241,15 @@
       <div style="color:var(--muted); font-size:12px; margin-top:2px;" id="timestamp-hdr">Connecting feed...</div>
     </div>
     
-    <div class="tier-indicator">
-      <div class="tier-stat"><span class="tier-dot" style="background:var(--good)"></span> EXECUTE: <span id="cnt-execute" style="color:var(--good)">0</span></div>
-      <div class="tier-stat"><span class="tier-dot" style="background:var(--warn)"></span> WATCH: <span id="cnt-watch" style="color:var(--warn)">0</span></div>
-      <div class="tier-stat"><span class="tier-dot" style="background:var(--bad)"></span> DEAD: <span id="cnt-dead" style="color:var(--bad)">0</span></div>
+    <div class="header-actions">
+      <button class="btn-action" onclick="enablePushNotifications()">🔔 Enable Push Alerts</button>
+      <button class="btn-action" onclick="setWebhookUrl()">⚙️ Webhook Settings</button>
+      
+      <div class="tier-indicator">
+        <div class="tier-stat"><span class="tier-dot" style="background:var(--good)"></span> EXECUTE: <span id="cnt-execute" style="color:var(--good)">0</span></div>
+        <div class="tier-stat"><span class="tier-dot" style="background:var(--warn)"></span> WATCH: <span id="cnt-watch" style="color:var(--warn)">0</span></div>
+        <div class="tier-stat"><span class="tier-dot" style="background:var(--bad)"></span> DEAD: <span id="cnt-dead" style="color:var(--bad)">0</span></div>
+      </div>
     </div>
   </header>
 
@@ -252,9 +271,34 @@ let joinedData = [];
 let currentTab = 'EXECUTE';
 let prevExecuteCount = 0;
 let lastFeedTimestamp = 0;
+let webhookUrl = localStorage.getItem('ORACLE_WEBHOOK_URL') || '';
 
-// Webhook Configuration (Replace with your actual webhook or broker endpoint if desired)
-const WEBHOOK_URL = ""; 
+function setWebhookUrl() {
+  const input = prompt("Enter your Webhook / Exchange API Endpoint URL:\n(e.g., https://3commas.io/trade_webhook or https://your-server.com/api/order)", webhookUrl);
+  if (input !== null) {
+    webhookUrl = input.trim();
+    localStorage.setItem('ORACLE_WEBHOOK_URL', webhookUrl);
+    alert(webhookUrl ? "Webhook URL configured successfully!" : "Webhook URL cleared. Executions will revert to Simulation Mode.");
+  }
+}
+
+function enablePushNotifications() {
+  if (!("Notification" in window)) {
+    alert("This browser does not support desktop notifications");
+    return;
+  }
+  Notification.requestPermission().then(permission => {
+    if (permission === "granted") {
+      new Notification("Oracle Terminal", { body: "Push Notifications Enabled! You will be alerted on new EXECUTE setups." });
+    }
+  });
+}
+
+function sendPushNotification(title, body) {
+  if ("Notification" in window && Notification.permission === "granted") {
+    new Notification(title, { body, icon: '/favicon.ico' });
+  }
+}
 
 function playAlertSound() {
   try {
@@ -262,14 +306,14 @@ function playAlertSound() {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(880, ctx.currentTime); // A5 note
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
     gain.gain.setValueAtTime(0.1, ctx.currentTime);
     osc.connect(gain);
     gain.connect(ctx.destination);
     osc.start();
     osc.stop(ctx.currentTime + 0.25);
   } catch (e) {
-    console.log("Audio alert suppressed by browser security policy.");
+    console.log("Audio alert suppressed.");
   }
 }
 
@@ -335,7 +379,7 @@ function calculateBarAge(item) {
   
   const mins = Math.floor(diffSec / 60);
   const secs = diffSec % 60;
-  const isFresh = diffSec < 900; // Fresh within 15 minutes
+  const isFresh = diffSec < 900;
   
   return {
     text: mins > 0 ? `${mins}m ${secs}s ago` : `${secs}s ago`,
@@ -354,13 +398,13 @@ async function triggerTradeExecution(pair, dir, entry, sl, tp) {
     timestamp: new Date().toISOString()
   };
 
-  if (!WEBHOOK_URL) {
-    alert(`[SIMULATION] Trade Executed!\n\nPair: ${pair}\nDirection: ${dir}\nEntry: ${entry}\nSL: ${sl}\nTP: ${tp}`);
+  if (!webhookUrl) {
+    alert(`[SIMULATION MODE]\n\nTrade Executed!\nPair: ${pair}\nDirection: ${dir}\nEntry: ${entry}\nSL: ${sl}\nTP: ${tp}\n\n(Configure a Webhook URL in Settings to route this to your exchange)`);
     return;
   }
 
   try {
-    const res = await fetch(WEBHOOK_URL, {
+    const res = await fetch(webhookUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
@@ -368,7 +412,7 @@ async function triggerTradeExecution(pair, dir, entry, sl, tp) {
     if (res.ok) {
       alert(`[SUCCESS] Webhook Order Sent for ${pair}!`);
     } else {
-      alert(`[ERROR] Execution failed with status ${res.status}`);
+      alert(`[ERROR] Webhook execution failed with status ${res.status}`);
     }
   } catch (e) {
     alert(`[ERROR] Webhook target unreachable: ${e.message}`);
@@ -409,7 +453,10 @@ function updateCounters() {
   const header = document.getElementById('main-header');
   if (executeCount > 0) {
     header.classList.add('alert-active');
-    if (executeCount > prevExecuteCount) playAlertSound();
+    if (executeCount > prevExecuteCount) {
+      playAlertSound();
+      sendPushNotification("CRITICAL TRADE SIGNAL", `${executeCount} setup(s) ready for instant execution!`);
+    }
   } else {
     header.classList.remove('alert-active');
   }
@@ -521,8 +568,8 @@ function renderCards() {
 }
 
 fetchFeed();
-setInterval(fetchFeed, 5000); // 5-second fast check loop
-setInterval(renderCards, 1000); // 1-second UI tick for age countdown timers
+setInterval(fetchFeed, 5000);
+setInterval(renderCards, 1000);
 </script>
 </body>
 </html>
