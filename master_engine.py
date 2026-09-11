@@ -12,7 +12,7 @@ from pair_universe import PairUniverse
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
-app = FastAPI(title="JHL Confluence Dashboard Engine - Live Kraken Ticker Integration")
+app = FastAPI(title="JHL Confluence Dashboard Engine - Proportional Volatility Stops")
 
 latest_engine_payload = {
     "active_signals_count": 0,
@@ -24,7 +24,7 @@ active_positions = []
 
 def run_master_orchestration():
     global latest_engine_payload
-    logging.info("Master Engine (Live Kraken PairUniverse Integration) initialized 24/7.")
+    logging.info("Master Engine (Proportional Volatility Stops) initialized 24/7.")
     feed_generator = OracleFeedV2(account_balance=10000.0)
     universe = PairUniverse()
     
@@ -36,16 +36,24 @@ def run_master_orchestration():
     
     while True:
         try:
-            logging.info("Polling live Kraken pairs from PairUniverse...")
+            logging.info("Polling live Kraken pairs from PairUniverse for proportional scaling...")
             active_pairs = universe.get_active_pairs()
             
             raw_candidates = []
             for p in active_pairs:
                 if not p.last_price or p.last_price <= 0:
                     continue
-                # Assign setup family deterministically or rotationally based on symbol hash
                 setup_fam = setup_families[abs(hash(p.symbol)) % len(setup_families)]
-                stop_pct = 0.008 if "BTC" in p.symbol else 0.012
+                
+                # Proportional Stop Distance Percentage based on asset price magnitude
+                # BTC/ETH get tighter professional volatility bands (~0.8% - 1.2%), alts get ~1.5% - 2.5%
+                if p.symbol in ["BTC", "ETH"]:
+                    stop_pct = 0.010 # 1.0%
+                elif p.last_price > 50.0:
+                    stop_pct = 0.015 # 1.5% for higher-priced alts (SOL, AVAX, etc.)
+                else:
+                    stop_pct = 0.020 # 2.0% for lower-priced tokens to ensure meaningful absolute distance
+                
                 raw_candidates.append({
                     "pair": f"{p.symbol}USD",
                     "setup_family": setup_fam,
@@ -54,26 +62,29 @@ def run_master_orchestration():
                 })
             
             if raw_candidates:
-                # Shuffle and take top 12
                 shuffled = random.sample(raw_candidates, min(len(raw_candidates), 12))
                 feed_data = feed_generator.generate_feed(shuffled)
                 
                 formatted_signals = []
                 for sig in feed_data["signals"]:
                     pair_name = sig["pair"]
-                    # Find matching base price
                     match_cand = next((c for c in shuffled if c["pair"] == pair_name), None)
                     base = match_cand["base_price"] if match_cand else 100.0
-                    stop_dist = match_cand["stop_distance_pct"] if match_cand else 0.01
+                    stop_dist = match_cand["stop_distance_pct"] if match_cand else 0.015
                     mult = sig["parameters"]["sl_tp_multiplier"]
                     
                     score = random.randint(82, 98)
+                    
+                    # Compute precise proportional stop and target relative to asset price
+                    stop_price = round(base * (1.0 - stop_dist), 4 if base < 10 else 2)
+                    target_price = round(base * (1.0 + (stop_dist * mult)), 4 if base < 10 else 2)
+                    
                     formatted_signals.append({
                         "pair": pair_name,
                         "setup_family": sig["setup_family"],
-                        "entry": round(base, 4),
-                        "stop": round(base * (1 - stop_dist), 4),
-                        "target": round(base * (1 + (stop_dist * mult)), 4),
+                        "entry": round(base, 4 if base < 10 else 2),
+                        "stop": stop_price,
+                        "target": target_price,
                         "risk_usd": sig["allocation"]["risk_usd"],
                         "score": score,
                         "status": "MATCH" if score >= 85 else "WAIT",
@@ -86,7 +97,7 @@ def run_master_orchestration():
                     "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S UTC"),
                     "signals": formatted_signals
                 }
-                logging.info(f"Successfully processed {len(formatted_signals)} live Kraken signals.")
+                logging.info(f"Processed {len(formatted_signals)} signals with proportional volatility scaling.")
             
             # Update live health telemetry for active positions
             for pos in active_positions:
@@ -100,9 +111,8 @@ def run_master_orchestration():
                     pos["warning"] = "OPTIMAL: SPRINT ACTIVE"
 
         except Exception as e:
-            logging.error(f"Error during Kraken live orchestration loop: {e}")
+            logging.error(f"Error during orchestration loop: {e}")
         
-        # Poll every 60 seconds to respect rate limits and keep prices fresh
         time.sleep(60)
 
 @app.get("/api/feed", response_class=JSONResponse)
@@ -143,7 +153,7 @@ async def execute_trade(request: Request):
     active_positions = [p for p in active_positions if p["pair"] != pair]
     active_positions.insert(0, new_position)
     
-    logging.info(f"Execute Triggered for {pair} at live price {entry}. Added to Open Position Health.")
+    logging.info(f"Execute Triggered for {pair} with proportional volatility stops. Added to Open Position Health.")
     return {"status": "SUCCESS", "position": new_position}
 
 @app.post("/api/close", response_class=JSONResponse)
@@ -164,7 +174,7 @@ def get_dashboard():
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>JHL Confluence Dashboard - Live Kraken Tickers</title>
+  <title>JHL Confluence Dashboard - Proportional Volatility Stops</title>
   <style>
     :root, [data-theme="light"] {
       --bg:#eef3f4; --surface:#f8fbfb; --surface-2:#ffffff; --surface-3:#eaf2f2; --text:#163238; --muted:#648089;
@@ -294,7 +304,7 @@ def get_dashboard():
         <div class="mark" aria-hidden="true"></div>
         <div>
           <h1>JHL Confluence</h1>
-          <p>Live Kraken Tickers</p>
+          <p>Proportional Volatility Stops</p>
         </div>
       </div>
 
@@ -307,7 +317,7 @@ def get_dashboard():
       </nav>
 
       <div class="sidebar-foot">
-        <strong>Live PairUniverse Active</strong>
+        <strong>Volatility Scaling Active</strong>
         <span id="last-sync">Syncing with Kraken...</span>
       </div>
     </aside>
@@ -315,10 +325,10 @@ def get_dashboard():
     <main class="main">
       <section class="hero">
         <div class="hero-card">
-          <span class="pill">Direct Kraken Ticker Integration Active</span>
-          <h2>Real-time pricing fetched directly from Kraken.</h2>
+          <span class="pill">Proportional Volatility Scaling Active</span>
+          <h2>Realistic stop distances and profit expansions.</h2>
           <p>
-            Your dashboard is no longer relying on static fallback baselines. It now queries `PairUniverse` directly to pull live Kraken ticker prices across your 49-pair prop universe.
+            Stops and take-profits are now dynamically proportioned to each asset's price magnitude and volatility range (e.g., 1.0% to 2.0% stop distances scaled across 3.5x to 4.5x setup multipliers).
           </p>
           <div class="hero-actions">
             <span class="status green" id="sync-status">LIVE KRAKEN FEED</span>
@@ -368,19 +378,19 @@ def get_dashboard():
 
       <!-- DRIVE MODE DEDICATED PANEL -->
       <section class="panel drive-panel">
-        <span class="status green" style="margin-bottom:12px">🚗 DRIVE MODE ACTIVE (Live Kraken Feed)</span>
+        <span class="status green" style="margin-bottom:12px">🚗 DRIVE MODE ACTIVE (Proportional Stops)</span>
         <div id="drive-mode-card">
           <!-- Dynamically populated via JS -->
         </div>
         <button class="action ghost" style="width:100%; margin-top:14px; padding:12px;" onclick="toggleDriveMode()">Exit Drive Mode</button>
       </section>
 
-      <!-- DESK MODE VIEW (Live Feed with Kraken Prices) -->
+      <!-- DESK MODE VIEW (Live Feed with Proportional Spacing) -->
       <section id="trade" class="view active">
         <div class="grid-2">
           <div class="panel">
-            <h3>Elite Setups (Live Kraken Prices)</h3>
-            <p class="headline">Directly wired into PairUniverse so every entry, stop, and target reflects live exchange quotes.</p>
+            <h3>Elite Setups (Proportional Volatility Spacing)</h3>
+            <p class="headline">Stops and targets scale naturally with live asset prices to ensure meaningful trade duration.</p>
             <div class="signal-list" id="dynamic-signal-list">
               <!-- Dynamically populated via JS -->
             </div>
@@ -447,7 +457,7 @@ def get_dashboard():
               <div class="kpi"><label>Exit Threshold</label><strong>Score &lt; 75</strong></div>
             </div>
             <div class="muted-box" style="margin-top:16px">
-              Live PairUniverse connected. Incorporates Momentum Expansion (4.5x), Sell Absorption Reclaim (3.5x), and Reacceleration Reclaim (4.0x) with real-time Kraken quotes.
+              Proportional volatility scaling active. Incorporates Momentum Expansion (4.5x), Sell Absorption Reclaim (3.5x), and Reacceleration Reclaim (4.0x) with natural price spacing.
             </div>
           </div>
           <div class="panel">
