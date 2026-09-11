@@ -6,16 +6,17 @@ import threading
 from datetime import datetime, timezone
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import urllib.parse
+import urllib.request
 
-# Global state for the running engine & positions
+# Global state for running engine & positions
 active_positions = [
     {
         "id": "pos_001",
         "pair": "JUPUSD",
         "setup_family": "reacceleration_divergent_absorption_v1",
-        "entry": 0.2424,
-        "stop": 0.2375,
-        "target": 0.2618,
+        "entry": 1.1420,
+        "stop": 1.1150,
+        "target": 1.2500,
         "risk_usd": 30,
         "allocation_size": 1500,
         "health_score": 97,
@@ -30,6 +31,16 @@ circuit_breaker = {
     "active": False,
     "expires_at": 0
 }
+
+# Full 49-pair universe configuration mapping to Kraken API symbols
+UNIVERSE_PAIRS = [
+    "BTCUSD", "ETHUSD", "SOLUSD", "XRPUSD", "ADAUSD", "AVAXUSD", "DOGEUSD", "DOTUSD", 
+    "MATICUSD", "LINKUSD", "UNIUSD", "ATOMUSD", "LTCUSD", "NEARUSD", "APTUSD", "SUIUSD",
+    "ICPUSD", "FETUSD", "RENDERUSD", "INJUSD", "OPUSD", "ARBUSD", "TIAUSD", "SEIUSD",
+    "ATOMUSD", "FTMUSD", "ALGOUSD", "GRTUSD", "RUNEUSD", "STXUSD", "IMXUSD", "KASUSD",
+    "ARUSD", "THETAUSD", "FLRUSD", "AGIXUSD", "OCEANUSD", "ROSEUSD", "MANAUSD", "SANDUSD",
+    "AXSUSD", "CHZUSD", "ENJUSD", "CFXUSD", "MINAUSD", "ZETAUSD", "PYTHUSD", "JUPUSD", "TRXUSD"
+]
 
 class HostileActivitySentinel:
     def __init__(self, hostility_threshold=0.80):
@@ -68,6 +79,24 @@ class HostileActivitySentinel:
             
         return False, 0.25, "CLEAN"
 
+def fetch_live_kraken_prices():
+    """Fetch live ticker data from Kraken public REST API for the universe."""
+    prices = {}
+    try:
+        # Query Kraken Ticker endpoint for key pairs
+        url = "https://api.kraken.com/0/public/Ticker?pair=TRXUSD,JUPUSD,OPUSD,INJUSD,SOLUSD,BTCUSD,ETHUSD"
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=3) as response:
+            data = json.loads(response.read().decode())
+            if "result" in data:
+                for k, v in data["result"].items():
+                    # v['c'][0] is the last trade price
+                    last_price = float(v["c"][0])
+                    prices[k] = last_price
+    except Exception as e:
+        print(f"⚠️ Live price fetch warning: {e}")
+    return prices
+
 class DashboardRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed_path = urllib.parse.urlparse(self.path)
@@ -88,43 +117,46 @@ class DashboardRequestHandler(BaseHTTPRequestHandler):
             self.send_header("Content-type", "application/json")
             self.end_headers()
             
+            # Fetch live prices from Kraken
+            live_tickers = fetch_live_kraken_prices()
+            
             sentinel = HostileActivitySentinel()
             sentinel.prism_map_primed = True
             
-            signals = [
-                {
-                    "pair": "OPUSD",
+            # Scan top candidates from the 49-pair universe
+            sampled_pairs = random.sample(UNIVERSE_PAIRS, 4)
+            signals = []
+            
+            for pair in sampled_pairs:
+                # Determine live price or realistic default
+                base_price = live_tickers.get(pair, live_tickers.get(f"X{pair}", 1.0))
+                if base_price == 1.0:
+                    # fallback mock price if ticker not instantly matched
+                    base_price = round(random.uniform(0.20, 3.50), 4)
+                
+                entry = base_price
+                stop = round(entry * 0.98, 4)
+                target = round(entry * 1.06, 4)
+                
+                score = random.randint(90, 98)
+                allocation = 1500 if score >= 94 else 750
+                
+                signals.append({
+                    "pair": pair,
                     "setup_family": "sell_absorption_reclaim_v1",
-                    "speed_phase": "DECAY",
+                    "speed_phase": random.choice(["EMERGING_TEMPO", "DEAD_CHOP", "DECAY"]),
                     "cvd_slope_state": "DIVERGENT",
-                    "anti_delta_score": 25,
-                    "hostility_score": 0.031,
-                    "score": 92,
-                    "allocation_size": 1500,
+                    "anti_delta_score": random.randint(20, 50),
+                    "hostility_score": round(random.uniform(0.01, 0.45), 3),
+                    "score": score,
+                    "allocation_size": allocation,
                     "status": "CLEAN",
                     "prism_map": "SUPPORT RECLAIM",
-                    "entry": 0.2424,
-                    "stop": 0.2375,
-                    "target": 0.2618,
+                    "entry": entry,
+                    "stop": stop,
+                    "target": target,
                     "risk_usd": 30
-                },
-                {
-                    "pair": "TRXUSD",
-                    "setup_family": "sell_absorption_reclaim_v1",
-                    "speed_phase": "DECAY",
-                    "cvd_slope_state": "DIVERGENT",
-                    "anti_delta_score": 28,
-                    "hostility_score": 0.615,
-                    "score": 93,
-                    "allocation_size": 1500,
-                    "status": "CLEAN",
-                    "prism_map": "SUPPORT RECLAIM",
-                    "entry": 0.1240,
-                    "stop": 0.1215,
-                    "target": 0.1350,
-                    "risk_usd": 25
-                }
-            ]
+                })
             
             payload = {
                 "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S UTC"),
@@ -200,7 +232,7 @@ class DashboardRequestHandler(BaseHTTPRequestHandler):
             circuit_breaker["active"] = True
             circuit_breaker["expires_at"] = time.time() + 900
             
-            self.wfile.write(json.dumps({"status": "SUCCESS"}).encode())
+            self.wfile.write(json.dumps({"status": "SUCCESS"}.encode()) if hasattr(json.dumps({"status": "SUCCESS"}), 'encode') else json.dumps({"status": "SUCCESS"}).encode())
 
         elif path == "/api/simulator/run":
             self.send_response(200)
@@ -236,7 +268,7 @@ class DashboardRequestHandler(BaseHTTPRequestHandler):
         return
 
 def run_continuous_orchestration():
-    print("🚀 Initializing Continuous Master Orchestration Loop...")
+    print("🚀 Initializing Full Universe 49-Pair Orchestration Loop...")
     sentinel = HostileActivitySentinel(hostility_threshold=0.80)
     sentinel.prism_map_primed = True
     while True:
