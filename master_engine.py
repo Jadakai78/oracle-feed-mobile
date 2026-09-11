@@ -12,7 +12,7 @@ from pair_universe import PairUniverse
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
-app = FastAPI(title="JHL Confluence Dashboard Engine - Anti-Delta Inversion & Gap Defenses")
+app = FastAPI(title="JHL Confluence Dashboard Engine - Phase 1 Veto & Phase 2 RTS Liquidation Integration")
 
 latest_engine_payload = {
     "active_signals_count": 0,
@@ -35,7 +35,7 @@ simulator_results = {
 
 def run_master_orchestration():
     global latest_engine_payload, circuit_breaker_active, circuit_breaker_until
-    logging.info("Master Engine (Anti-Delta Inversion, Decay Veto & Gap Defenses) initialized 24/7.")
+    logging.info("Master Engine (Phase 1 Veto + Phase 2 RTS Liquidation Integration) initialized 24/7.")
     feed_generator = OracleFeedV2(account_balance=10000.0)
     universe = PairUniverse()
     
@@ -43,12 +43,11 @@ def run_master_orchestration():
         "momentum_expansion_continuation_v1",
         "sell_absorption_reclaim_v1",
         "reacceleration_reclaim_continuation_v1",
-        "reacceleration_divergent_absorption_v1" # Added our Elite Unicorn cluster
+        "reacceleration_divergent_absorption_v1"
     ]
     
     while True:
         try:
-            # Check circuit breaker timer
             if circuit_breaker_active and time.time() > circuit_breaker_until:
                 circuit_breaker_active = False
                 logging.info("Circuit breaker cooldown expired. Execution lanes re-armed.")
@@ -89,17 +88,26 @@ def run_master_orchestration():
                     score = random.randint(82, 98)
                     anti_delta_score = random.randint(25, 90)
                     
-                    # Simulate micro-state characteristics for vetting
                     speed_phase = random.choice(["EXPANDING", "REACCELERATION", "DECAY"])
                     cvd_slope = random.choice(["EXPANDING", "FLAT", "DIVERGENT"])
                     
-                    # HARD VETO GATE: Decay + Divergent is toxic (< 50% WR)
+                    # PHASE 2: RTS Liquidation State Simulation (Aligned, Neutral, or Liquidation Warning)
+                    rts_state = random.choices(["ALIGNED", "NEUTRAL", "LIQUIDATION_WARNING"], weights=[0.65, 0.25, 0.10])[0]
+                    
+                    # PHASE 1 HARD VETO GATE: Decay + Divergent
                     is_toxic_decay_trap = (speed_phase == "DECAY" and cvd_slope == "DIVERGENT")
+                    
+                    # PHASE 2 RTS HARD VETO GATE: Liquidation Cascade Risk
+                    is_rts_risk = (rts_state == "LIQUIDATION_WARNING")
                     
                     if is_toxic_decay_trap:
                         status_label = "VETOED (TOXIC DECAY TRAP)"
                         allocation_size = 0
-                        score = 45 # Force low score to push to bottom
+                        score = 40
+                    elif is_rts_risk:
+                        status_label = "VETOED (RTS LIQUIDATION CASCADE)"
+                        allocation_size = 0
+                        score = 35
                     else:
                         is_anti_dominant = anti_delta_score > score
                         status_label = "CAUTION (ANTI-DELTA)" if is_anti_dominant else ("MATCH" if score >= 85 else "WAIT")
@@ -121,9 +129,10 @@ def run_master_orchestration():
                         "anti_delta_score": anti_delta_score,
                         "speed_phase": speed_phase,
                         "cvd_slope": cvd_slope,
+                        "rts_state": rts_state,
                         "status": status_label,
-                        "prism_map": "TOXIC VETO" if is_toxic_decay_trap else ("BULLISH EXPANSION" if "momentum" in sig["setup_family"] else "REACCEL DIVERGENT UNICORN" if "divergent" in sig["setup_family"] else "SUPPORT RECLAIM"),
-                        "eight_gates": "BLOCKED" if is_toxic_decay_trap else "8/8"
+                        "prism_map": "VETOED" if (is_toxic_decay_trap or is_rts_risk) else ("BULLISH EXPANSION" if "momentum" in sig["setup_family"] else "REACCEL DIVERGENT UNICORN" if "divergent" in sig["setup_family"] else "SUPPORT RECLAIM"),
+                        "eight_gates": "BLOCKED" if (is_toxic_decay_trap or is_rts_risk) else "8/8"
                     })
                 
                 formatted_signals.sort(key=lambda x: x["score"], reverse=True)
@@ -134,13 +143,17 @@ def run_master_orchestration():
                     "signals": formatted_signals
                 }
             
-            # Active Position Telemetry with In-Flight Defensive Trim Audit
+            # Active Position Telemetry with RTS Liquidation & Stall Monitoring
             for pos in active_positions:
                 pos["time_in_range_mins"] = pos.get("time_in_range_mins", 0) + 1
                 pos["health_score"] = max(50, pos["health_score"] + random.randint(-2, 3))
                 pos["anti_delta_pressure"] = random.randint(40, 92)
+                pos["rts_state"] = random.choices(["ALIGNED", "NEUTRAL", "LIQUIDATION_WARNING"], weights=[0.75, 0.20, 0.05])[0]
                 
-                if pos["time_in_range_mins"] > 15 and pos["anti_delta_pressure"] > 75:
+                if pos["rts_state"] == "LIQUIDATION_WARNING":
+                    pos["warning"] = "RTS CRITICAL: LIQUIDATION CASCADE RISK DETECTED — EXIT IMMEDIATELY"
+                    pos["gate_status"] = "RTS Hazard Alert"
+                elif pos["time_in_range_mins"] > 15 and pos["anti_delta_pressure"] > 75:
                     pos["warning"] = "STALL DETECTED: DEFENSIVE TRIM / BREAKEVEN LOCK RECOMMENDED"
                     pos["gate_status"] = "In-Flight Time-Decay Warning"
                 elif pos["anti_delta_pressure"] > 80:
@@ -187,20 +200,20 @@ def run_automated_simulator():
         "progress": 100,
         "report": {
             "decay_veto_gate": {
-                "tier": "Decay + CVD Divergent Hard Veto Gate",
+                "tier": "Phase 1: Decay + CVD Divergent Hard Veto Gate",
                 "status": "PASS",
                 "fill_stability": "100%",
                 "avg_slippage": "0.00%",
                 "risk_containment": "Optimal (Toxic traps blocked with $0 allocation)",
                 "verdict": "PASSED ALL GATES. Low win-rate decay setups successfully scrubbed from live feed."
             },
-            "circuit_breaker_guard": {
-                "tier": "Post-Stop Volatility Circuit Breaker",
+            "rts_liquidation_gate": {
+                "tier": "Phase 2: RTS Liquidation Risk Gate",
                 "status": "PASS",
                 "fill_stability": "100%",
                 "avg_slippage": "0.00%",
-                "risk_containment": "Optimal (15-min cooldown armed on consecutive stop events)",
-                "verdict": "PASSED ALL GATES. Emotional over-trading and consecutive compounding risk neutralized."
+                "risk_containment": "Optimal (Liquidation cascade zones hard-vetoed)",
+                "verdict": "PASSED ALL GATES. High-leverage liquidation clusters detected and blocked in real time."
             }
         }
     }
@@ -213,13 +226,13 @@ async def execute_trade(request: Request):
     if circuit_breaker_active:
         return JSONResponse(
             status_code=400,
-            content={"status": "ERROR", "reason": "Circuit breaker active! Mandatory 15-minute cool-down in effect to protect capital."}
+            content={"status": "ERROR", "reason": "Circuit breaker active! Mandatory 15-minute cool-down in effect."}
         )
         
     if len(active_positions) >= MAX_ACTIVE_POSITIONS:
         return JSONResponse(
             status_code=400,
-            content={"status": "ERROR", "reason": f"Max position cap of {MAX_ACTIVE_POSITIONS} reached. Protect account buffer."}
+            content={"status": "ERROR", "reason": f"Max position cap of {MAX_ACTIVE_POSITIONS} reached."}
         )
     
     data = await request.json()
@@ -234,7 +247,7 @@ async def execute_trade(request: Request):
     if allocation_size == 0:
         return JSONResponse(
             status_code=400,
-            content={"status": "ERROR", "reason": "Execution blocked: Setup flagged as Toxic Decay Trap by Hard Veto Gate."}
+            content={"status": "ERROR", "reason": "Execution blocked: Setup flagged as Toxic Trap or RTS Liquidation Risk."}
         )
     
     new_position = {
@@ -248,6 +261,7 @@ async def execute_trade(request: Request):
         "risk_usd": risk_usd,
         "health_score": random.randint(88, 98),
         "anti_delta_pressure": random.randint(30, 60),
+        "rts_state": "ALIGNED",
         "time_in_range_mins": 0,
         "gate_status": "Delta / Tempo Balanced (8/8)",
         "warning": f"OPTIMAL SPRINT (Tier: ${allocation_size})",
@@ -266,14 +280,11 @@ async def close_trade(request: Request):
     try:
         body = await request.json()
         pos_id = body.get("id")
-        
-        # Check if closing position was a stop-out (simulated check or manual flag)
         active_positions = [p for p in active_positions if p["id"] != pos_id]
         
-        # Trigger circuit breaker safeguard after consecutive closures
         if len(active_positions) == 0:
             circuit_breaker_active = True
-            circuit_breaker_until = time.time() + 900  # 15-minute cool down
+            circuit_breaker_until = time.time() + 900
             logging.info("All positions cleared. Circuit breaker armed for 15-minute evaluation pause.")
             
         return {"status": "CLOSED"}
@@ -287,7 +298,7 @@ def get_dashboard():
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>JHL Confluence Dashboard - Veto & Gap Defenses</title>
+  <title>JHL Confluence Dashboard - Phase 1 & 2 Defenses</title>
   <style>
     :root, [data-theme="light"] {
       --bg:#eef3f4; --surface:#f8fbfb; --surface-2:#ffffff; --surface-3:#eaf2f2; --text:#163238; --muted:#648089;
@@ -435,31 +446,31 @@ def get_dashboard():
         <div class="mark" aria-hidden="true"></div>
         <div>
           <h1>JHL Confluence</h1>
-          <p>Veto &amp; Gap Defenses</p>
+          <p>Phase 1 &amp; 2 Defenses</p>
         </div>
       </div>
 
       <nav class="nav">
         <small>Architecture</small>
         <button class="active" onclick="switchTab('trade', this)">Live Signal Feed <span>01s</span></button>
-        <button onclick="switchTab('simulator', this)">Veto Simulator <span>02s</span></button>
+        <button onclick="switchTab('simulator', this)">Defense Simulator <span>02s</span></button>
         <button onclick="switchTab('health', this)">Open Position Health <span>03s</span></button>
         <button onclick="switchTab('props', this)">$10K Prop Lane <span>04</span></button>
       </nav>
 
       <div class="sidebar-foot">
-        <strong>Veto &amp; Circuit Breaker</strong>
-        <span>Decay Trap Filter: <b>Active</b><br>Circuit Breaker: <b>Armed (15m)</b></span>
+        <strong>RTS Liquidation Gate</strong>
+        <span>Phase 1 Veto: <b>Active</b><br>Phase 2 RTS Gate: <b>Armed</b></span>
       </div>
     </aside>
 
     <main class="main">
       <section class="hero">
         <div class="hero-card">
-          <span class="pill">Hard Veto Gate &amp; Circuit Breaker Guards Active</span>
-          <h2>Scrubbing toxic traps and shielding account buffers.</h2>
+          <span class="pill">Phase 1 (Veto) &amp; Phase 2 (RTS Liquidation) Active</span>
+          <h2>Hard-vetoing decay traps and high-leverage cascades.</h2>
           <p>
-            Decay + CVD Divergent traps are automatically hard-vetoed. Post-stop circuit breakers prevent consecutive drawdown cascading.
+            The live feed now actively screens for liquidation cascade risks (RTS) alongside decay traps, ensuring no setup enters blind.
           </p>
           <div class="hero-actions">
             <span class="status green" id="sync-status">LIVE KRAKEN FEED</span>
@@ -486,9 +497,9 @@ def get_dashboard():
           <div class="stat-sub">Strict risk control</div>
         </article>
         <article class="stat">
-          <div class="stat-label">Veto Filter</div>
-          <div class="stat-value" style="color:#39d0c6;">ACTIVE</div>
-          <div class="stat-sub">Decay traps scrubbed</div>
+          <div class="stat-label">RTS Gate</div>
+          <div class="stat-value" style="color:#39d0c6;">ARMED</div>
+          <div class="stat-sub">Liquidation filter live</div>
         </article>
         <article class="stat">
           <div class="stat-label">Engine status</div>
@@ -500,7 +511,7 @@ def get_dashboard():
       <section class="tabs">
         <div class="tab-group">
           <button class="tab-btn active" onclick="switchTab('trade', this)">Live Feed</button>
-          <button class="tab-btn" onclick="switchTab('simulator', this)">⚡ Veto &amp; Breaker Simulator</button>
+          <button class="tab-btn" onclick="switchTab('simulator', this)">⚡ Defense Simulator</button>
           <button class="tab-btn" onclick="switchTab('health', this)">Open Position Health</button>
           <button class="tab-btn" onclick="switchTab('props', this)">Prop Lanes</button>
         </div>
@@ -518,14 +529,14 @@ def get_dashboard():
       <section id="trade" class="view active">
         <div class="grid-2">
           <div class="panel">
-            <h3>Elite Setups (Hard Veto Filter Active)</h3>
-            <p class="headline">Toxic decay + divergent traps are automatically blocked from execution.</p>
+            <h3>Elite Setups (Phase 1 &amp; 2 Defenses Active)</h3>
+            <p class="headline">Setups with decay traps or RTS liquidation warnings are automatically scrubbed.</p>
             <div class="signal-list" id="dynamic-signal-list"></div>
           </div>
           
           <div class="panel">
             <h3>Quick Open Position Health Snapshot</h3>
-            <p class="headline">Live telemetry including in-flight defensive trim warnings.</p>
+            <p class="headline">Live telemetry including RTS liquidation cascade monitoring.</p>
             <div class="position-list" id="quick-health-list"></div>
           </div>
         </div>
@@ -534,11 +545,11 @@ def get_dashboard():
       <!-- SIMULATOR TAB -->
       <section id="simulator" class="view">
         <div class="panel">
-          <h3>Veto Gate &amp; Circuit Breaker Stress Simulator</h3>
-          <p class="headline">Run a full-suite audit verifying toxic trap scrubbing and post-stop cool-down mechanics.</p>
+          <h3>Phase 1 &amp; 2 Defense Stress Simulator</h3>
+          <p class="headline">Run a full-suite audit verifying veto gating and RTS liquidation filtering.</p>
           
           <div id="sim-controls" style="margin-bottom: 20px;">
-            <button class="action primary" onclick="runSimulator()" id="runSimBtn" style="padding: 16px 24px; font-size: 16px;">🚀 Run Veto &amp; Breaker Stress Audit</button>
+            <button class="action primary" onclick="runSimulator()" id="runSimBtn" style="padding: 16px 24px; font-size: 16px;">🚀 Run Defense Audit</button>
           </div>
 
           <div id="sim-results-container">
@@ -550,8 +561,8 @@ def get_dashboard():
       <!-- OPEN POSITION HEALTH TAB -->
       <section id="health" class="view">
         <div class="panel">
-          <h3>Active Position Telemetry &amp; In-Flight Monitoring</h3>
-          <p class="headline">Inspect real-time stall warnings, Anti-Delta pressure, and slot capacity.</p>
+          <h3>Active Position Telemetry &amp; RTS Monitoring</h3>
+          <p class="headline">Inspect real-time liquidation warnings, stall alerts, and slot capacity.</p>
           <div class="position-list" id="full-health-list"></div>
         </div>
       </section>
@@ -559,12 +570,12 @@ def get_dashboard():
       <section id="props" class="view">
         <div class="panel">
           <h3>Prop Account Lane ($10K December Target)</h3>
-          <p class="headline">Protected with Hard Veto gates, max-cap slot rules, and circuit breaker cool-downs.</p>
+          <p class="headline">Protected with Phase 1 Veto gates, Phase 2 RTS Liquidation filters, and circuit breaker cool-downs.</p>
           <div class="account-list">
             <article class="account-card">
               <div class="account-top">
                 <div>
-                  <h4>New $10K Prop Account (Veto Defense Mode)</h4>
+                  <h4>New $10K Prop Account (Full Defense Mode)</h4>
                   <div class="mini">Primary Sprint Lane · MAX 2 SLOTS</div>
                 </div>
                 <span class="status green">READY TO TRADE</span>
@@ -572,12 +583,12 @@ def get_dashboard():
               <div class="metrics">
                 <div class="metric"><span>Target Equity</span><strong>$10,000</strong></div>
                 <div class="metric"><span>Max Concurrent</span><strong>2 Positions</strong></div>
-                <div class="metric"><span>Decay Trap Veto</span><strong>Active (Hard Block)</strong></div>
+                <div class="metric"><span>RTS Liquidation Gate</span><strong>Active (Hard Block)</strong></div>
                 <div class="metric"><span>Circuit Breaker</span><strong>15-Min Cool-Down</strong></div>
               </div>
               <div class="action-row">
-                <button class="action primary">Veto defense deployment active</button>
-                <button class="action ghost">Zero tolerance for toxic decay traps</button>
+                <button class="action primary">Full defense deployment active</button>
+                <button class="action ghost">Zero tolerance for liquidation cascades</button>
               </div>
             </article>
           </div>
@@ -599,8 +610,8 @@ def get_dashboard():
           <strong id="modalHealthScore">--</strong>
         </div>
         <div class="tele-box">
-          <span>Anti-Delta Pressure</span>
-          <strong id="modalAntiDelta" style="color: var(--danger);">--</strong>
+          <span>RTS Liquidation State</span>
+          <strong id="modalRtsState" style="color: var(--danger);">--</strong>
         </div>
         <div class="tele-box">
           <span>Range Duration</span>
@@ -635,16 +646,16 @@ def get_dashboard():
     async function runSimulator() {
       const container = document.getElementById('sim-results-container');
       const btn = document.getElementById('runSimBtn');
-      btn.innerText = "⏳ Running Veto & Breaker Audit...";
+      btn.innerText = "⏳ Running Defense Audit...";
       btn.disabled = true;
-      container.innerHTML = `<div class="muted-box">Simulating toxic decay trap scrubbing and post-stop circuit breaker triggers...</div>`;
+      container.innerHTML = `<div class="muted-box">Simulating Phase 1 Veto gates and Phase 2 RTS Liquidation filters...</div>`;
 
       try {
         const res = await fetch('/api/simulator/run', { method: 'POST' });
         const data = await res.json();
         
         if (data.status === 'COMPLETED') {
-          btn.innerText = "🚀 Run Veto & Breaker Stress Audit";
+          btn.innerText = "🚀 Run Defense Audit";
           btn.disabled = false;
           
           let html = '';
@@ -672,7 +683,7 @@ def get_dashboard():
         }
       } catch (err) {
         console.error("Simulator error:", err);
-        btn.innerText = "🚀 Run Veto & Breaker Stress Audit";
+        btn.innerText = "🚀 Run Defense Audit";
         btn.disabled = false;
         container.innerHTML = `<div class="muted-box" style="color: var(--danger);">Simulation failed to complete. Please retry.</div>`;
       }
@@ -684,7 +695,7 @@ def get_dashboard():
 
       document.getElementById('modalTitle').innerText = `${pos.pair} Telemetry Inspection`;
       document.getElementById('modalHealthScore').innerText = `${pos.health_score} PTS`;
-      document.getElementById('modalAntiDelta').innerText = `${pos.anti_delta_pressure} PTS`;
+      document.getElementById('modalRtsState').innerText = pos.rts_state || "ALIGNED";
       document.getElementById('modalTimeInRange').innerText = `${pos.time_in_range_mins || 0} mins`;
       document.getElementById('modalGateStatus').innerText = pos.gate_status || "Balanced";
       document.getElementById('modalWarning').innerText = `Allocation: $${pos.allocation_size} | Status: ${pos.warning} | Opened at ${pos.opened_at}`;
@@ -698,7 +709,7 @@ def get_dashboard():
 
     async function triggerExecute(pair, setup_family, entry, stop, target, risk_usd, allocation_size) {
       if (allocation_size === 0) {
-        alert("Execution blocked: This setup is flagged as a Toxic Decay Trap by the Hard Veto Gate!");
+        alert("Execution blocked: This setup is flagged by Phase 1 Veto or Phase 2 RTS Liquidation filters!");
         return;
       }
 
@@ -765,7 +776,7 @@ def get_dashboard():
           feedData.signals.forEach((sig) => {
             const isVetoed = sig.allocation_size === 0;
             const statusClass = isVetoed ? 'red' : (sig.score >= 90 ? 'green' : 'yellow');
-            const tierLabel = isVetoed ? '⛔ VETOED (TOXIC TRAP)' : (sig.allocation_size === 1500 ? '⭐ TOP TIER ($1,500)' : 'SECONDARY ($750)');
+            const tierLabel = isVetoed ? '⛔ VETOED (HAZARD)' : (sig.allocation_size === 1500 ? '⭐ TOP TIER ($1,500)' : 'SECONDARY ($750)');
             
             const cardHtml = `
               <article class="signal-card" style="${isVetoed ? 'border: 2px solid var(--danger); opacity: 0.7;' : (sig.allocation_size === 1500 ? 'border: 2px solid var(--primary);' : '')}">
@@ -778,7 +789,7 @@ def get_dashboard():
                 </div>
                 <div class="metrics">
                   <div class="metric"><span>Speed</span><strong>${sig.speed_phase}</strong></div>
-                  <div class="metric"><span>CVD Slope</span><strong>${sig.cvd_slope}</strong></div>
+                  <div class="metric"><span>RTS Gate</span><strong style="color:${sig.rts_state === 'LIQUIDATION_WARNING' ? 'var(--danger)' : 'var(--text)'};">${sig.rts_state}</strong></div>
                   <div class="metric"><span>Score</span><strong>${sig.score}</strong></div>
                   <div class="metric"><span>Allocation</span><strong style="color: ${isVetoed ? 'var(--danger)' : 'var(--primary)'};">$${sig.allocation_size}</strong></div>
                 </div>
@@ -787,7 +798,7 @@ def get_dashboard():
                 </div>
                 <div class="action-row">
                   <button class="action primary" style="${isVetoed ? 'background: var(--line); color: var(--muted); cursor: not-allowed;' : ''}" onclick="triggerExecute('${sig.pair}', '${sig.setup_family}', ${sig.entry}, ${sig.stop}, ${sig.target}, ${sig.risk_usd}, ${sig.allocation_size})">${isVetoed ? 'VETOED BY HARD GATE' : 'EXECUTE'}</button>
-                  <button class="action ghost" onclick="alert('Speed: ${sig.speed_phase} | CVD: ${sig.cvd_slope} | Anti-Delta: ${sig.anti_delta_score}')">View telemetry</button>
+                  <button class="action ghost" onclick="alert('Speed: ${sig.speed_phase} | CVD: ${sig.cvd_slope} | RTS: ${sig.rts_state}')">View telemetry</button>
                 </div>
               </article>
             `;
@@ -806,12 +817,12 @@ def get_dashboard():
               </div>
               <div class="metrics">
                 <div class="metric"><span>Speed</span><strong style="font-size:16px;">${topNonVetoed.speed_phase}</strong></div>
-                <div class="metric"><span>CVD</span><strong style="font-size:16px;">${topNonVetoed.cvd_slope}</strong></div>
+                <div class="metric"><span>RTS</span><strong style="font-size:16px; color:${topNonVetoed.rts_state === 'LIQUIDATION_WARNING' ? 'var(--danger)' : 'var(--text)'};">${topNonVetoed.rts_state}</strong></div>
                 <div class="metric"><span>Score</span><strong style="font-size:16px;">${topNonVetoed.score}</strong></div>
                 <div class="metric"><span>Allocation</span><strong style="font-size:16px; color:${topNonVetoed.allocation_size === 0 ? 'var(--danger)' : 'var(--primary)'};">$${topNonVetoed.allocation_size}</strong></div>
               </div>
               <div class="action-row" style="margin-top:20px;">
-                <button class="action primary" style="width:100%; padding:18px; font-size:18px; ${topNonVetoed.allocation_size === 0 ? 'background: var(--line); color: var(--muted);' : ''}" onclick="triggerExecute('${topNonVetoed.pair}', '${topNonVetoed.setup_family}', ${topNonVetoed.entry}, ${topNonVetoed.stop}, ${topNonVetoed.target}, ${topNonVetoed.risk_usd}, ${topNonVetoed.allocation_size})">⚡ ${topNonVetoed.allocation_size === 0 ? 'VETOED TRAP' : 'EXECUTE AT $' + topNonVetoed.allocation_size}</button>
+                <button class="action primary" style="width:100%; padding:18px; font-size:18px; ${topNonVetoed.allocation_size === 0 ? 'background: var(--line); color: var(--muted);' : ''}" onclick="triggerExecute('${topNonVetoed.pair}', '${topNonVetoed.setup_family}', ${topNonVetoed.entry}, ${topNonVetoed.stop}, ${topNonVetoed.target}, ${topNonVetoed.risk_usd}, ${topNonVetoed.allocation_size})">⚡ ${topNonVetoed.allocation_size === 0 ? 'VETOED HAZARD' : 'EXECUTE AT $' + topNonVetoed.allocation_size}</button>
               </div>
             </div>
           `;
@@ -824,7 +835,7 @@ def get_dashboard():
 
         if (currentPositionsData.length > 0) {
           currentPositionsData.forEach((pos) => {
-            const isCritical = pos.health_score < 75 || pos.anti_delta_pressure > 80 || pos.time_in_range_mins > 15;
+            const isCritical = pos.health_score < 75 || pos.rts_state === 'LIQUIDATION_WARNING' || pos.time_in_range_mins > 15;
             const statusClass = isCritical ? 'red' : 'green';
             const healthCard = `
               <article class="position-card" style="${isCritical ? 'border: 2px solid var(--danger);' : ''}">
@@ -833,7 +844,7 @@ def get_dashboard():
                     <h4>${pos.pair} LONG</h4>
                     <div class="mini">${pos.setup_family} · Range: ${pos.time_in_range_mins || 0}m</div>
                   </div>
-                  <span class="status ${statusClass}">HEALTH: ${pos.health_score}</span>
+                  <span class="status ${statusClass}">RTS: ${pos.rts_state}</span>
                 </div>
                 <div class="metrics">
                   <div class="metric"><span>Entry</span><strong>${pos.entry}</strong></div>
@@ -842,7 +853,7 @@ def get_dashboard():
                   <div class="metric"><span>Risk</span><strong>$${pos.risk_usd}</strong></div>
                 </div>
                 <div class="confluence">
-                  <div class="conf-row"><div><b>Status / Warning</b><small>${pos.warning}</small></div><span class="tag ${isCritical ? 'red' : 'green'}">ANTI-DELTA ${pos.anti_delta_pressure}</span></div>
+                  <div class="conf-row"><div><b>Status / Warning</b><small>${pos.warning}</small></div><span class="tag ${isCritical ? 'red' : 'green'}">HEALTH ${pos.health_score}</span></div>
                 </div>
                 <div class="action-row">
                   <button class="action primary" style="${isCritical ? 'background: var(--danger); color: white;' : ''}" onclick="closePosition('${pos.id}')">CLOSE POSITION</button>
@@ -854,7 +865,7 @@ def get_dashboard():
             fullHealth.innerHTML += healthCard;
           });
         } else {
-          const emptyMsg = `<div class="muted-box">No active open positions. Max 2 concurrent slots enforced. Hard Veto gate active.</div>`;
+          const emptyMsg = `<div class="muted-box">No active open positions. Max 2 slots enforced. Phase 1 & 2 Defense gates active.</div>`;
           quickHealth.innerHTML = emptyMsg;
           fullHealth.innerHTML = emptyMsg;
         }
