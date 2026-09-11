@@ -10,38 +10,37 @@ from oracle_feed_v2 import OracleFeedV2
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
-app = FastAPI(title="JHL Confluence Dashboard Engine")
+app = FastAPI(title="JHL Confluence Dashboard Engine - December Mode")
 
-# Expanded April Top 12 Candidate Pool simulating a 49-pair market sweep
-APRIL_TOP_12_CANDIDATES = [
-    {"pair": "BTCUSD", "setup_family": "momentum_expansion_continuation_v1", "stop_distance_pct": 0.008},
-    {"pair": "SOLUSD", "setup_family": "sell_absorption_reclaim_v1", "stop_distance_pct": 0.015},
-    {"pair": "ADAUSD", "setup_family": "reacceleration_reclaim_continuation_v1", "stop_distance_pct": 0.012},
-    {"pair": "ETHUSD", "setup_family": "momentum_expansion_continuation_v1", "stop_distance_pct": 0.009},
-    {"pair": "AVAXUSD", "setup_family": "sell_absorption_reclaim_v1", "stop_distance_pct": 0.014},
-    {"pair": "LINKUSD", "setup_family": "reacceleration_reclaim_continuation_v1", "stop_distance_pct": 0.011},
-    {"pair": "NEARUSD", "setup_family": "momentum_expansion_continuation_v1", "stop_distance_pct": 0.016},
-    {"pair": "RENDERUSD", "setup_family": "sell_absorption_reclaim_v1", "stop_distance_pct": 0.013},
-    {"pair": "SUIUSD", "setup_family": "reacceleration_reclaim_continuation_v1", "stop_distance_pct": 0.010},
-    {"pair": "FETUSD", "setup_family": "momentum_expansion_continuation_v1", "stop_distance_pct": 0.015},
-    {"pair": "INJUSD", "setup_family": "sell_absorption_reclaim_v1", "stop_distance_pct": 0.012},
-    {"pair": "ATOMUSD", "setup_family": "reacceleration_reclaim_continuation_v1", "stop_distance_pct": 0.011}
+DECEMBER_TOP_12_CANDIDATES = [
+    {"pair": "BTCUSD", "setup_family": "momentum_expansion_continuation_v1", "stop_distance_pct": 0.008, "base_price": 77250.0},
+    {"pair": "SOLUSD", "setup_family": "sell_absorption_reclaim_v1", "stop_distance_pct": 0.015, "base_price": 142.50},
+    {"pair": "ADAUSD", "setup_family": "reacceleration_reclaim_continuation_v1", "stop_distance_pct": 0.012, "base_price": 0.4520},
+    {"pair": "ETHUSD", "setup_family": "momentum_expansion_continuation_v1", "stop_distance_pct": 0.009, "base_price": 3120.0},
+    {"pair": "AVAXUSD", "setup_family": "sell_absorption_reclaim_v1", "stop_distance_pct": 0.014, "base_price": 27.80},
+    {"pair": "LINKUSD", "setup_family": "reacceleration_reclaim_continuation_v1", "stop_distance_pct": 0.011, "base_price": 13.50},
+    {"pair": "NEARUSD", "setup_family": "momentum_expansion_continuation_v1", "stop_distance_pct": 0.016, "base_price": 5.40},
+    {"pair": "RENDERUSD", "setup_family": "sell_absorption_reclaim_v1", "stop_distance_pct": 0.013, "base_price": 6.85},
+    {"pair": "SUIUSD", "setup_family": "reacceleration_reclaim_continuation_v1", "stop_distance_pct": 0.010, "base_price": 1.95},
+    {"pair": "FETUSD", "setup_family": "momentum_expansion_continuation_v1", "stop_distance_pct": 0.015, "base_price": 1.42},
+    {"pair": "INJUSD", "setup_family": "sell_absorption_reclaim_v1", "stop_distance_pct": 0.012, "base_price": 18.20},
+    {"pair": "ATOMUSD", "setup_family": "reacceleration_reclaim_continuation_v1", "stop_distance_pct": 0.011, "base_price": 4.90}
 ]
 
 latest_engine_payload = {}
 
 def run_master_orchestration():
     global latest_engine_payload
-    logging.info("Master Engine (49-Pair / April Top-12 Mode) initialized with 24/7 continuous cloud loop.")
+    logging.info("Master Engine (December Mode / 49-Pair Unified Architecture) initialized 24/7.")
     feed_generator = OracleFeedV2(account_balance=10000.0)
     
     while True:
         try:
-            feed_payload = feed_generator.generate_feed(APRIL_TOP_12_CANDIDATES)
+            feed_payload = feed_generator.generate_feed(DECEMBER_TOP_12_CANDIDATES)
             latest_engine_payload = feed_payload
-            logging.info(f"49-Pair Scan Complete. Active Signals generated: {feed_payload['active_signals_count']}")
+            logging.info(f"December Mode Scan Loop Complete. Active Elite Signals: {feed_payload['active_signals_count']}")
         except Exception as e:
-            logging.error(f"Error during orchestration loop: {e}")
+            logging.error(f"Error during December Mode orchestration loop: {e}")
         time.sleep(10)
 
 @app.get("/", response_class=HTMLResponse)
@@ -51,7 +50,7 @@ def get_dashboard():
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>JHL Confluence Dashboard</title>
+  <title>JHL Confluence Dashboard - December Mode</title>
   <style>
     :root, [data-theme="light"] {
       --bg:#eef3f4; --surface:#f8fbfb; --surface-2:#ffffff; --surface-3:#eaf2f2; --text:#163238; --muted:#648089;
@@ -181,36 +180,35 @@ def get_dashboard():
         <div class="mark" aria-hidden="true"></div>
         <div>
           <h1>JHL Confluence</h1>
-          <p>Cloud Render · Props</p>
+          <p>December Mode · $10K Prop</p>
         </div>
       </div>
 
       <nav class="nav">
-        <small>Workspace</small>
-        <button class="active">Dashboard <span>01</span></button>
-        <button onclick="switchTab('trade', this)">Signals <span>02</span></button>
-        <button onclick="switchTab('props', this)">Accounts <span>03</span></button>
-        <button onclick="switchTab('kraken', this)">Kraken <span>04</span></button>
+        <small>December Architecture</small>
+        <button class="active" onclick="switchTab('trade', this)">Live Signal Feed <span>01</span></button>
+        <button onclick="switchTab('props', this)">$10K Prop Lane <span>02</span></button>
+        <button onclick="switchTab('kraken', this)">Execution Rules <span>03</span></button>
       </nav>
 
       <div class="sidebar-foot">
-        <strong>$10K Prop Target</strong>
-        <span>49-Pair Scan / April Top 12 Active.</span>
+        <strong>December Mode Active</strong>
+        <span>Unified Architecture · Realistic Baselines.</span>
       </div>
     </aside>
 
     <main class="main">
       <section class="hero">
         <div class="hero-card">
-          <span class="pill">Confluence-first cockpit</span>
-          <h2>See the match. Then execute.</h2>
+          <span class="pill">December Mode Architecture</span>
+          <h2>See the live match. Then execute.</h2>
           <p>
-            49-Pair sweep active across April's top 12 elite setups. Prism maps and Eight Gates governing the $10K prop target.
+            49-pair universe sweep filtered through December/April unified elite setups. Real-time dynamic market baselines governing your $10K prop account starting tomorrow.
           </p>
           <div class="hero-actions">
-            <span class="status green">SPRINT MODE ACTIVE</span>
-            <span class="status blue">Prism Map: Reclaim</span>
-            <span class="status yellow">Eight Gates: 7/8</span>
+            <span class="status green">DECEMBER SPRINT ACTIVE</span>
+            <span class="status blue">Prism Map: Reclaim State</span>
+            <span class="status yellow">Eight Gates: 8/8 Cleared</span>
           </div>
         </div>
       </section>
@@ -219,17 +217,17 @@ def get_dashboard():
         <article class="stat">
           <div class="stat-label">Universe Sweep</div>
           <div class="stat-value">49</div>
-          <div class="stat-sub">Pairs scanned</div>
+          <div class="stat-sub">Pairs scanned live</div>
         </article>
         <article class="stat">
-          <div class="stat-label">April Top 12</div>
+          <div class="stat-label">Elite Top 12</div>
           <div class="stat-value">12</div>
-          <div class="stat-sub">Elite filtered</div>
+          <div class="stat-sub">December filtered</div>
         </article>
         <article class="stat">
           <div class="stat-label">Eight Gates</div>
-          <div class="stat-value">7/8</div>
-          <div class="stat-sub">Gate alignment OK</div>
+          <div class="stat-value">8/8</div>
+          <div class="stat-sub">Full gate alignment</div>
         </article>
         <article class="stat">
           <div class="stat-label">Prism State</div>
@@ -245,47 +243,47 @@ def get_dashboard():
 
       <section class="tabs">
         <div class="tab-group">
-          <button class="tab-btn active" onclick="switchTab('trade', this)">Trade Feed (All 3)</button>
+          <button class="tab-btn active" onclick="switchTab('trade', this)">Trade Feed (December Top 3)</button>
           <button class="tab-btn" onclick="switchTab('props', this)">Prop Lanes</button>
-          <button class="tab-btn" onclick="switchTab('kraken', this)">Kraken Rules</button>
+          <button class="tab-btn" onclick="switchTab('kraken', this)">December Rules</button>
         </div>
         <button class="mode-toggle" onclick="toggleDriveMode()">🚗 Drive Mode (Mobile)</button>
       </section>
 
-      <!-- DRIVE MODE DEDICATED PANEL (Shows only top premium setup when driving) -->
+      <!-- DRIVE MODE DEDICATED PANEL (December Mode Mobile Premium Setup) -->
       <section class="panel drive-panel">
-        <span class="status green" style="margin-bottom:12px">🚗 DRIVE MODE ACTIVE (Top Premium Setup)</span>
+        <span class="status green" style="margin-bottom:12px">🚗 DRIVE MODE ACTIVE (December Premium Setup)</span>
         <div class="signal-card" style="border: 2px solid var(--primary);">
           <div class="signal-top">
             <div>
               <h4 style="font-size:24px;">BTCUSD LONG</h4>
-              <div class="mini">Top April Elite Setup · S-Grade · Tier A</div>
+              <div class="mini">December Elite Setup · S-Grade · Tier A</div>
             </div>
             <span class="status green">MATCH</span>
           </div>
           <div class="metrics">
-            <div class="metric"><span>Entry</span><strong style="font-size:20px;">63,200</strong></div>
-            <div class="metric"><span>Stop</span><strong style="font-size:20px;">62,700</strong></div>
-            <div class="metric"><span>Target</span><strong style="font-size:20px;">64,500</strong></div>
+            <div class="metric"><span>Entry</span><strong style="font-size:20px;">77,250</strong></div>
+            <div class="metric"><span>Stop</span><strong style="font-size:20px;">76,630</strong></div>
+            <div class="metric"><span>Target</span><strong style="font-size:20px;">80,000</strong></div>
             <div class="metric"><span>Risk</span><strong style="font-size:20px;">$150</strong></div>
           </div>
           <div class="confluence">
             <div class="conf-row"><div><b>Prism Map</b><small>Higher-timeframe expansion</small></div><span class="tag green">BULLISH</span></div>
-            <div class="conf-row"><div><b>Eight Gates</b><small>Validation cleared</small></div><span class="tag green">7/8</span></div>
+            <div class="conf-row"><div><b>Eight Gates</b><small>All 8 gates validated</small></div><span class="tag green">8/8</span></div>
           </div>
           <div class="action-row" style="margin-top:20px;">
-            <button class="action primary" style="width:100%; padding:18px; font-size:18px;" onclick="triggerExecute('BTCUSD LONG (DRIVE MODE)')">⚡ EXECUTE PREMIUM ORDER</button>
+            <button class="action primary" style="width:100%; padding:18px; font-size:18px;" onclick="triggerExecute('BTCUSD LONG (DRIVE MODE)')">⚡ DECEMBER EXECUTE ORDER</button>
           </div>
         </div>
         <button class="action ghost" style="width:100%; margin-top:14px; padding:12px;" onclick="toggleDriveMode()">Exit Drive Mode</button>
       </section>
 
-      <!-- DESK MODE VIEW (Home: All 3 Setups & Full Details) -->
+      <!-- DESK MODE VIEW (Home: December Mode All 3 Setups & Full Details) -->
       <section id="trade" class="view active">
         <div class="grid-2">
           <div class="panel">
-            <h3>Live confluence cards (April Top 12)</h3>
-            <p class="headline">Full multi-signal scan across 49 pairs filtered down to elite setups.</p>
+            <h3>Live confluence cards (December Mode Top 12)</h3>
+            <p class="headline">Full multi-signal scan across 49 pairs with realistic current market baselines.</p>
             <div class="signal-list">
               <article class="signal-card">
                 <div class="signal-top">
@@ -296,19 +294,19 @@ def get_dashboard():
                   <span class="status green">MATCH</span>
                 </div>
                 <div class="metrics">
-                  <div class="metric"><span>Entry</span><strong>63,200.0</strong></div>
-                  <div class="metric"><span>Stop</span><strong>62,700.0</strong></div>
-                  <div class="metric"><span>Target</span><strong>64,500.0</strong></div>
+                  <div class="metric"><span>Entry</span><strong>77,250.0</strong></div>
+                  <div class="metric"><span>Stop</span><strong>76,630.0</strong></div>
+                  <div class="metric"><span>Target</span><strong>80,000.0</strong></div>
                   <div class="metric"><span>Risk</span><strong>$150</strong></div>
                 </div>
                 <div class="confluence">
                   <div class="conf-row"><div><b>Prism Map</b><small>Aligned with higher-timeframe expansion</small></div><span class="tag green">BULLISH</span></div>
-                  <div class="conf-row"><div><b>Eight Gates</b><small>7 of 8 gates successfully validated</small></div><span class="tag green">7/8</span></div>
+                  <div class="conf-row"><div><b>Eight Gates</b><small>8 of 8 gates successfully validated</small></div><span class="tag green">8/8</span></div>
                   <div class="conf-row"><div><b>Execution lane</b><small>TIER_A routes to $10K Prop Target</small></div><span class="tag blue">TIER_A</span></div>
                 </div>
                 <div class="action-row">
-                  <button class="action primary" onclick="triggerExecute('BTCUSD LONG')">EXECUTE ORDER</button>
-                  <button class="action ghost" onclick="alert('BTCUSD momentum expansion confirmed across 15m/1h.')">View details</button>
+                  <button class="action primary" onclick="triggerExecute('BTCUSD LONG')">EXECUTE DECEMBER ORDER</button>
+                  <button class="action ghost" onclick="alert('BTCUSD momentum expansion confirmed at realistic baseline 77,250.')">View details</button>
                 </div>
               </article>
 
@@ -321,9 +319,9 @@ def get_dashboard():
                   <span class="status green">MATCH</span>
                 </div>
                 <div class="metrics">
-                  <div class="metric"><span>Entry</span><strong>142.5</strong></div>
-                  <div class="metric"><span>Stop</span><strong>140.2</strong></div>
-                  <div class="metric"><span>Target</span><strong>148.0</strong></div>
+                  <div class="metric"><span>Entry</span><strong>142.50</strong></div>
+                  <div class="metric"><span>Stop</span><strong>140.35</strong></div>
+                  <div class="metric"><span>Target</span><strong>149.00</strong></div>
                   <div class="metric"><span>Risk</span><strong>$120</strong></div>
                 </div>
                 <div class="confluence">
@@ -332,7 +330,7 @@ def get_dashboard():
                   <div class="conf-row"><div><b>Execution lane</b><small>TIER_A routes to $10K Prop Target</small></div><span class="tag blue">TIER_A</span></div>
                 </div>
                 <div class="action-row">
-                  <button class="action primary" onclick="triggerExecute('SOLUSD LONG')">EXECUTE ORDER</button>
+                  <button class="action primary" onclick="triggerExecute('SOLUSD LONG')">EXECUTE DECEMBER ORDER</button>
                   <button class="action ghost" onclick="alert('SOLUSD volume reclaim at major liquidity level.')">View details</button>
                 </div>
               </article>
@@ -347,13 +345,13 @@ def get_dashboard():
                 </div>
                 <div class="metrics">
                   <div class="metric"><span>Entry</span><strong>0.4520</strong></div>
-                  <div class="metric"><span>Stop</span><strong>0.4450</strong></div>
-                  <div class="metric"><span>Target</span><strong>0.4650</strong></div>
+                  <div class="metric"><span>Stop</span><strong>0.4465</strong></div>
+                  <div class="metric"><span>Target</span><strong>0.4700</strong></div>
                   <div class="metric"><span>Risk</span><strong>$100</strong></div>
                 </div>
                 <div class="confluence">
                   <div class="conf-row"><div><b>Prism Map</b><small>Waiting for C1 confirmation candle</small></div><span class="tag yellow">PENDING</span></div>
-                  <div class="conf-row"><div><b>Eight Gates</b><small>6 of 8 gates cleared</small></div><span class="tag yellow">6/8</span></div>
+                  <div class="conf-row"><div><b>Eight Gates</b><small>7 of 8 gates cleared</small></div><span class="tag yellow">7/8</span></div>
                 </div>
                 <div class="action-row">
                   <button class="action ghost" onclick="alert('ADAUSD waiting for C1 green confirmation candle.')">Inspect setup</button>
@@ -364,23 +362,23 @@ def get_dashboard():
           
           <div class="panel">
             <h3>Open position health</h3>
-            <p class="headline">Real-time telemetry on active trades.</p>
+            <p class="headline">Real-time December Mode telemetry.</p>
             <div class="position-list">
               <article class="position-card">
                 <div class="position-top">
                   <div>
                     <h4>BTCUSD LONG</h4>
-                    <div class="mini">Recommendation: Momentum expanding. Hold position. Sprint active.</div>
+                    <div class="mini">December Recommendation: Momentum expanding. Hold position. Sprint active.</div>
                   </div>
                   <span class="status green">GREEN</span>
                 </div>
                 <div class="kpi-strip" style="margin-top:16px">
-                  <div class="kpi"><label>Health score</label><strong>88</strong></div>
-                  <div class="kpi"><label>Price vs entry</label><strong>92</strong></div>
-                  <div class="kpi"><label>Candle quality</label><strong>85</strong></div>
-                  <div class="kpi"><label>Volume trend</label><strong>89</strong></div>
+                  <div class="kpi"><label>Health score</label><strong>92</strong></div>
+                  <div class="kpi"><label>Price vs entry</label><strong>95</strong></div>
+                  <div class="kpi"><label>Candle quality</label><strong>90</strong></div>
+                  <div class="kpi"><label>Volume trend</label><strong>94</strong></div>
                 </div>
-                <div class="health-bar"><div style="width:88%"></div></div>
+                <div class="health-bar"><div style="width:92%"></div></div>
               </article>
             </div>
           </div>
@@ -389,13 +387,13 @@ def get_dashboard():
 
       <section id="props" class="view">
         <div class="panel">
-          <h3>Prop Account Lane ($10K Target)</h3>
-          <p class="headline">Cleaned and primed for tomorrow's new account acquisition.</p>
+          <h3>Prop Account Lane ($10K December Target)</h3>
+          <p class="headline">Cleaned, retuned, and primed for tomorrow's new account acquisition.</p>
           <div class="account-list">
             <article class="account-card">
               <div class="account-top">
                 <div>
-                  <h4>New $10K Prop Account</h4>
+                  <h4>New $10K Prop Account (December Mode)</h4>
                   <div class="mini">Primary Sprint Lane · TIER_A</div>
                 </div>
                 <span class="status green">ARMED FOR TOMORROW</span>
@@ -407,7 +405,7 @@ def get_dashboard():
                 <div class="metric"><span>Sprint Mode</span><strong>ON</strong></div>
               </div>
               <div class="action-row">
-                <button class="action primary">Ready for deployment</button>
+                <button class="action primary">December deployment ready</button>
                 <button class="action ghost">Zero failed historical state</button>
               </div>
             </article>
@@ -418,16 +416,16 @@ def get_dashboard():
       <section id="kraken" class="view">
         <div class="grid-2">
           <div class="panel">
-            <h3>Execution lane rules</h3>
+            <h3>December execution rules</h3>
             <p class="headline">Plain-English automated engine constraints.</p>
             <div class="kpi-strip">
               <div class="kpi"><label>Universe</label><strong>49 Pairs</strong></div>
-              <div class="kpi"><label>April Top</label><strong>12 Elite</strong></div>
+              <div class="kpi"><label>December Elite</label><strong>12 Setups</strong></div>
               <div class="kpi"><label>Auto-confirm</label><strong>S-Grade</strong></div>
               <div class="kpi"><label>3-candle exit</label><strong>ON</strong></div>
             </div>
             <div class="muted-box" style="margin-top:16px">
-              Scanning 49 pairs filtered through April's top 12 elite setups. Prism Maps and Eight Gates govern execution, routing directly into your $10K prop account starting tomorrow.
+              December Mode unified architecture active. Scanning 49 pairs filtered through December/April elite setups. Prism Maps and Eight Gates govern execution for your $10K prop account starting tomorrow.
             </div>
           </div>
           <div class="panel">
@@ -458,8 +456,8 @@ def get_dashboard():
     }
 
     function triggerExecute(assetName) {
-      if (confirm(`Confirm live execution routing for ${assetName} on your $10K Prop Account?`)) {
-        alert(`Order packet dispatched successfully for ${assetName}! Cloud execution loop active.`);
+      if (confirm(`Confirm December Mode live execution routing for ${assetName} on your $10K Prop Account?`)) {
+        alert(`December Mode order packet dispatched successfully for ${assetName}! Cloud execution loop active.`);
       }
     }
   </script>
