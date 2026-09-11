@@ -88,7 +88,6 @@ class DashboardRequestHandler(BaseHTTPRequestHandler):
             self.send_header("Content-type", "application/json")
             self.end_headers()
             
-            # Generate live signals using the prism speed gate / sentinel
             sentinel = HostileActivitySentinel()
             sentinel.prism_map_primed = True
             
@@ -156,6 +155,7 @@ class DashboardRequestHandler(BaseHTTPRequestHandler):
             self.end_headers()
 
     def do_POST(self):
+        global active_positions
         parsed_path = urllib.parse.urlparse(self.path)
         path = parsed_path.path
         content_length = int(self.headers.get('Content-Length', 0))
@@ -195,12 +195,10 @@ class DashboardRequestHandler(BaseHTTPRequestHandler):
             self.end_headers()
             
             pos_id = data.get("id")
-            global active_positions
             active_positions = [p for p in active_positions if p["id"] != pos_id]
             
-            # Trigger circuit breaker cool-down
             circuit_breaker["active"] = True
-            circuit_breaker["expires_at"] = time.time() + 900 # 15 mins
+            circuit_breaker["expires_at"] = time.time() + 900
             
             self.wfile.write(json.dumps({"status": "SUCCESS"}).encode())
 
