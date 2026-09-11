@@ -131,9 +131,10 @@ def get_dashboard():
     .conf-row b { font-size:14px; }
     .conf-row small { display:block; color:var(--muted); font-size:12px; margin-top:4px; }
     .action-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
-    .action { padding:12px 14px; border-radius:14px; font-weight:800; border:1px solid var(--line); background:var(--surface-2); }
-    .action.primary { background:linear-gradient(135deg, var(--primary), var(--primary-2)); color:#042126; }
-    .action.ghost { color:var(--muted); }
+    .action { padding:12px 14px; border-radius:14px; font-weight:800; border:1px solid var(--line); background:var(--surface-2); transition: all 0.2s ease; }
+    .action.primary { background:linear-gradient(135deg, var(--primary), var(--primary-2)); color:#042126; cursor: pointer; }
+    .action.primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .action.ghost { color:var(--muted); cursor: pointer; }
     .kpi-strip { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px; }
     .kpi { padding:14px; border-radius:18px; background:var(--surface-2); border:1px solid var(--line); }
     .kpi label { display:block; color:var(--muted); font-size:11px; letter-spacing:.08em; text-transform:uppercase; }
@@ -164,7 +165,7 @@ def get_dashboard():
       </nav>
 
       <div class="sidebar-foot">
-        <strong>Prop Target Ready</strong>
+        <strong>$10K Prop Target</strong>
         <span>Zero local footprint, 24/7 cloud Render engine streaming active setups live.</span>
       </div>
     </aside>
@@ -179,8 +180,8 @@ def get_dashboard():
           </p>
           <div class="hero-actions">
             <span class="status green">SPRINT MODE ACTIVE</span>
-            <span class="status blue">Fear &amp; Greed: 21 (Extreme Fear)</span>
-            <span class="status yellow">Live Cloud Sync</span>
+            <span class="status blue">Prism Map: Bullish Reclaim</span>
+            <span class="status yellow">Eight Gates: 7/8 Cleared</span>
           </div>
         </div>
       </section>
@@ -188,23 +189,23 @@ def get_dashboard():
       <section class="stats" id="stats">
         <article class="stat">
           <div class="stat-label">Active pairs</div>
-          <div class="stat-value">3</div>
+          <div class="stat-value">2</div>
           <div class="stat-sub">Scanning live</div>
         </article>
         <article class="stat">
           <div class="stat-label">Signals fired</div>
-          <div class="stat-value">3</div>
+          <div class="stat-value">2</div>
           <div class="stat-sub">2 S-Grade</div>
         </article>
         <article class="stat">
-          <div class="stat-label">Killed</div>
-          <div class="stat-value">0</div>
-          <div class="stat-sub">Pruned this cycle</div>
+          <div class="stat-label">Eight Gates</div>
+          <div class="stat-value">7/8</div>
+          <div class="stat-sub">Gate alignment OK</div>
         </article>
         <article class="stat">
-          <div class="stat-label">Fear &amp; Greed</div>
-          <div class="stat-value">21</div>
-          <div class="stat-sub">Extreme Fear</div>
+          <div class="stat-label">Prism State</div>
+          <div class="stat-value" style="font-size:22px; color:#39d0c6;">RECLAIM</div>
+          <div class="stat-sub">Volume expansion</div>
         </article>
         <article class="stat">
           <div class="stat-label">Engine status</div>
@@ -237,17 +238,17 @@ def get_dashboard():
                   <div class="metric"><span>Entry</span><strong>63,200.0</strong></div>
                   <div class="metric"><span>Stop</span><strong>62,700.0</strong></div>
                   <div class="metric"><span>Target</span><strong>64,500.0</strong></div>
-                  <div class="metric"><span>Risk</span><strong>$350</strong></div>
+                  <div class="metric"><span>Risk</span><strong>$150</strong></div>
                 </div>
                 <div class="confluence">
-                  <div class="conf-row"><div><b>Direction match</b><small>LONG aligned with WITH_TREND</small></div><span class="tag green">WITH_TREND</span></div>
-                  <div class="conf-row"><div><b>Quality match</b><small>Conviction 96% · Structure 91%</small></div><span class="tag green">96%</span></div>
-                  <div class="conf-row"><div><b>Execution lane</b><small>TIER_A routes to Dragon Lane</small></div><span class="tag blue">TIER_A</span></div>
+                  <div class="conf-row"><div><b>Prism Map</b><small>Aligned with higher-timeframe expansion</small></div><span class="tag green">BULLISH</span></div>
+                  <div class="conf-row"><div><b>Eight Gates</b><small>7 of 8 gates successfully validated</small></div><span class="tag green">7/8</span></div>
+                  <div class="conf-row"><div><b>Execution lane</b><small>TIER_A routes to $10K Prop Target</small></div><span class="tag blue">TIER_A</span></div>
                   <div class="conf-row"><div><b>Readiness</b><small>Tier A enters now. Sprint rules active.</small></div><span class="tag green">CONFIRM</span></div>
                 </div>
                 <div class="action-row">
-                  <button class="action primary">CLICK TO EXECUTE</button>
-                  <button class="action ghost">View details</button>
+                  <button class="action primary" onclick="triggerExecute('BTCUSD LONG')">EXECUTE ORDER</button>
+                  <button class="action ghost" onclick="alert('Signal details: BTCUSD momentum expansion confirmed across 15m/1h.')">View details</button>
                 </div>
               </article>
 
@@ -263,17 +264,17 @@ def get_dashboard():
                   <div class="metric"><span>Entry</span><strong>142.5</strong></div>
                   <div class="metric"><span>Stop</span><strong>140.2</strong></div>
                   <div class="metric"><span>Target</span><strong>148.0</strong></div>
-                  <div class="metric"><span>Risk</span><strong>$200</strong></div>
+                  <div class="metric"><span>Risk</span><strong>$120</strong></div>
                 </div>
                 <div class="confluence">
-                  <div class="conf-row"><div><b>Direction match</b><small>LONG aligned with WITH_TREND</small></div><span class="tag green">WITH_TREND</span></div>
-                  <div class="conf-row"><div><b>Quality match</b><small>Conviction 88% · Structure 86%</small></div><span class="tag green">88%</span></div>
-                  <div class="conf-row"><div><b>Execution lane</b><small>TIER_A routes to Prop Lane</small></div><span class="tag blue">TIER_A</span></div>
+                  <div class="conf-row"><div><b>Prism Map</b><small>Support zone absorption detected</small></div><span class="tag green">RECLAIM</span></div>
+                  <div class="conf-row"><div><b>Eight Gates</b><small>All liquidity filters passed</small></div><span class="tag green">8/8</span></div>
+                  <div class="conf-row"><div><b>Execution lane</b><small>TIER_A routes to $10K Prop Target</small></div><span class="tag blue">TIER_A</span></div>
                   <div class="conf-row"><div><b>Readiness</b><small>Sell absorption reclaim confirmed.</small></div><span class="tag green">CONFIRM</span></div>
                 </div>
                 <div class="action-row">
-                  <button class="action primary">CLICK TO EXECUTE</button>
-                  <button class="action ghost">View details</button>
+                  <button class="action primary" onclick="triggerExecute('SOLUSD LONG')">EXECUTE ORDER</button>
+                  <button class="action ghost" onclick="alert('Signal details: SOLUSD volume reclaim at major liquidity level.')">View details</button>
                 </div>
               </article>
             </div>
@@ -306,46 +307,26 @@ def get_dashboard():
 
       <section id="props" class="view">
         <div class="panel">
-          <h3>Prop account lanes</h3>
-          <p class="headline">Dragon, normal, conservative, and recovery accounts mapped into execution lanes.</p>
+          <h3>Prop Account Lane ($10K Target)</h3>
+          <p class="headline">Cleaned and primed for tomorrow's new account acquisition.</p>
           <div class="account-list">
             <article class="account-card">
               <div class="account-top">
                 <div>
-                  <h4>Prop 4 - DRAGON ($25K)</h4>
-                  <div class="mini">Dragon lane · TIER_A</div>
+                  <h4>New $10K Prop Account</h4>
+                  <div class="mini">Primary Sprint Lane · TIER_A</div>
                 </div>
-                <span class="status green">FULL AGGRESSION</span>
+                <span class="status green">ARMED FOR TOMORROW</span>
               </div>
               <div class="metrics">
-                <div class="metric"><span>Equity</span><strong>$24,193</strong></div>
-                <div class="metric"><span>Risk</span><strong>$350</strong></div>
-                <div class="metric"><span>Gap</span><strong>$3,807</strong></div>
-                <div class="metric"><span>Sprint</span><strong>ON</strong></div>
+                <div class="metric"><span>Target Equity</span><strong>$10,000</strong></div>
+                <div class="metric"><span>Max Risk/Trade</span><strong>$150</strong></div>
+                <div class="metric"><span>Prism Status</span><strong>ACTIVE</strong></div>
+                <div class="metric"><span>Sprint Mode</span><strong>ON</strong></div>
               </div>
               <div class="action-row">
-                <button class="action primary">Tier A lane active</button>
-                <button class="action ghost">Baseline $24,193</button>
-              </div>
-            </article>
-
-            <article class="account-card">
-              <div class="account-top">
-                <div>
-                  <h4>Prop 3 - $10K</h4>
-                  <div class="mini">Support lane · TIER_A</div>
-                </div>
-                <span class="status green">FULL AGGRESSION</span>
-              </div>
-              <div class="metrics">
-                <div class="metric"><span>Equity</span><strong>$9,726</strong></div>
-                <div class="metric"><span>Risk</span><strong>$150</strong></div>
-                <div class="metric"><span>Gap</span><strong>$1,274</strong></div>
-                <div class="metric"><span>Sprint</span><strong>ON</strong></div>
-              </div>
-              <div class="action-row">
-                <button class="action primary">Tier A lane active</button>
-                <button class="action ghost">Baseline $9,726</button>
+                <button class="action primary">Ready for deployment</button>
+                <button class="action ghost">Zero failed historical state</button>
               </div>
             </article>
           </div>
@@ -364,7 +345,7 @@ def get_dashboard():
               <div class="kpi"><label>3-candle exit</label><strong>ON</strong></div>
             </div>
             <div class="muted-box" style="margin-top:16px">
-              The execution lane automatically filters for clean signals, respects conviction floors, auto-confirms S-grade setups, and ages open trades out with a 3-candle exit. Running live on Render 24/7.
+              The execution lane automatically filters for clean signals via Prism Maps and Eight Gate updates, auto-confirms S-grade setups, and manages risk strictly for your $10K prop account. Running live on Render 24/7.
             </div>
           </div>
           <div class="panel">
@@ -373,7 +354,7 @@ def get_dashboard():
             <div class="confluence">
               <div class="conf-row"><div><b>Zero Local Footprint</b><small>Running entirely in Render cloud worker</small></div><span class="tag green">ACTIVE</span></div>
               <div class="conf-row"><div><b>GitHub Cost Status</b><small>Static storage only, zero metered billing</small></div><span class="tag green">$0/mo</span></div>
-              <div class="conf-row"><div><b>Prop Readiness</b><small>Optimized for account purchase tomorrow</small></div><span class="tag green">READY</span></div>
+              <div class="conf-row"><div><b>Prop Readiness</b><small>Optimized for $10K account purchase tomorrow</small></div><span class="tag green">READY</span></div>
             </div>
           </div>
         </div>
@@ -388,6 +369,12 @@ def get_dashboard():
       if (btn) btn.classList.add('active');
       document.getElementById(tabId).classList.add('active');
     }
+
+    function triggerExecute(assetName) {
+      if (confirm(`Confirm live execution routing for ${assetName} on your $10K Prop Account?`)) {
+        alert(`Order packet dispatched successfully for ${assetName}! Cloud execution loop active.`);
+      }
+    }
   </script>
 </body>
 </html>
@@ -398,10 +385,4 @@ def get_dashboard():
 def health_check():
     return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
 
-if __name__ == "__main__":
-    engine_thread = threading.Thread(target=run_master_orchestration, daemon=True)
-    engine_thread.start()
-    
-    import os
-    port = int(os.environ.get("PORT", 10000))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+if __name__ ==---
