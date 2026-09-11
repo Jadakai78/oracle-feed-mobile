@@ -4,9 +4,18 @@ import time
 import os
 import threading
 from datetime import datetime, timezone
-from flask import Flask
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
-app = Flask(__name__)
+class HealthCheckHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header("Content-type", "text/plain")
+        self.end_headers()
+        self.wfile.write(b"Sniper Execution Engine & Prism Speed-Gate Active")
+    
+    def log_message(self, format, *args):
+        # Suppress noisy HTTP access logs in terminal
+        return
 
 class HostileActivitySentinel:
     def __init__(self, hostility_threshold=0.80):
@@ -76,15 +85,16 @@ def run_continuous_orchestration():
             print(f"⚠️ Error in orchestration loop: {e}")
             time.sleep(5)
 
-@app.route("/")
-def health_check():
-    return "Sniper Execution Engine & Prism Speed-Gate Active", 200
+def run_web_server():
+    port = int(os.environ.get("PORT", 10000))
+    server = HTTPServer(("0.0.0.0", port), HealthCheckHandler)
+    print(f"🌐 Native HTTP health-check server bound to port {port}")
+    server.serve_forever()
 
 if __name__ == "__main__":
-    # Start the continuous engine in a background thread so it doesn't block the web server
+    # Start the continuous sniper engine in a background thread
     engine_thread = threading.Thread(target=run_continuous_orchestration, daemon=True)
     engine_thread.start()
     
-    # Bind to Render's required port
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+    # Run the native http server on the main thread to satisfy Render's port check
+    run_web_server()
