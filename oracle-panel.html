@@ -1,0 +1,332 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Oracle Quantitative Engine - Mobile Command Center</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <style>
+    :root {
+      --bg: #090d14;
+      --panel: #111823;
+      --panel-hover: #172130;
+      --line: #223044;
+      --text: #e6f0ff;
+      --muted: #8ca0ba;
+      --good: #3ddc97;
+      --warn: #ffc857;
+      --bad: #ff5370;
+      --blue: #539bf5;
+      --purple: #9d7cd8;
+      --accent: #22d3ee;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.4;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 1500px; margin: 0 auto; padding: 12px; }
+    
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+      gap: 10px;
+    }
+    .brand-title { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); display: flex; align-items: center; gap: 8px; }
+    .brand-title .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); display: inline-block; box-shadow: 0 0 8px var(--good); }
+    .status-badge {
+      background: rgba(255, 83, 112, 0.15);
+      border: 1px solid var(--bad);
+      color: var(--bad);
+      font-weight: 700;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .stat-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .stat-card .label { font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.04em; }
+    .stat-card .value { font-size: 18px; font-weight: 800; margin-top: 2px; }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+    .tab {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    .tab:hover { background: var(--panel-hover); color: var(--text); }
+    .tab.active { background: var(--blue); color: #000; border-color: var(--blue); }
+
+    .search-input {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      color: var(--text);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      outline: none;
+      width: 180px;
+    }
+    .search-input:focus { border-color: var(--blue); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 10px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 14px;
+      position: relative;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .card:hover { border-color: var(--blue); transform: translateY(-1px); }
+    .card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .pair-name { font-size: 16px; font-weight: 800; letter-spacing: -0.01em; }
+    .dir-badge {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .dir-badge.LONG { background: rgba(61, 220, 151, 0.15); color: var(--good); border: 1px solid rgba(61, 220, 151, 0.3); }
+    .dir-badge.SHORT { background: rgba(255, 83, 112, 0.15); color: var(--bad); border: 1px solid rgba(255, 83, 112, 0.3); }
+
+    .prism-box {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 8px;
+      margin: 8px 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .p-item { font-size: 11px; }
+    .p-item .lbl { color: var(--muted); }
+    .p-item .val { font-weight: 700; color: var(--text); }
+
+    .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+    .tag {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--line);
+      color: var(--muted);
+    }
+    .tag.highlight { border-color: var(--accent); color: var(--accent); }
+    .tag.warn { border-color: var(--warn); color: var(--warn); }
+
+    .card-foot {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .empty-state {
+      grid-column: 1 / -1;
+      padding: 30px;
+      text-align: center;
+      background: var(--panel);
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="brand-title"><span class="dot"></span> Oracle Quantitative Engine</div>
+      <div style="color:var(--muted); font-size:12px; margin-top:2px;" id="timestamp-hdr">Syncing local joined feed artifact...</div>
+    </div>
+    <div class="status-badge">NO TRADE AUTHORIZATION (MANUAL REVIEW)</div>
+  </header>
+
+  <div class="stats-bar" id="stats-bar">
+    <div class="stat-card"><div class="label">Total Cards</div><div class="value" id="st-total">0</div></div>
+    <div class="stat-card"><div class="label">Time Matched</div><div class="value" id="st-matched" style="color:var(--good)">0</div></div>
+    <div class="stat-card"><div class="label">Active Signals</div><div class="value" id="st-active" style="color:var(--warn)">0</div></div>
+    <div class="stat-card"><div class="label">Gated / Deferred</div><div class="value" id="st-gated" style="color:var(--bad)">0</div></div>
+  </div>
+
+  <div class="controls">
+    <div class="tabs">
+      <button class="tab active" onclick="filterTab('all', this)">All Candidates</button>
+      <button class="tab" onclick="filterTab('matched', this)">Exact Time Match</button>
+      <button class="tab" onclick="filterTab('longs', this)">Long Setup</button>
+      <button class="tab" onclick="filterTab('shorts', this)">Short Setup</button>
+      <button class="tab" onclick="filterTab('unmatched', this)">Unmatched / Fallback</button>
+    </div>
+    <input type="text" id="search" class="search-input" placeholder="Search Pair (e.g. SOL)..." oninput="renderCards()">
+  </div>
+
+  <div class="grid" id="cards-grid"></div>
+</div>
+
+<script>
+let joinedData = [];
+let currentTab = 'all';
+
+async function fetchFeed() {
+  try {
+    const res = await fetch('./oracle_joined_delta_prism_v1.json?ts=' + Date.now());
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const payload = await res.json();
+    
+    joinedData = payload.joined_data || [];
+    
+    document.getElementById('timestamp-hdr').textContent = 
+      `Joined Feed: ${payload.join_status} | Cards: ${payload.total_cards_evaluated} | Exact Matches: ${payload.exact_timestamp_matches}`;
+    
+    document.getElementById('st-total').textContent = payload.total_cards_evaluated || 0;
+    document.getElementById('st-matched').textContent = payload.exact_timestamp_matches || 0;
+    document.getElementById('st-active').textContent = 0; // Guardrail strictly enforced
+    document.getElementById('st-gated').textContent = payload.total_cards_evaluated || 0;
+
+    renderCards();
+  } catch (err) {
+    document.getElementById('timestamp-hdr').textContent = 'Feed unavailable: ' + err.message;
+    document.getElementById('cards-grid').innerHTML = 
+      `<div class="empty-state">Unable to load oracle_joined_delta_prism_v1.json.<br>Ensure master pipeline has executed.</div>`;
+  }
+}
+
+function filterTab(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderCards();
+}
+
+function renderCards() {
+  const grid = document.getElementById('cards-grid');
+  const search = document.getElementById('search').value.toUpperCase().trim();
+
+  const filtered = joinedData.filter(item => {
+    const card = item.card_payload || {};
+    const pair = (item.pair || '').toUpperCase();
+    const dir = (card.delta_tempo_timing?.direction || '').toUpperCase();
+    const matched = item.timestamp_matched;
+
+    if (search && !pair.includes(search)) return false;
+
+    if (currentTab === 'matched') return matched;
+    if (currentTab === 'unmatched') return !matched;
+    if (currentTab === 'longs') return dir === 'LONG';
+    if (currentTab === 'shorts') return dir === 'SHORT';
+
+    return true;
+  });
+
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="empty-state">No candidate cards match current filters.</div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(item => {
+    const card = item.card_payload || {};
+    const prismBar = item.matched_prism_bar || {};
+    const dt = card.delta_tempo_timing || {};
+    const pair = item.pair || 'UNKNOWN';
+    const dir = dt.direction || 'NEUTRAL';
+    
+    const closePrice = prismBar.close ? `$${Number(prismBar.close).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}` : 'N/A';
+    const highPrice = prismBar.high ? `$${Number(prismBar.high).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}` : 'N/A';
+    const lowPrice = prismBar.low ? `$${Number(prismBar.low).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}` : 'N/A';
+    const volume = prismBar.volume ? Number(prismBar.volume).toFixed(2) : 'N/A';
+
+    return `
+      <article class="card">
+        <div>
+          <div class="card-head">
+            <div>
+              <div class="pair-name">${pair}</div>
+              <div style="font-size:11px; color:var(--muted);">${card.canonical_pair || pair}</div>
+            </div>
+            <span class="dir-badge ${dir}">${dir}</span>
+          </div>
+
+          <div class="prism-box">
+            <div class="p-item"><span class="lbl">15m Close:</span> <span class="val">${closePrice}</span></div>
+            <div class="p-item"><span class="lbl">Volume:</span> <span class="val">${volume}</span></div>
+            <div class="p-item"><span class="lbl">15m High:</span> <span class="val">${highPrice}</span></div>
+            <div class="p-item"><span class="lbl">15m Low:</span> <span class="val">${lowPrice}</span></div>
+          </div>
+
+          <div class="tags">
+            <span class="tag highlight">SPEED: ${dt.speed_phase || 'N/A'}</span>
+            <span class="tag">STATE: ${dt.state || 'OK'}</span>
+            ${item.timestamp_matched ? '<span class="tag" style="border-color:var(--good); color:var(--good);">EXACT MATCH</span>' : '<span class="tag warn">FALLBACK MATCH</span>'}
+            <span class="tag">EPOCH: ${item.reference_bar_epoch}</span>
+          </div>
+        </div>
+
+        <div class="card-foot">
+          <span>Bar: ${item.reference_bar_raw || 'N/A'}</span>
+          <span style="color:var(--bad); font-weight:700;">MANUAL REVIEW</span>
+        </div>
+      </article>
+    `;
+  }).join('');
+}
+
+fetchFeed();
+setInterval(fetchFeed, 30000);
+</script>
+</body>
+</html>

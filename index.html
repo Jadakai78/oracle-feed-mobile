@@ -1,0 +1,575 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Oracle Terminal - Direct Execution Engine</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <style>
+    :root {
+      --bg: #070a0f;
+      --panel: #0d131d;
+      --panel-hover: #131b29;
+      --line: #1c283c;
+      --text: #e6f0ff;
+      --muted: #7a8fa8;
+      --good: #00e676;
+      --warn: #ffb300;
+      --bad: #ff1744;
+      --blue: #29b6f6;
+      --accent: #00e5ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.4;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 1500px; margin: 0 auto; padding: 12px; }
+    
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+      gap: 10px;
+      transition: border-color 0.3s ease;
+    }
+    header.alert-active {
+      border-color: var(--good);
+      box-shadow: 0 0 15px rgba(0, 230, 118, 0.25);
+    }
+    
+    .brand-title { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); display: flex; align-items: center; gap: 8px; }
+    .brand-title .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); display: inline-block; box-shadow: 0 0 8px var(--good); }
+    
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+    
+    .btn-action {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--line);
+      color: var(--text);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-action:hover { background: var(--panel-hover); border-color: var(--accent); }
+
+    .tier-indicator {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      font-weight: 700;
+      font-size: 12px;
+    }
+    .tier-stat { display: flex; align-items: center; gap: 6px; }
+    .tier-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+    .tab {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    .tab:hover { background: var(--panel-hover); color: var(--text); }
+    .tab.active { background: var(--blue); color: #000; border-color: var(--blue); }
+    .tab.execute-tab.active { background: var(--good); color: #000; border-color: var(--good); }
+    .tab.watch-tab.active { background: var(--warn); color: #000; border-color: var(--warn); }
+    .tab.dead-tab.active { background: var(--bad); color: #fff; border-color: var(--bad); }
+
+    .search-input {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      color: var(--text);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      outline: none;
+      width: 180px;
+    }
+    .search-input:focus { border-color: var(--blue); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 10px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 14px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .card.EXECUTE { border-color: var(--good); box-shadow: 0 0 12px rgba(0, 230, 118, 0.2); }
+    .card.WATCH { border-color: rgba(255, 179, 0, 0.4); }
+    .card.DEAD { opacity: 0.55; }
+
+    .card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .pair-name { font-size: 16px; font-weight: 800; letter-spacing: -0.01em; }
+    
+    .dir-badge {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .dir-badge.LONG { background: rgba(0, 230, 118, 0.15); color: var(--good); border: 1px solid rgba(0, 230, 118, 0.3); }
+    .dir-badge.SHORT { background: rgba(255, 23, 68, 0.15); color: var(--bad); border: 1px solid rgba(255, 23, 68, 0.3); }
+
+    .prism-box {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 8px;
+      margin: 6px 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .p-item { font-size: 11px; }
+    .p-item .lbl { color: var(--muted); }
+    .p-item .val { font-weight: 700; color: var(--text); }
+
+    .targets-box {
+      background: rgba(0, 229, 255, 0.04);
+      border: 1px solid rgba(0, 229, 255, 0.2);
+      border-radius: 8px;
+      padding: 8px;
+      margin: 6px 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 4px;
+      align-items: center;
+    }
+    .targets-box .val-sl { font-weight: 800; color: var(--bad); }
+    .targets-box .val-tp { font-weight: 800; color: var(--good); }
+    .targets-box .val-rr { font-weight: 800; color: var(--accent); }
+
+    .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+    .tag {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--line);
+      color: var(--muted);
+    }
+    .tag.highlight { border-color: var(--accent); color: var(--accent); }
+    .tag.age-fresh { border-color: var(--good); color: var(--good); }
+    .tag.age-stale { border-color: var(--bad); color: var(--bad); }
+
+    .card-foot {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+    }
+    
+    .btn-exec {
+      background: var(--good);
+      color: #000;
+      border: none;
+      font-weight: 800;
+      font-size: 11px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+    .btn-exec:hover { transform: scale(1.03); box-shadow: 0 0 10px rgba(0, 230, 118, 0.4); }
+    .btn-exec:active { transform: scale(0.97); }
+
+    .empty-state {
+      grid-column: 1 / -1;
+      padding: 50px 20px;
+      text-align: center;
+      background: var(--panel);
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header id="main-header">
+    <div>
+      <div class="brand-title"><span class="dot"></span> Oracle Terminal Engine</div>
+      <div style="color:var(--muted); font-size:12px; margin-top:2px;" id="timestamp-hdr">Connecting feed...</div>
+    </div>
+    
+    <div class="header-actions">
+      <button class="btn-action" onclick="enablePushNotifications()">🔔 Enable Push Alerts</button>
+      <button class="btn-action" onclick="setWebhookUrl()">⚙️ Webhook Settings</button>
+      
+      <div class="tier-indicator">
+        <div class="tier-stat"><span class="tier-dot" style="background:var(--good)"></span> EXECUTE: <span id="cnt-execute" style="color:var(--good)">0</span></div>
+        <div class="tier-stat"><span class="tier-dot" style="background:var(--warn)"></span> WATCH: <span id="cnt-watch" style="color:var(--warn)">0</span></div>
+        <div class="tier-stat"><span class="tier-dot" style="background:var(--bad)"></span> DEAD: <span id="cnt-dead" style="color:var(--bad)">0</span></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="controls">
+    <div class="tabs">
+      <button class="tab execute-tab active" onclick="filterTab('EXECUTE', this)">EXECUTE NOW (<span id="tab-cnt-execute">0</span>)</button>
+      <button class="tab watch-tab" onclick="filterTab('WATCH', this)">WATCH / IMPROVING (<span id="tab-cnt-watch">0</span>)</button>
+      <button class="tab dead-tab" onclick="filterTab('DEAD', this)">DEAD / BAD SETUPS (<span id="tab-cnt-dead">0</span>)</button>
+      <button class="tab" onclick="filterTab('ALL', this)">ALL CANDIDATES</button>
+    </div>
+    <input type="text" id="search" class="search-input" placeholder="Filter Pair..." oninput="renderCards()">
+  </div>
+
+  <div class="grid" id="cards-grid"></div>
+</div>
+
+<script>
+let joinedData = [];
+let currentTab = 'EXECUTE';
+let prevExecuteCount = 0;
+let lastFeedTimestamp = 0;
+let webhookUrl = localStorage.getItem('ORACLE_WEBHOOK_URL') || '';
+
+function setWebhookUrl() {
+  const input = prompt("Enter your Webhook / Exchange API Endpoint URL:\n(e.g., https://3commas.io/trade_webhook or https://your-server.com/api/order)", webhookUrl);
+  if (input !== null) {
+    webhookUrl = input.trim();
+    localStorage.setItem('ORACLE_WEBHOOK_URL', webhookUrl);
+    alert(webhookUrl ? "Webhook URL configured successfully!" : "Webhook URL cleared. Executions will revert to Simulation Mode.");
+  }
+}
+
+function enablePushNotifications() {
+  if (!("Notification" in window)) {
+    alert("This browser does not support desktop notifications");
+    return;
+  }
+  Notification.requestPermission().then(permission => {
+    if (permission === "granted") {
+      new Notification("Oracle Terminal", { body: "Push Notifications Enabled! You will be alerted on new EXECUTE setups." });
+    }
+  });
+}
+
+function sendPushNotification(title, body) {
+  if ("Notification" in window && Notification.permission === "granted") {
+    new Notification(title, { body, icon: '/favicon.ico' });
+  }
+}
+
+function playAlertSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.25);
+  } catch (e) {
+    console.log("Audio alert suppressed.");
+  }
+}
+
+function extractSpeedPhase(speedObj) {
+  if (!speedObj) return 'N/A';
+  if (typeof speedObj === 'string') return speedObj;
+  if (typeof speedObj === 'object') {
+    return speedObj.phase || speedObj.speed_phase || speedObj.name || 'UNKNOWN';
+  }
+  return String(speedObj);
+}
+
+function classifyTier(item) {
+  const card = item.card_payload || {};
+  const dt = card.delta_tempo_timing || {};
+  const phase = extractSpeedPhase(dt.speed_phase).toUpperCase();
+  const matched = item.timestamp_matched;
+  const state = (dt.state || '').toUpperCase();
+
+  if (matched && (phase === 'ACCELERATING' || phase === 'IMPULSE') && state !== 'GATED') {
+    return 'EXECUTE';
+  }
+  if (matched || phase === 'IMPULSE_DECAY' || phase === 'PULLBACK' || state === 'AVAILABLE') {
+    return 'WATCH';
+  }
+  return 'DEAD';
+}
+
+function parsePriceNum(val) {
+  if (val === undefined || val === null) return 0;
+  const num = Number(val);
+  return isNaN(num) ? 0 : num;
+}
+
+function parsePrice(val) {
+  const num = parsePriceNum(val);
+  if (num === 0) return 'N/A';
+  return `$${num.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}`;
+}
+
+function calcRiskReward(close, sl, tp, dir) {
+  if (!close || !sl || !tp) return 'N/A';
+  let risk = 0, reward = 0;
+  if (dir === 'SHORT') {
+    risk = sl - close;
+    reward = close - tp;
+  } else {
+    risk = close - sl;
+    reward = tp - close;
+  }
+  if (risk <= 0 || reward <= 0) return '1:1.0';
+  const ratio = (reward / risk).toFixed(1);
+  return `1:${ratio}`;
+}
+
+function calculateBarAge(item) {
+  if (!item.reference_bar_raw) return { text: 'N/A', isFresh: false };
+  const barTime = new Date(item.reference_bar_raw).getTime();
+  if (isNaN(barTime)) return { text: 'N/A', isFresh: false };
+  
+  const diffSec = Math.floor((Date.now() - barTime) / 1000);
+  if (diffSec < 0) return { text: '0s ago', isFresh: true };
+  
+  const mins = Math.floor(diffSec / 60);
+  const secs = diffSec % 60;
+  const isFresh = diffSec < 900;
+  
+  return {
+    text: mins > 0 ? `${mins}m ${secs}s ago` : `${secs}s ago`,
+    isFresh
+  };
+}
+
+async function triggerTradeExecution(pair, dir, entry, sl, tp) {
+  const payload = {
+    event: "ORACLE_EXECUTE_SIGNAL",
+    pair,
+    direction: dir,
+    entry_price: entry,
+    stop_loss: sl,
+    take_profit: tp,
+    timestamp: new Date().toISOString()
+  };
+
+  if (!webhookUrl) {
+    alert(`[SIMULATION MODE]\n\nTrade Executed!\nPair: ${pair}\nDirection: ${dir}\nEntry: ${entry}\nSL: ${sl}\nTP: ${tp}\n\n(Configure a Webhook URL in Settings to route this to your exchange)`);
+    return;
+  }
+
+  try {
+    const res = await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      alert(`[SUCCESS] Webhook Order Sent for ${pair}!`);
+    } else {
+      alert(`[ERROR] Webhook execution failed with status ${res.status}`);
+    }
+  } catch (e) {
+    alert(`[ERROR] Webhook target unreachable: ${e.message}`);
+  }
+}
+
+async function fetchFeed() {
+  try {
+    const res = await fetch('./oracle_joined_delta_prism_v1.json?ts=' + Date.now());
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const payload = await res.json();
+    
+    joinedData = payload.joined_data || [];
+    lastFeedTimestamp = Date.now();
+    
+    document.getElementById('timestamp-hdr').textContent = 
+      `Stream Active | Evaluated ${payload.total_cards_evaluated} Candidates`;
+
+    updateCounters();
+    renderCards();
+  } catch (err) {
+    document.getElementById('timestamp-hdr').textContent = 'Feed Offline: ' + err.message;
+  }
+}
+
+function updateCounters() {
+  let executeCount = 0;
+  let watchCount = 0;
+  let deadCount = 0;
+
+  joinedData.forEach(item => {
+    const tier = classifyTier(item);
+    if (tier === 'EXECUTE') executeCount++;
+    else if (tier === 'WATCH') watchCount++;
+    else deadCount++;
+  });
+
+  const header = document.getElementById('main-header');
+  if (executeCount > 0) {
+    header.classList.add('alert-active');
+    if (executeCount > prevExecuteCount) {
+      playAlertSound();
+      sendPushNotification("CRITICAL TRADE SIGNAL", `${executeCount} setup(s) ready for instant execution!`);
+    }
+  } else {
+    header.classList.remove('alert-active');
+  }
+  prevExecuteCount = executeCount;
+
+  document.getElementById('cnt-execute').textContent = executeCount;
+  document.getElementById('cnt-watch').textContent = watchCount;
+  document.getElementById('cnt-dead').textContent = deadCount;
+
+  document.getElementById('tab-cnt-execute').textContent = executeCount;
+  document.getElementById('tab-cnt-watch').textContent = watchCount;
+  document.getElementById('tab-cnt-dead').textContent = deadCount;
+}
+
+function filterTab(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderCards();
+}
+
+function renderCards() {
+  const grid = document.getElementById('cards-grid');
+  const search = document.getElementById('search').value.toUpperCase().trim();
+
+  const filtered = joinedData.filter(item => {
+    const pair = (item.pair || '').toUpperCase();
+    const tier = classifyTier(item);
+
+    if (search && !pair.includes(search)) return false;
+    if (currentTab !== 'ALL' && tier !== currentTab) return false;
+
+    return true;
+  });
+
+  if (!filtered.length) {
+    grid.innerHTML = currentTab === 'EXECUTE' 
+      ? `<div class="empty-state">No Executable Signals Available<br><span style="font-size:12px; font-weight:400; color:var(--muted)">All candidates currently in Watch or Inactive tiers.</span></div>`
+      : `<div class="empty-state">No candidates match current tier filter.</div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(item => {
+    const card = item.card_payload || {};
+    const prismBar = item.matched_prism_bar || {};
+    const dt = card.delta_tempo_timing || {};
+    const pair = item.pair || 'UNKNOWN';
+    const dir = dt.direction || 'NEUTRAL';
+    const tier = classifyTier(item);
+    
+    const speedDisplay = extractSpeedPhase(dt.speed_phase);
+    const closeNum = parsePriceNum(prismBar.close);
+    const highNum = parsePriceNum(prismBar.high);
+    const lowNum = parsePriceNum(prismBar.low);
+
+    const closePrice = parsePrice(closeNum);
+    const highPrice = parsePrice(highNum);
+    const lowPrice = parsePrice(lowNum);
+    const volume = prismBar.volume ? Number(prismBar.volume).toFixed(2) : 'N/A';
+
+    const rawSl = card.stop_loss || card.sl || (dir === 'SHORT' ? highNum : lowNum);
+    const rawTp = card.take_profit || card.tp || (dir === 'SHORT' ? (closeNum * 0.98) : (closeNum * 1.02));
+    
+    const sl = parsePrice(rawSl);
+    const tp = parsePrice(rawTp);
+    const rrRatio = calcRiskReward(closeNum, parsePriceNum(rawSl), parsePriceNum(rawTp), dir);
+
+    const ageInfo = calculateBarAge(item);
+
+    return `
+      <article class="card ${tier}">
+        <div>
+          <div class="card-head">
+            <div>
+              <div class="pair-name">${pair}</div>
+              <div style="font-size:11px; color:var(--muted);">${card.canonical_pair || pair}</div>
+            </div>
+            <span class="dir-badge ${dir}">${dir}</span>
+          </div>
+
+          <div class="prism-box">
+            <div class="p-item"><span class="lbl">15m Close:</span> <span class="val">${closePrice}</span></div>
+            <div class="p-item"><span class="lbl">Volume:</span> <span class="val">${volume}</span></div>
+            <div class="p-item"><span class="lbl">15m High:</span> <span class="val">${highPrice}</span></div>
+            <div class="p-item"><span class="lbl">15m Low:</span> <span class="val">${lowPrice}</span></div>
+          </div>
+
+          <div class="targets-box">
+            <div class="p-item"><span class="lbl">SL:</span> <br><span class="val-sl">${sl}</span></div>
+            <div class="p-item"><span class="lbl">TP:</span> <br><span class="val-tp">${tp}</span></div>
+            <div class="p-item"><span class="lbl">R:R Ratio:</span> <br><span class="val-rr">${rrRatio}</span></div>
+          </div>
+
+          <div class="tags">
+            <span class="tag highlight">SPEED: ${speedDisplay}</span>
+            <span class="tag ${ageInfo.isFresh ? 'age-fresh' : 'age-stale'}">AGE: ${ageInfo.text}</span>
+          </div>
+        </div>
+
+        <div class="card-foot">
+          <span style="font-size:10px; color:var(--muted);">${item.reference_bar_raw || 'N/A'}</span>
+          ${tier === 'EXECUTE' 
+            ? `<button class="btn-exec" onclick="triggerTradeExecution('${pair}', '${dir}', '${closePrice}', '${sl}', '${tp}')">EXECUTE</button>` 
+            : `<span style="font-weight:600; color:var(--muted);">${tier}</span>`}
+        </div>
+      </article>
+    `;
+  }).join('');
+}
+
+fetchFeed();
+setInterval(fetchFeed, 5000);
+setInterval(renderCards, 1000);
+</script>
+</body>
+</html>
