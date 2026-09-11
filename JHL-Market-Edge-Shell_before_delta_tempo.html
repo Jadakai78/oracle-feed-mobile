@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JHL Market Edge</title>
+<style>
+:root{--bg:#07100f;--panel:#0d1b19;--line:#25403a;--text:#e6f1ed;--muted:#8ca59d;--green:#54d79a;--red:#ff7272;--amber:#f5c76a;--blue:#78b9ff;--gray:#687a75}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#112a25,#07100f 45%);color:var(--text);font:14px/1.4 Inter,ui-sans-serif,system-ui,sans-serif}header{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;gap:18px;align-items:center;justify-content:space-between;background:#091513cc;position:sticky;top:0;z-index:3;backdrop-filter:blur(12px)}h1{font-size:18px;margin:0;letter-spacing:.08em}.sub{color:var(--muted);font-size:12px}.controls{display:flex;gap:8px;align-items:center}.pill,button{border:1px solid var(--line);background:#0d201d;color:var(--text);padding:6px 9px;border-radius:999px;font:inherit}button{cursor:pointer}.layout{display:grid;grid-template-columns:1.1fr 1.35fr 1.1fr;gap:14px;padding:14px;max-width:1800px;margin:auto}.panel{background:#0b1715e6;border:1px solid var(--line);border-radius:12px;overflow:hidden}.panel h2{font-size:12px;letter-spacing:.12em;margin:0;padding:12px 14px;border-bottom:1px solid var(--line);color:#b8d3c9}.panel-note{font-size:11px;color:var(--muted);padding:8px 14px;border-bottom:1px solid var(--line)}.rows{padding:8px}.row{border:1px solid #1d342f;border-radius:9px;padding:10px;margin:7px 0;background:#0a1513}.top{display:flex;align-items:center;justify-content:space-between;gap:8px}.pair{font-weight:750;letter-spacing:.03em}.tag{font-size:10px;padding:3px 6px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}.ok{color:var(--green)}.warn{color:var(--amber)}.bad{color:var(--red)}.muted{color:var(--muted)}.blue{color:var(--blue)}.meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:6px;font-size:11px;color:var(--muted)}.bot{padding:10px;border:1px solid #213a34;border-radius:9px;margin:7px 0;background:#0c1a17}.bot-head{display:flex;justify-content:space-between;gap:8px;align-items:center}.bot-name{font-weight:700;font-size:12px;letter-spacing:.06em}.direction{font-weight:800}.long{color:var(--green)}.short{color:var(--red)}.score{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.plan{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:#cce2da;margin-top:6px}.why{font-size:11px;color:var(--muted);margin-top:5px}.pressure{padding:9px;border:1px solid #243d37;border-radius:8px;margin:7px 0;font-size:11px}.pressure-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;margin-top:6px;color:var(--muted)}.empty{padding:18px;color:var(--muted);text-align:center}.status{font-size:11px;color:var(--muted)}@media(max-width:1100px){.layout{grid-template-columns:1fr}.panel{min-height:auto}}@media(max-width:600px){header{align-items:flex-start;flex-direction:column}.layout{padding:8px}.meta{gap:4px}}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>JHL MARKET EDGE</h1><div class="sub">One feed · specialist tactics · pressure must be real · no imaginary votes</div></div>
+  <div class="controls"><span id="feed" class="status">Waiting for signals.json</span><button id="refresh">Refresh</button><button id="auto">Auto: ON</button></div>
+</header>
+<main class="layout">
+  <section class="panel"><h2>FIELD / MARKET STATE</h2><div class="panel-note">Where the market is: structure, location, tempo, and pressure availability.</div><div id="field" class="rows"></div></section>
+  <section class="panel"><h2>SPECIALIST READS</h2><div class="panel-note">A plan is not permission. Read the tactic, conviction, KNN status, geometry, and reason.</div><div id="specialists" class="rows"></div></section>
+  <section class="panel"><h2>PERMISSION / OFFENSE</h2><div class="panel-note">PROVEN requires displacement, participation, acceptance, and a payable path. Missing pressure gets no vote.</div><div id="permission" class="rows"></div></section>
+</main>
+<script>
+// Active execution specialists — these contribute to offense/permission routing.
+const EXEC_BOTS = [['gimba_range','RNG'], ['rts_liq','RTS']];
+// Training-only specialist — logged and evaluated; does NOT route to execution.
+const TRAIN_BOTS = [['gimba_drive','DRIVE']];
+const PULSE_BOT = ['gimba_pulse','PULSE'];
+// Diagnostic context providers — visible for analysis; must not generate execution eligibility.
+const DIAG_BOTS = [['gimba_volatile','VOL·CTX'], ['gimba_trend','TRD·CTX']];
+// Shadow-only candidates — read-only observation cards; never contribute to offense/permission/routing.
+const SHADOW_BOTS = [['shadow_volatile','SHD-VOL'], ['shadow_trend_recovery','SHD-TRD']];
+let auto = true, timer = null;
+const el = id => document.getElementById(id);
+const text = value => value === undefined || value === null || value === '' ? '—' : String(value);
+const n = value => Number.isFinite(Number(value)) ? Number(value) : null;
+const pct = value => n(value) === null ? '—' : n(value).toFixed(2);
+const esc = value => text(value).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+function marketNoise(raw={}) {
+  const score = n(raw.noise_score);
+  return {
+    available: !!raw.available && score !== null && !!raw.regime,
+    regime: raw.regime || '—',
+    score
+  };
+}
+function marketNoiseBits(raw={}) {
+  const noise = marketNoise(raw);
+  return noise.available ? `NOISE ${noise.regime} ${noise.score.toFixed(2)}` : 'NOISE unavailable';
+}
+
+function timing(raw={}) {
+  const fallback = {
+    base_status: 'no_base',
+    delta_state: 'unavailable',
+    cvd_state: 'unavailable',
+    noise_relation: 'unavailable',
+    timing_state: 'OBSERVE',
+    gap: 'no_actionable_base',
+    reasons: [],
+    rationale: 'timing unavailable',
+  };
+  const merged = Object.assign({}, fallback, raw || {});
+  merged.reasons = Array.isArray(merged.reasons) ? merged.reasons : [];
+  return merged;
+}
+
+function pressure(flow={}) {
+  if (!flow.ready) return {state:'UNAVAILABLE', cls:'warn', detail:text(flow.reason || 'no confirmed pressure source')};
+  const delta = n(flow.delta_norm), slope = n(flow.cvd_slope);
+  if (delta === null || slope === null) return {state:'UNAVAILABLE', cls:'warn', detail:'incomplete pressure fields'};
+  if (delta > .2 && slope > 0) return {state:'BUY PRESSURE', cls:'ok', detail:'positive delta + rising CVD'};
+  if (delta < -.2 && slope < 0) return {state:'SELL PRESSURE', cls:'bad', detail:'negative delta + falling CVD'};
+  return {state:'BALANCED', cls:'muted', detail:'pressure present but not directional'};
+}
+
+function offense(row) {
+  const flow = row.volume_flow || {};
+  const p = pressure(flow);
+  // Only active execution specialists vote on offense.
+  const bots = EXEC_BOTS.map(([key]) => row[key] || {});
+  const watch = bots.filter(x => String(x.action_state || '').toLowerCase() === 'watch' && n(x.conviction) >= .60);
+  const active = watch.filter(x => ['LIVE','BUILDING','EARLY'].includes(String((x.indicators||{}).tempo || '').toUpperCase()));
+  if (!watch.length) return {state:'NONE', cls:'muted', why:'No strong execution specialist claim is active.'};
+  if (!flow.ready) return {state:'FORMING', cls:'warn', why:'Tactic exists, but pressure is unavailable and cannot confirm offense.'};
+  if (!active.length) return {state:'FORMING', cls:'warn', why:'Tactic exists, but tempo has not demonstrated active follow-through.'};
+  if (p.state === 'BALANCED') return {state:'FORMING', cls:'warn', why:'Tactic and tempo exist; pressure is present but not directional.'};
+  return {state:'PROVEN', cls:'ok', why:'Strong tactic, active tempo, and directional pressure are present. Verify acceptance and path before entry.'};
+}
+
+function fieldCard(row) {
+  const s = row.structure || {};
+  const p = pressure(row.volume_flow || {});
+  return `<article class="row"><div class="top"><span class="pair">${esc(row.pair)}</span><span class="tag ${p.cls}">${esc(p.state)}</span></div>
+    <div class="meta"><span>${esc(s.market_condition || s.trend || 'STRUCTURE UNKNOWN')}</span><span>ZONE ${esc(s.zone || '—')}</span><span>EQ ${pct(s.eq_pct)}</span><span>${esc(marketNoiseBits(row.market_noise || {}))}</span></div>
+    <div class="meta"><span>D1 ${esc(s.d1_trend || '—')}</span><span>H4 ${esc(s.h4_trend || '—')}</span><span>TEMPO ${esc(s.market_tempo || s.h1_tempo || '—')}</span><span>BOS ${s.bos ? 'YES' : 'NO'}</span></div>
+    <div class="why">${esc(s.why || p.detail)}</div></article>`;
+}
+
+function botCard(pair, key, label, sig, badge) {
+  if (!sig || !Object.keys(sig).length) return '';
+  const bias = String(sig.bias || 'NONE').toUpperCase();
+  const directionClass = bias === 'LONG' ? 'long' : bias === 'SHORT' ? 'short' : 'muted';
+  const action = String(sig.action_state || 'idle').toUpperCase();
+  const conviction = n(sig.conviction) || 0;
+  const knnN = n(sig.knn_samples) || 0;
+  const knnAdj = n(sig.knn_adj) || 0;
+  const actionClass = action === 'WATCH' ? 'blue' : 'muted';
+  const plan = sig.entry !== null && sig.entry !== undefined ? `E ${sig.entry} · SL ${sig.sl ?? '—'} · TP ${sig.tp ?? '—'}` : 'No active geometry';
+  const badgeHtml = badge ? `<span class="tag warn">${esc(badge)}</span>` : '';
+  return `<article class="bot"><div class="bot-head"><span class="bot-name">${label}</span>${badgeHtml}<span class="tag ${actionClass}">${action}</span></div>
+    <div class="top"><span class="direction ${directionClass}">${bias}</span><span class="score">CONVICTION ${conviction.toFixed(2)}</span></div>
+    <div class="meta"><span>TEMPO ${esc((sig.indicators||{}).tempo || sig.tempo || (sig.indicators||{}).m15_tempo || '—')}</span><span>KNN ${knnN}/30 ${knnAdj >= 0 ? '+' : ''}${knnAdj.toFixed(3)}</span><span>${esc(marketNoiseBits(sig.market_noise || {}))}</span></div>
+    <div class="plan">${esc(plan)}</div><div class="why">${esc(sig.setup_type || '—')} · ${esc(sig.why || 'No stated reason')}</div></article>`;
+}
+
+function driveConditionsCard(sig) {
+  if (!sig || !sig.drive_conditions) return '';
+  const dc = sig.drive_conditions;
+  const rows = [
+    ['HTF alignment', dc.htf_alignment],
+    ['Pullback location', dc.pullback_location],
+    ['Compression', dc.compression],
+    ['Structure break', dc.structure_break],
+    ['Expansion holds', dc.expansion],
+  ].map(([label, ok]) => `<span class="${ok ? 'ok' : 'bad'}">${ok ? '✓' : '✗'} ${label}</span>`).join('');
+  const traction = esc(sig.traction_expectation || '');
+  return `<div class="meta" style="margin-top:5px">${rows}</div>${traction ? `<div class="why">${traction}</div>` : ''}`;
+}
+
+function diagCard(pair, key, label, sig) {
+  if (!sig || !Object.keys(sig).length) return '';
+  const bias = String(sig.bias || 'NONE').toUpperCase();
+  const dirClass = bias === 'LONG' ? 'ok' : bias === 'SHORT' ? 'bad' : 'muted';
+  return `<article class="bot" style="opacity:.7;border-color:#1a2e28"><div class="bot-head"><span class="bot-name muted">${label}</span><span class="tag muted">DIAGNOSTIC</span></div>
+    <div class="meta"><span class="${dirClass}">${bias}</span><span>${esc(sig.setup_type || '—')}</span><span>${esc(marketNoiseBits(sig.market_noise || {}))}</span></div>
+    <div class="why">${esc((sig.indicators || {}).d1_trend ? 'd1=' + sig.indicators.d1_trend : '')} ${esc(sig.why || '')}</div></article>`;
+}
+
+function shadowCard(pair, key, label, sig) {
+  if (!sig || !Object.keys(sig).length) return '';
+  const side = String(sig.side || 'NONE').toUpperCase();
+  const score = n(sig.score) !== null ? n(sig.score).toFixed(3) : '—';
+  const family = esc(sig.setup_family || '—');
+  const state = esc(sig.state || '—');
+  const reasons = Array.isArray(sig.reasons) ? sig.reasons.map(r => esc(String(r))).join(' · ') : esc(String(sig.reasons || '—'));
+  const maturity = esc(sig.maturity_context || '—');
+  const invalidation = sig.invalidation_level !== null && sig.invalidation_level !== undefined ? esc(String(sig.invalidation_level)) : '—';
+  return `<article class="bot" style="opacity:.65;border-color:#1a2e28;border-style:dashed;background:#0a1512"><div class="bot-head"><span class="bot-name muted">${label}</span><span class="tag muted">SHADOW / OBSERVE ONLY</span></div>
+    <div class="meta"><span class="muted">${side}</span><span class="score muted">SCORE ${score}</span><span>${family}</span></div>
+    <div class="meta"><span>STATE ${state}</span><span>MATURITY ${maturity}</span><span>INVAL ${invalidation}</span></div>
+    <div class="meta"><span>${esc(marketNoiseBits(sig.market_noise || {}))}</span></div>
+    <div class="why">${reasons || 'No reasons'}</div></article>`;
+}
+
+function timingCard(row) {
+  const t = timing(row.market_timing || {});
+  const reasons = t.reasons.length ? t.reasons.map(x => esc(String(x))).join(' · ') : esc(t.rationale || '—');
+  return `<article class="bot" style="opacity:.72;border-color:#1a2e28;background:#0a1512"><div class="bot-head"><span class="bot-name muted">TIMING / CONFLUENCE</span><span class="tag muted">OBSERVE ONLY</span></div>
+    <div class="meta"><span>BASE ${esc(t.base_status)}</span><span>Δ ${esc(t.delta_state)}</span><span>CVD ${esc(t.cvd_state)}</span></div>
+    <div class="meta"><span>NOISE ${esc(t.noise_relation)}</span><span>STATE ${esc(t.timing_state)}</span><span>GAP ${esc(t.gap)}</span></div>
+    <div class="why">${reasons}</div></article>`;
+}
+
+function pulseCard(sig) {
+  if (!sig || !Object.keys(sig).length) return '';
+  const ind = sig.indicators || {};
+  const metrics = [
+    `score ${pct(sig.pulse_score)}`,
+    `range ${pct(ind.realized_range)}`,
+    `expand ${pct(ind.range_expansion)}`,
+    `eff ${pct(ind.directional_efficiency)}`,
+    `alt ${pct(ind.alternation_ratio)}`,
+    `run ${text(ind.directional_run_length)}`,
+    `noise ${pct(ind.wick_body_noise)}`,
+    marketNoiseBits(sig.market_noise || {}),
+    `break ${esc(ind.breakout_status || 'NONE')}`,
+  ].join(' · ');
+  return `<article class="bot" style="border-color:#534322;background:#17130a"><div class="bot-head"><span class="bot-name">PULSE</span><span class="tag warn">TRAINING ONLY</span><span class="tag muted">${esc(sig.pulse_state || sig.setup_type || 'PULSE_DEAD')}</span></div>
+    <div class="plan">${esc(metrics)}</div><div class="why">${esc(sig.why || 'No stated rationale')}</div></article>`;
+}
+
+function permissionCard(row) {
+  const p = pressure(row.volume_flow || {}), o = offense(row), flow = row.volume_flow || {};
+  return `<article class="row"><div class="top"><span class="pair">${esc(row.pair)}</span><span class="tag ${o.cls}">OFFENSE ${esc(o.state)}</span></div>
+    <div class="pressure"><div class="top"><strong class="${p.cls}">PRESSURE ${esc(p.state)}</strong><span class="status">${esc(flow.timeframe || '—')}</span></div>
+      <div class="pressure-grid"><span>Δ ${pct(flow.delta_norm)}</span><span>CVD slope ${pct(flow.cvd_slope)}</span><span>Volume ${pct(flow.volume_norm)}</span><span>Source ${esc(flow.source || '—')}</span></div></div>
+    <div class="why">${esc(o.why)}</div></article>`;
+}
+
+function render(payload) {
+  const rows = Array.isArray(payload.signals) ? payload.signals : [];
+  const stamp = payload.ts || payload.timestamp || new Date().toISOString();
+  el('feed').textContent = `Feed ${stamp} · ${rows.length} pairs`;
+  el('field').innerHTML = rows.length ? rows.map(fieldCard).join('') : '<div class="empty">No rows in signals.json</div>';
+  el('specialists').innerHTML = rows.length ? rows.map(row => {
+    const timingHtml = timingCard(row);
+    const execCards = EXEC_BOTS.map(([key,label]) => botCard(row.pair,key,label,row[key],null)).join('');
+    const trainCards = TRAIN_BOTS.map(([key,label]) => {
+      const sig = row[key] || {};
+      return botCard(row.pair,key,label,sig,'TRAINING ONLY') + driveConditionsCard(sig);
+    }).join('');
+    const pulse = pulseCard(row[PULSE_BOT[0]] || {});
+    const diagCards = DIAG_BOTS.map(([key,label]) => diagCard(row.pair,key,label,row[key])).join('');
+    const shadowCards = SHADOW_BOTS.map(([key,label]) => shadowCard(row.pair,key,label,row[key])).join('');
+    return `<div class="row"><div class="top"><span class="pair">${esc(row.pair)}</span><span class="muted">SPECIALIST READS</span></div>${timingHtml}${execCards}${trainCards}${pulse}${diagCards}${shadowCards}</div>`;
+  }).join('') : '<div class="empty">No specialist rows</div>';
+  el('permission').innerHTML = rows.length ? rows.map(permissionCard).join('') : '<div class="empty">No permission rows</div>';
+}
+
+async function load() {
+  try {
+    const response = await fetch('./signals.json', {cache:'no-store'});
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    render(await response.json());
+  } catch (error) {
+    el('feed').textContent = `Feed error: ${error.message}`;
+  }
+}
+function schedule(){clearInterval(timer);if(auto) timer=setInterval(load,5000)}
+el('refresh').onclick=load;
+el('auto').onclick=()=>{auto=!auto;el('auto').textContent=`Auto: ${auto?'ON':'OFF'}`;schedule()};
+load();schedule();
+</script>
+</body>
+</html>

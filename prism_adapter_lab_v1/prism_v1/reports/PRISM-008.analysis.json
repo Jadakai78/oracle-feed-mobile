@@ -1,0 +1,90 @@
+{
+  "classification_reason_codes": [
+    "PRISM.CLASSIFICATION.SEGMENT_METRICS",
+    "PRISM.CLASSIFICATION.PREVIOUS_RANGE_ROTATION",
+    "PRISM.CLASSIFICATION.CURRENT_STAIR_STEP",
+    "PRISM.CLASSIFICATION.TRANSITION_CONFIRMED"
+  ],
+  "construction": {
+    "current": {
+      "confidence": "moderate",
+      "direction": "bearish",
+      "label": "stair_step"
+    },
+    "previous": {
+      "confidence": "low",
+      "direction": "neutral",
+      "label": "range_rotation"
+    },
+    "transition": {
+      "label": "range_rotation_to_stair_step",
+      "status": "confirmed"
+    }
+  },
+  "data_health": {
+    "completed_bars": 390,
+    "fingerprint": {
+      "actual": "1a3671baf1f7faa30d51ed6ede7b8c6c9e0559c0aeb9eb68512da0f6a465096f",
+      "expected": "1a3671baf1f7faa30d51ed6ede7b8c6c9e0559c0aeb9eb68512da0f6a465096f",
+      "state": "matched"
+    },
+    "reason_codes": [],
+    "required_bars": 390,
+    "state": "healthy"
+  },
+  "entry_authority": false,
+  "evidence": {
+    "PRISM.EVIDENCE.EXPECTED_COMPARISON": "pass",
+    "PRISM.EVIDENCE.FINGERPRINT_MATCHED": "pass",
+    "PRISM.EVIDENCE.OHLCV_INTEGRITY": "pass",
+    "PRISM.EVIDENCE.SEGMENT_CONTINUITY": "pass",
+    "PRISM.EVIDENCE.TRANSITION_CONFIRMED": "pass"
+  },
+  "expected_comparison": {
+    "construction": {
+      "current_label": {
+        "actual": "stair_step",
+        "expected": "stair_step",
+        "match": true
+      },
+      "previous_label": {
+        "actual": "range_rotation",
+        "expected": "range_rotation",
+        "match": true
+      },
+      "transition_status": {
+        "actual": "confirmed",
+        "expected": "confirmed",
+        "match": true
+      }
+    },
+    "data_health_state": {
+      "actual": "healthy",
+      "expected": "healthy",
+      "match": true
+    },
+    "map_status": {
+      "actual": "ready",
+      "expected": "ready",
+      "match": true
+    }
+  },
+  "fixture_id": "PRISM-008",
+  "instrument": {
+    "base": "XRP",
+    "canonical_symbol": "XRP/USD",
+    "quote": "USD"
+  },
+  "manual_review_only": true,
+  "map_status": "ready",
+  "market_source": {
+    "product_type": "spot",
+    "source_timezone": "UTC",
+    "venue": "fixture",
+    "venue_symbol": "XRP/USD"
+  },
+  "recordtype": "PRISMANALYSIS",
+  "schema_version": "prism.analysis.v1",
+  "timeframe": "15m",
+  "trade_authority": false
+}

@@ -1,0 +1,332 @@
+﻿"""Candidate-only Oracle + PRISM + Delta/Tempo + Kraken Spot Speed feed.
+
+Reads existing local review/lab artifacts and writes a separate, non-publishable
+candidate JSON. It never writes the live Oracle feed and has no GitHub, alert,
+queue, order, or execution behavior.
+"""
+from __future__ import annotations
+
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Dict, List, Tuple
+
+ROOT = Path(__file__).resolve().parent
+SPEED_REVIEW_PATH = ROOT / "oracle_prop_feed_kraken_spot_speed_review_v1.json"
+PRISM_SAMPLE_PATH = ROOT / "prism_adapter_lab_v1" / "sample_prism_adapter_feed.json"
+OUTPUT_PATH = ROOT / "oracle_prism_delta_tempo_speed_candidate_feed_v1.json"
+
+RECORDTYPE = "ORACLEPRISMDELTATEMPOSPEEDCANDIDATEFEED"
+SCHEMA_VERSION = "oracle.prism-delta-tempo-speed-candidate-feed.v1"
+PRISM_FIXTURE_BLOCK = "prism_fixture_market_source"
+
+REQUIRED_SAFETY = {
+    "manual_review_only": True,
+    "trade_authority": False,
+    "entry_authority": False,
+    "does_not_authorize_trade": True,
+    "does_not_send_alerts": True,
+    "does_not_change_queue": True,
+}
+
+
+def _now_utc() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def _load_json(path: Path) -> Dict[str, Any]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError(f"payload_not_object:{path.name}")
+    return payload
+
+
+def _base_asset(pair: Any) -> str:
+    text = str(pair or "").strip().upper()
+    return text.split("/", 1)[0]
+
+
+def _prism_index(cards: Any) -> Dict[str, Dict[str, Any]]:
+    if not isinstance(cards, list):
+        raise ValueError("prism_cards_not_list")
+    indexed: Dict[str, Dict[str, Any]] = {}
+    for card in cards:
+        if not isinstance(card, dict):
+            raise ValueError("prism_card_not_object")
+        base = _base_asset(card.get("pair"))
+        if not base:
+            raise ValueError("prism_card_pair_missing")
+        if base in indexed:
+            raise ValueError(f"prism_pair_duplicate:{base}")
+        indexed[base] = card
+    return indexed
+
+
+def _delta_tempo_timing(card: Dict[str, Any]) -> Dict[str, Any]:
+    source = card.get("kraken_spot_speed_companion")
+    if not isinstance(source, dict):
+        source = {
+            "state": "UNAVAILABLE",
+            "reason": "KRAKEN_SPOT_SPEED_SOURCE_MISSING",
+            "manual_review_only": True,
+            "entry_authority": False,
+        }
+
+    speed_phase = source.get("speed_phase")
+    if not isinstance(speed_phase, dict):
+        speed_phase = {}
+
+    return {
+        "state": str(source.get("state") or "UNAVAILABLE"),
+        "presentation_role": "DELTA_TEMPO_SPEED_TIMING",
+        "source_component": "kraken_spot_speed_companion",
+        "source": source.get("source") or "kraken_spot_ohlc",
+        "input_timeframe": source.get("input_timeframe"),
+        "last_completed_candle_utc": source.get("last_completed_candle_utc"),
+        "direction": speed_phase.get("direction"),
+        "lifecycle_state": speed_phase.get("phase"),
+        "speed_phase": speed_phase,
+        "raw_source": source,
+        "flow_confirmation": {
+            "state": "DEFERRED",
+            "reason": "DEFERRED_NICHE_RETUNE",
+            "summary": "Delta/CVD is retained for future niche research and is not evaluated in field mode.",
+        },
+        "manual_review_only": True,
+        "entry_authority": False,
+    }
+
+
+def _unavailable_prism(reason: str) -> Dict[str, Any]:
+    return {
+        "state": "UNAVAILABLE",
+        "source_pair": None,
+        "pair_match_method": "NONE",
+        "source_health": {
+            "state": "UNAVAILABLE",
+            "reason": reason,
+        },
+        "context": {},
+        "prism_map": {
+            "state": "UNAVAILABLE",
+            "construction": "UNAVAILABLE",
+            "fair_price_relationship": "UNAVAILABLE",
+            "band_travel_state": "UNAVAILABLE",
+            "routes_ranked": [],
+            "map_quality": "UNAVAILABLE",
+        },
+        "confluence": {
+            "score_relationship": "INDEPENDENT_NOT_COMBINED",
+        },
+        "risk": {
+            "structural_invalidation": "UNAVAILABLE",
+            "opposing_structure": "UNAVAILABLE",
+            "available_distance": "UNAVAILABLE",
+            "room_status": "UNAVAILABLE",
+            "liquidation_coverage": "UNAVAILABLE",
+            "risk_reasons": [reason],
+        },
+        "display": {
+            "attention_state": "OBSERVE",
+            "manual_review_only": True,
+            "entry_authority": False,
+            "summary": "PRISM unavailable; no map, risk, route, or score has been inferred.",
+        },
+    }
+
+
+def _project_prism(prism_card: Dict[str, Any], oracle_pair: str) -> Dict[str, Any]:
+    source_health = prism_card.get("source_health")
+    context = prism_card.get("context")
+    prism_map = prism_card.get("prism_map")
+    confluence = prism_card.get("confluence")
+    risk = prism_card.get("risk")
+    display = prism_card.get("display")
+
+    if not all(isinstance(value, dict) for value in (source_health, context, prism_map, confluence, risk, display)):
+        return _unavailable_prism("PRISM_CARD_SCHEMA_INVALID")
+
+    projected = {
+        "state": str(prism_map.get("state") or "UNAVAILABLE"),
+        "source_pair": prism_card.get("pair"),
+        "pair_match_method": "BASE_ASSET",
+        "source_health": source_health,
+        "context": context,
+        "prism_map": prism_map,
+        "confluence": confluence,
+        "risk": risk,
+        "display": display,
+    }
+
+    projected["confluence"] = dict(projected["confluence"])
+    projected["confluence"]["score_relationship"] = "INDEPENDENT_NOT_COMBINED"
+    projected["display"] = dict(projected["display"])
+    projected["display"]["manual_review_only"] = True
+    projected["display"]["entry_authority"] = False
+
+    if _base_asset(oracle_pair) != _base_asset(projected["source_pair"]):
+        return _unavailable_prism("PRISM_PAIR_MISMATCH")
+
+    return projected
+
+
+def _oracle_context(card: Dict[str, Any]) -> Dict[str, Any]:
+    keys = (
+        "directional_context",
+        "market_type",
+        "structure",
+        "tempo",
+        "flow",
+        "shield",
+        "location",
+        "review_state",
+        "reason_codes",
+        "context_claim",
+        "context_score",
+        "tier",
+        "correlation_group",
+        "correlation_role",
+        "micro_watchlist",
+        "micro_state",
+    )
+    return {key: card.get(key) for key in keys}
+
+
+
+
+
+def _validate_speed_review(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
+    if payload.get("recordtype") != "ORACLEPROPFEEDKRAKENSPOTSPEEDREVIEW":
+        raise ValueError("unexpected_speed_review_recordtype")
+    if payload.get("venue") != "PROP" or payload.get("universe") != "APRIL_12_FIXED":
+        raise ValueError("unexpected_speed_review_scope")
+    if payload.get("manual_review_only") is not True:
+        raise ValueError("speed_review_not_manual_review_only")
+    cards = payload.get("cards")
+    if not isinstance(cards, list) or len(cards) != 49:
+        raise ValueError("speed_review_pair_count_must_be_49")
+    pairs = [card.get("pair") for card in cards if isinstance(card, dict)]
+    if len(pairs) != 49 or len(set(pairs)) != 49 or any(not isinstance(pair, str) or "/" not in pair for pair in pairs):
+        raise ValueError("speed_review_pair_identity_invalid")
+    return cards
+
+
+def build_payload(speed_review: Dict[str, Any], prism_payload: Dict[str, Any]) -> Dict[str, Any]:
+    cards = _validate_speed_review(speed_review)
+
+    if prism_payload.get("recordtype") != "PRISMADAPTERFEED":
+        raise ValueError("unexpected_prism_recordtype")
+    for key, expected in (
+        ("manual_review_only", True),
+        ("trade_authority", False),
+        ("entry_authority", False),
+        ("does_not_send_alerts", True),
+        ("does_not_change_queue", True),
+    ):
+        if prism_payload.get(key) is not expected:
+            raise ValueError(f"prism_safety_invalid:{key}")
+
+    prism_by_asset = _prism_index(prism_payload.get("cards"))
+    candidate_cards: List[Dict[str, Any]] = []
+
+    for source_card in cards:
+        pair = source_card["pair"]
+        prism_card = prism_by_asset.get(_base_asset(pair))
+        prism = (
+            _project_prism(prism_card, pair)
+            if prism_card is not None
+            else _unavailable_prism("NO_PRISM_CARD_FOR_ORACLE_PAIR")
+        )
+
+        candidate_cards.append({
+            "pair": pair,
+            "oracle_context": _oracle_context(source_card),
+            "delta_tempo_timing": _delta_tempo_timing(source_card),
+            "prism": prism,
+            "display": {
+                "attention_state": "OBSERVE",
+                "manual_review_only": True,
+                "entry_authority": False,
+                "summary": (
+                    "Oracle context, Delta/Tempo Timing, and PRISM remain independent "
+                    "source sections; no combined score or trade authority."
+                ),
+            },
+        })
+
+    return {
+        "recordtype": RECORDTYPE,
+        "schema_version": SCHEMA_VERSION,
+        "generated_at_utc": _now_utc(),
+        "operating_mode": "FIELD_READ_ONLY",
+        "enabled_sources": [
+            "oracle_context",
+            "delta_tempo_timing",
+            "prism",
+        ],
+        "deferred_sources": {
+            "delta_cvd": "DEFERRED_NICHE_RETUNE",
+            "micro_trigger": "PAUSED_UNTIL_LOCAL_TRADING",
+        },
+        **REQUIRED_SAFETY,
+        "publish_eligible": False,
+        "publish_block_reason": PRISM_FIXTURE_BLOCK,
+        "source_artifacts": {
+            "oracle_speed_review": {
+                "file": SPEED_REVIEW_PATH.name,
+                "recordtype": speed_review.get("recordtype"),
+                "generated_at_utc": speed_review.get("generated_at_utc"),
+                "context_generated_at_utc": speed_review.get("context_generated_at_utc"),
+                "context_age_seconds": speed_review.get("context_age_seconds"),
+            },
+            "prism_adapter": {
+                "file": str(PRISM_SAMPLE_PATH.relative_to(ROOT)).replace("\\", "/"),
+                "recordtype": prism_payload.get("recordtype"),
+                "generated_at_utc": prism_payload.get("generated_at_utc"),
+                "source_kind": "fixture_market_source",
+            },
+            "delta_tempo_timing": {
+                "state": "AVAILABLE_FROM_SPEED_REVIEW",
+                "source_component": "kraken_spot_speed_companion",
+                "presentation_role": "DELTA_TEMPO_SPEED_TIMING",
+            },
+            "delta_cvd": {
+                "state": "DEFERRED",
+                "reason": "DEFERRED_NICHE_RETUNE",
+            },
+            "micro_trigger": {
+                "state": "PAUSED",
+                "reason": "PAUSED_UNTIL_LOCAL_TRADING",
+            },
+        },
+        "health": {
+            "card_count": len(candidate_cards),
+            "prism_matched_count": sum(card["prism"]["pair_match_method"] != "NONE" for card in candidate_cards),
+            "prism_unavailable_count": sum(card["prism"]["state"] == "UNAVAILABLE" for card in candidate_cards),
+            "delta_tempo_timing_available_count": sum(
+                card["delta_tempo_timing"]["state"] == "AVAILABLE"
+                for card in candidate_cards
+            ),
+            "delta_cvd_state": "DEFERRED",
+            "micro_trigger_state": "PAUSED",
+        },
+        "cards": candidate_cards,
+    }
+
+
+def write_payload(payload: Dict[str, Any], output_path: Path = OUTPUT_PATH) -> None:
+    temporary = output_path.with_suffix(output_path.suffix + ".tmp")
+    temporary.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+    temporary.replace(output_path)
+
+
+def main() -> None:
+    payload = build_payload(_load_json(SPEED_REVIEW_PATH), _load_json(PRISM_SAMPLE_PATH))
+    write_payload(payload)
+    print(f"Candidate feed written: {OUTPUT_PATH}")
+    print(f"Cards: {payload['health']['card_count']} | PRISM matches: {payload['health']['prism_matched_count']}")
+    print(f"Publish eligible: {payload['publish_eligible']} | Block: {payload['publish_block_reason']}")
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,617 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "prism.fixture.v1.schema.json",
+  "title": "PRISM v1 Fixture Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "instrument",
+    "timeframe",
+    "market_source",
+    "kind",
+    "seed",
+    "timing",
+    "generation",
+    "expected",
+    "audit"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "prism.fixture.v1"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^PRISM-[0-9]{3}$"
+    },
+    "timeframe": {
+      "const": "15m"
+    },
+    "kind": {
+      "enum": [
+        "valid_market",
+        "insufficient_history",
+        "missing_bar",
+        "timestamp_misaligned",
+        "timestamp_non_monotonic",
+        "future_bar",
+        "invalid_ohlc",
+        "invalid_volume",
+        "zero_total_volume",
+        "zero_dispersion"
+      ]
+    },
+    "seed": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "timing": {
+      "$ref": "#/$defs/timing"
+    },
+    "generation": {
+      "$ref": "#/$defs/generation"
+    },
+    "expected": {
+      "$ref": "#/$defs/expected"
+    },
+    "audit": {
+      "$ref": "#/$defs/audit"
+    },
+    "instrument": {
+      "$ref": "#/$defs/instrument"
+    },
+    "market_source": {
+      "$ref": "#/$defs/market_source"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "valid_market"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "timing": {
+            "properties": {
+              "completed_bars": {
+                "const": 390
+              },
+              "as_of_bar_index": {
+                "const": 389
+              }
+            }
+          },
+          "generation": {
+            "properties": {
+              "background": {
+                "properties": {
+                  "bars": {
+                    "const": 358
+                  }
+                }
+              },
+              "previous_segment": {
+                "properties": {
+                  "bars": {
+                    "const": 24
+                  }
+                }
+              },
+              "current_segment": {
+                "properties": {
+                  "bars": {
+                    "const": 8
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "insufficient_history"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "timing": {
+            "properties": {
+              "completed_bars": {
+                "maximum": 364
+              }
+            }
+          },
+          "expected": {
+            "properties": {
+              "map_status": {
+                "const": "degraded"
+              },
+              "data_health": {
+                "properties": {
+                  "state": {
+                    "const": "insufficient_history"
+                  }
+                }
+              },
+              "expected_data_health_reason_codes": {
+                "contains": {
+                  "const": "PRISM.DATA.INSUFFICIENT_HISTORY"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "missing_bar"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "expected": {
+            "properties": {
+              "map_status": {
+                "const": "unavailable"
+              },
+              "data_health": {
+                "properties": {
+                  "state": {
+                    "const": "missing_bars"
+                  }
+                }
+              },
+              "expected_data_health_reason_codes": {
+                "contains": {
+                  "const": "PRISM.DATA.MISSING_BARS"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "timing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "start_timestamp",
+        "completed_bars",
+        "bar_interval_seconds",
+        "as_of_bar_index"
+      ],
+      "properties": {
+        "start_timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completed_bars": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "bar_interval_seconds": {
+          "const": 900
+        },
+        "as_of_bar_index": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "baseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "price",
+        "true_range",
+        "volume"
+      ],
+      "properties": {
+        "price": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "true_range": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "volume": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "segment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bars",
+        "profile",
+        "direction",
+        "recipe"
+      ],
+      "properties": {
+        "bars": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "direction": {
+          "enum": [
+            "bullish",
+            "bearish",
+            "neutral",
+            "two_sided"
+          ]
+        },
+        "recipe": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "generation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canonicalization",
+        "baseline",
+        "background",
+        "previous_segment",
+        "current_segment"
+      ],
+      "properties": {
+        "canonicalization": {
+          "const": "prism.ohlcv.canonical.v1"
+        },
+        "baseline": {
+          "$ref": "#/$defs/baseline"
+        },
+        "background": {
+          "$ref": "#/$defs/segment"
+        },
+        "previous_segment": {
+          "$ref": "#/$defs/segment"
+        },
+        "current_segment": {
+          "$ref": "#/$defs/segment"
+        }
+      }
+    },
+    "confidence": {
+      "enum": [
+        "low",
+        "moderate",
+        "high",
+        "unavailable"
+      ]
+    },
+    "construction_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "direction",
+        "confidence_at_least"
+      ],
+      "properties": {
+        "label": {
+          "enum": [
+            "compression",
+            "impulse",
+            "stair_step",
+            "breakout_acceptance",
+            "range_rotation",
+            "exhaustion",
+            "failed_trend",
+            "mixed",
+            "unclassified",
+            "unavailable"
+          ]
+        },
+        "direction": {
+          "enum": [
+            "bullish",
+            "bearish",
+            "neutral",
+            "two_sided",
+            "unavailable"
+          ]
+        },
+        "confidence_at_least": {
+          "$ref": "#/$defs/confidence"
+        }
+      }
+    },
+    "current_construction_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "direction",
+        "confidence_at_least",
+        "primary",
+        "secondary_contains"
+      ],
+      "properties": {
+        "label": {
+          "enum": [
+            "compression",
+            "impulse",
+            "stair_step",
+            "breakout_acceptance",
+            "range_rotation",
+            "exhaustion",
+            "failed_trend",
+            "mixed",
+            "unclassified",
+            "unavailable"
+          ]
+        },
+        "direction": {
+          "enum": [
+            "bullish",
+            "bearish",
+            "neutral",
+            "two_sided",
+            "unavailable"
+          ]
+        },
+        "confidence_at_least": {
+          "$ref": "#/$defs/confidence"
+        },
+        "primary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "secondary_contains": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "transition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "status"
+      ],
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "emerging",
+            "confirmed",
+            "weakening",
+            "failed",
+            "ambiguous",
+            "unavailable"
+          ]
+        }
+      }
+    },
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "map_status",
+        "data_health",
+        "expected_data_health_reason_codes",
+        "expected_classification_reason_codes",
+        "construction",
+        "required_evidence",
+        "required_evidence_results",
+        "forbidden_output_fields"
+      ],
+      "properties": {
+        "map_status": {
+          "enum": [
+            "ready",
+            "degraded",
+            "unavailable"
+          ]
+        },
+        "data_health": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state"
+          ],
+          "properties": {
+            "state": {
+              "enum": [
+                "healthy",
+                "insufficient_history",
+                "missing_bars",
+                "invalid_ohlcv",
+                "stale_fixture",
+                "unavailable"
+              ]
+            }
+          }
+        },
+        "expected_data_health_reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^PRISM\\.DATA\\."
+          },
+          "uniqueItems": true
+        },
+        "expected_classification_reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^PRISM\\.CLASSIFICATION\\."
+          },
+          "uniqueItems": true
+        },
+        "construction": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "previous",
+            "current",
+            "transition"
+          ],
+          "properties": {
+            "previous": {
+              "$ref": "#/$defs/construction_state"
+            },
+            "current": {
+              "$ref": "#/$defs/current_construction_state"
+            },
+            "transition": {
+              "$ref": "#/$defs/transition"
+            }
+          }
+        },
+        "required_evidence": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^PRISM\\."
+          },
+          "uniqueItems": true
+        },
+        "required_evidence_results": {
+          "type": "object",
+          "additionalProperties": {
+            "enum": [
+              "pass",
+              "fail",
+              "info"
+            ]
+          }
+        },
+        "forbidden_output_fields": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "score",
+              "trade_instruction",
+              "entry",
+              "stop",
+              "target",
+              "position_size"
+            ]
+          },
+          "uniqueItems": true,
+          "minItems": 6
+        }
+      }
+    },
+    "audit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ruleset_version",
+        "generator_version",
+        "expected_input_fingerprint"
+      ],
+      "properties": {
+        "ruleset_version": {
+          "const": "prism.v1.0.0"
+        },
+        "generator_version": {
+          "const": "prism.fixture-generator.v1.0.0"
+        },
+        "expected_input_fingerprint": {
+          "type": "string",
+          "pattern": "^(pending_generation|[a-f0-9]{64})$"
+        }
+      }
+    },
+    "instrument": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "base",
+        "quote",
+        "canonical_symbol"
+      ],
+      "properties": {
+        "base": {
+          "type": "string",
+          "pattern": "^[A-Z0-9]+$"
+        },
+        "quote": {
+          "type": "string",
+          "pattern": "^[A-Z0-9]+$"
+        },
+        "canonical_symbol": {
+          "type": "string",
+          "pattern": "^[A-Z0-9]+/[A-Z0-9]+$"
+        }
+      }
+    },
+    "market_source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "venue",
+        "venue_symbol",
+        "product_type",
+        "source_timezone"
+      ],
+      "properties": {
+        "venue": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_-]*$"
+        },
+        "venue_symbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "product_type": {
+          "enum": [
+            "spot",
+            "perpetual",
+            "futures",
+            "margin",
+            "other"
+          ]
+        },
+        "source_timezone": {
+          "const": "UTC"
+        }
+      }
+    }
+  }
+}

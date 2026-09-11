@@ -1,0 +1,328 @@
+﻿import copy
+import unittest
+from unittest.mock import patch
+
+from oracle_prism_delta_tempo_speed_candidate_feed_v1 import (
+    build_payload,
+    delta_tempo_timing,
+    oracle_context,
+)
+
+
+class CandidateFeedTests(unittest.TestCase):
+
+    def _valid_speed_review(self, pairs=None):
+        if pairs is None:
+            pairs = ["BTC/USD"] + [f"PAIR{i}/USD" for i in range(1, 49)]
+
+        cards = []
+        for pair in pairs:
+            cards.append(
+                {
+                    "pair": pair,
+                    "directional_context": "ALIGNED",
+                    "market_type": "PERPETUAL",
+                    "structure": "ALIGNED",
+                    "tempo": "EXPANDING",
+                    "flow": "CONFIRMS",
+                    "shield": "CLEAR",
+                    "location": "ORACLE_LOCATION",
+                    "review_state": "ACTIVE",
+                    "reason_codes": [],
+                    "context_claim": "VALIDATED",
+                    "context_score": 100,
+                    "tier": 1,
+                    "correlation_group": "MAJORS",
+                    "correlation_role": "LEADER",
+                    "micro_watchlist": True,
+                    "micro_state": "ACTIVE",
+                    "m5_speed_display": "REACCELERATION",
+                    "kraken_spot_speed_companion": {
+                        "state": "AVAILABLE",
+                        "source": "kraken_spot_ohlc",
+                        "input_timeframe": "5m",
+                        "last_completed_candle_utc": "2026-09-03T12:00:00Z",
+                        "manual_review_only": True,
+                        "entry_authority": False,
+                        "speed_phase": {
+                            "direction": "LONG",
+                            "phase": "REACCELERATION",
+                            "decay_reason": None,
+                            "reclaim_confirmed": True,
+                        },
+                    },
+                }
+            )
+
+        return {
+            "recordtype": "SPEEDREVIEW",
+            "cards": cards,
+        }
+
+    def _valid_prism_snapshot(self, pairs=None):
+        if pairs is None:
+            pairs = ["BTC/USD"] + [f"PAIR{i}/USD" for i in range(1, 49)]
+
+        prism_cards = []
+        for pair in pairs:
+            prism_cards.append(
+                {
+                    "pair": pair,
+                    "state": "AVAILABLE",
+                    "source_health": {"state": "AVAILABLE"},
+                    "context": {"location": "PRISM_LOCATION"},
+                    "construction": {
+                        "state": "AVAILABLE",
+                        "current": {"label": "CONSTRUCTED"},
+                    },
+                    "fair_price": {"state": "FAIR"},
+                    "band_travel": {"state": "INSIDE"},
+                    "routes_ranked": [],
+                    "risk": {"state": "CLEAR"},
+                    "display": {"summary": "PRISM OK"},
+                }
+            )
+
+        return {
+            "recordtype": "PRISMRUNTIMESNAPSHOT",
+            "schema_version": "prism.runtime-snapshot.v1",
+            "venue": "KRAKEN_SPOT",
+            "universe": "APRIL_12_FIXED",
+            "fixture_market_source": False,
+            "manual_review_only": True,
+            "trade_authority": False,
+            "entry_authority": False,
+            "does_not_send_alerts": True,
+            "does_not_change_queue": True,
+            "cards": prism_cards,
+        }
+
+    def test_runtime_input_remains_pending_review_not_publishable(self):
+        speed_review = self._valid_speed_review()
+        prism_payload = self._valid_prism_snapshot()
+
+        payload = build_payload(speed_review, prism_payload)
+
+        self.assertEqual(
+            payload["recordtype"],
+            "ORACLEPRISMDELTATEMPOSPEEDCANDIDATEFEED",
+        )
+        self.assertEqual(
+            payload["schema_version"],
+            "oracle.prism-delta-tempo-speed-candidate-feed.v1",
+        )
+        self.assertEqual(payload["operating_mode"], "FIELD_READ_ONLY")
+        self.assertFalse(payload["publish_eligible"])
+        self.assertEqual(
+            payload["publish_block_reason"],
+            "candidate_runtime_prism_v1_descriptive_only",
+        )
+
+    def test_exactly_49_unique_oracle_pairs_preserved(self):
+        speed_review = self._valid_speed_review()
+        prism_payload = self._valid_prism_snapshot()
+
+        payload = build_payload(speed_review, prism_payload)
+
+        self.assertEqual(len(payload["cards"]), 49)
+        output_pairs = [card["pair"] for card in payload["cards"]]
+        self.assertEqual(len(set(output_pairs)), 49)
+
+    def test_speed_is_represented_as_delta_tempo_timing_without_mutation(self):
+        speed_review = self._valid_speed_review()
+        prism_payload = self._valid_prism_snapshot()
+
+        payload = build_payload(speed_review, prism_payload)
+
+        card = payload["cards"][0]
+        timing = card["delta_tempo_timing"]
+        self.assertEqual(timing["presentation_role"], "DELTA_TEMPO_SPEED_TIMING")
+        self.assertEqual(timing["source_component"], "kraken_spot_speed_companion")
+        self.assertEqual(timing["direction"], "LONG")
+        self.assertEqual(timing["lifecycle_state"], "REACCELERATION")
+        self.assertTrue(timing["manual_review_only"])
+        self.assertFalse(timing["entry_authority"])
+
+    def test_runtime_prism_exact_match_is_available_and_source_owned(self):
+        speed_review = self._valid_speed_review()
+        prism_payload = self._valid_prism_snapshot()
+
+        payload = build_payload(speed_review, prism_payload)
+
+        card = payload["cards"][0]
+        prism = card["prism"]
+        self.assertEqual(prism["state"], "AVAILABLE")
+        self.assertEqual(prism["pair_match_method"], "EXACT")
+        self.assertEqual(prism["source_pair"], "BTC/USD")
+
+    def test_runtime_prism_unavailable_is_visible_and_not_invented(self):
+        speed_review = self._valid_speed_review()
+        prism_payload = self._valid_prism_snapshot()
+        prism_payload["cards"] = prism_payload["cards"][1:]
+
+        payload = build_payload(speed_review, prism_payload)
+
+        card = payload["cards"][0]
+        self.assertEqual(card["pair"], "BTC/USD")
+        self.assertEqual(card["prism"]["state"], "UNAVAILABLE")
+        self.assertEqual(card["prism"]["pair_match_method"], "NONE")
+
+    def test_runtime_prism_does_not_base_asset_match(self):
+        speed_review = self._valid_speed_review(pairs=["BTC/USD"] + [f"PAIR{i}/USD" for i in range(1, 49)])
+        prism_payload = self._valid_prism_snapshot(pairs=["BTC/EUR"] + [f"PAIR{i}/USD" for i in range(1, 49)])
+
+        payload = build_payload(speed_review, prism_payload)
+
+        card = payload["cards"][0]
+        self.assertEqual(card["pair"], "BTC/USD")
+        self.assertEqual(card["prism"]["state"], "UNAVAILABLE")
+
+    def test_runtime_prism_safety_must_be_valid(self):
+        speed_review = self._valid_speed_review()
+        prism_payload = self._valid_prism_snapshot()
+        prism_payload["manual_review_only"] = False
+
+        with self.assertRaises(ValueError) as context:
+            build_payload(speed_review, prism_payload)
+
+        self.assertIn("prism_runtime_safety_invalid", str(context.exception))
+
+    def test_runtime_prism_rejects_fixture_source(self):
+        speed_review = self._valid_speed_review()
+        prism_payload = self._valid_prism_snapshot()
+        prism_payload["fixture_market_source"] = True
+
+        with self.assertRaises(ValueError) as context:
+            build_payload(speed_review, prism_payload)
+
+        self.assertIn("prism_runtime_must_not_be_fixture_source", str(context.exception))
+
+    def test_field_mode_defers_delta_cvd_and_pauses_micro_trigger(self):
+        speed_review = self._valid_speed_review()
+        prism_payload = self._valid_prism_snapshot()
+
+        payload = build_payload(speed_review, prism_payload)
+
+        self.assertEqual(payload["deferred_sources"]["delta_cvd"], "DEFERRED_NICHE_RETUNE")
+        self.assertEqual(payload["deferred_sources"]["micro_trigger"], "PAUSED_UNTIL_LOCAL_TRADING")
+
+    def test_candidate_safety_invariants(self):
+        speed_review = self._valid_speed_review()
+        prism_payload = self._valid_prism_snapshot()
+
+        payload = build_payload(speed_review, prism_payload)
+
+        self.assertTrue(payload["manual_review_only"])
+        self.assertFalse(payload["trade_authority"])
+        self.assertFalse(payload["entry_authority"])
+        self.assertTrue(payload["does_not_authorize_trade"])
+        self.assertTrue(payload["does_not_send_alerts"])
+        self.assertTrue(payload["does_not_change_queue"])
+
+    @patch("oracle_prism_delta_tempo_speed_candidate_feed_v1.now_utc")
+    def test_candidate_offensive_review_integration(self, mock_now_utc):
+        mock_now_utc.return_value = "2026-09-03T12:10:00Z"
+
+        speed_review = self._valid_speed_review()
+        prism_payload = self._valid_prism_snapshot()
+
+        payload = build_payload(speed_review, prism_payload)
+
+        self.assertEqual(payload["operating_mode"], "FIELD_READ_ONLY")
+        self.assertFalse(payload["publish_eligible"])
+        self.assertFalse(payload["trade_authority"])
+        self.assertFalse(payload["entry_authority"])
+        self.assertEqual(payload["generated_at_utc"], "2026-09-03T12:10:00Z")
+
+        for card in payload["cards"]:
+            self.assertIn("offensive_review", card)
+
+        first_card = payload["cards"][0]
+        review = first_card["offensive_review"]
+
+        expected_keys = {
+            "state",
+            "pair",
+            "prism_state",
+            "structural_location",
+            "structure_state",
+            "flow_state",
+            "tempo_state",
+            "speed_phase",
+            "reclaim_confirmed",
+            "freshness_state",
+            "offensive_posture",
+            "summary",
+            "manual_review_only",
+            "does_not_authorize_trade",
+            "does_not_simulate_order",
+        }
+        self.assertEqual(set(review.keys()), expected_keys)
+        self.assertEqual(review["offensive_posture"], "PRIORITY_REVIEW")
+        self.assertEqual(review["freshness_state"], "CURRENT")
+        self.assertTrue(review["manual_review_only"])
+        self.assertTrue(review["does_not_authorize_trade"])
+        self.assertTrue(review["does_not_simulate_order"])
+
+        prohibited_keys = {
+            "directional_context",
+            "direction",
+            "review_state",
+            "context_claim",
+            "context_score",
+            "tier",
+            "correlation_group",
+            "correlation_role",
+            "micro_watchlist",
+            "micro_state",
+            "m5_speed_display",
+            "routes_ranked",
+            "risk",
+            "entry_authority",
+            "trade_authority",
+            "raw_source",
+            "score",
+            "rank",
+            "route",
+            "signal",
+            "side",
+            "entry",
+            "stop",
+            "target",
+            "order",
+            "position",
+            "buy",
+            "sell",
+            "long",
+            "short",
+            "recommendation",
+            "confidence",
+            "trade_setup",
+        }
+        self.assertFalse(
+            any(str(key).lower() in prohibited_keys for key in review)
+        )
+        self.assertFalse(
+            any(
+                isinstance(value, str)
+                and value.upper() in {"BUY", "SELL", "LONG", "SHORT"}
+                for value in review.values()
+            )
+        )
+
+        card_without_review = copy.deepcopy(first_card)
+        del card_without_review["offensive_review"]
+
+        source_card = speed_review["cards"][0]
+        legacy_built_card = {
+            "pair": source_card["pair"],
+            "oracle_context": oracle_context(source_card),
+            "delta_tempo_timing": delta_tempo_timing(source_card),
+            "prism": first_card["prism"],
+            "display": first_card["display"],
+        }
+        self.assertEqual(card_without_review, legacy_built_card)
+
+
+if __name__ == "__main__":
+    unittest.main()

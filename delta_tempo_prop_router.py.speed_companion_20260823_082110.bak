@@ -1,0 +1,632 @@
+from __future__ import annotations
+
+import math
+from collections import defaultdict
+from pathlib import Path
+from typing import Any, Dict
+
+import numpy as np
+
+from knn_engine import KNNEngine
+
+_STATE: Dict[str, Dict[str, Any]] = defaultdict(dict)
+
+# ── Constants ──────────────────────────────────────────────────────────────────
+LOCAL_STRUCTURE_BARS = 12
+MIN_ROOM_TO_RISK     = 1.50
+ATR_STOP_MULT        = 1.0    # ATR buffer below/above local low/high
+MIN_RISK_PCT         = 0.0015 # 0.15% minimum stop distance — rejects noise stops
+MIN_SPEED            = 0.50   # research-proven floor (delta_norm >= 0.50)
+MIN_ACCEL            = 1.30   # speed must accelerate ≥30% from prior bar to qualify
+
+
+# ── Helpers ────────────────────────────────────────────────────────────────────
+def _n(value: Any):
+    try:
+        value = float(value)
+        return value if math.isfinite(value) else None
+    except (TypeError, ValueError):
+        return None
+
+
+def _trend_side(value: Any) -> str:
+    value = str(value or "").lower()
+    if value == "up":
+        return "LONG"
+    if value == "down":
+        return "SHORT"
+    return "NONE"
+
+
+def _event_name(side: str, lifecycle: str, direction_reversal: bool) -> str:
+    if side == "NONE":
+        return "NO_DELTA"
+    if direction_reversal:
+        return f"ANTI_DELTA_{side}"
+    if lifecycle == "SPEED_INCREASING":
+        return f"DELTA_{side}_ACCELERATING"
+    if lifecycle == "SPEED_DECAYING":
+        return f"DELTA_{side}_DECAYING"
+    return f"DELTA_{side}"
+
+
+# ── Reclaim confirmation ───────────────────────────────────────────────────────
+def _reclaim_confirmed(side: str, ohlcv_arrays: tuple | None) -> bool:
+    """
+    Lightweight reclaim check on the last 3 completed 15m bars.
+    LONG reclaim: one of the last 3 bars swept below prior low then closed back above it.
+    SHORT reclaim: one of the last 3 bars swept above prior high then closed back below it.
+    This replaces BOS as confirmation in ranging / pullback conditions.
+    """
+    if not ohlcv_arrays or len(ohlcv_arrays) < 5:
+        return False
+    try:
+        _, highs, lows, closes, _, _ = ohlcv_arrays
+        highs  = np.asarray(highs,  dtype=float)
+        lows   = np.asarray(lows,   dtype=float)
+        closes = np.asarray(closes, dtype=float)
+    except (TypeError, ValueError):
+        return False
+
+    # Need at least 4 completed bars (exclude live bar)
+    if len(closes) < 5:
+        return False
+
+    completed_highs  = highs[ -5:-1]
+    completed_lows   = lows[  -5:-1]
+    completed_closes = closes[-5:-1]
+
+    if len(completed_closes) < 4:
+        return False
+
+    # Check last 3 bars for a sweep-and-reclaim
+    for i in range(1, 4):
+        bar_low   = float(completed_lows[-i])
+        bar_high  = float(completed_highs[-i])
+        bar_close = float(completed_closes[-i])
+        prior_low  = float(completed_lows[-(i+1)])  if i+1 <= len(completed_lows)  else None
+        prior_high = float(completed_highs[-(i+1)]) if i+1 <= len(completed_highs) else None
+
+        if side == "LONG" and prior_low is not None:
+            swept = bar_low < prior_low       # wick swept below prior low
+            reclaimed = bar_close > prior_low # closed back above it
+            if swept and reclaimed:
+                return True
+
+        if side == "SHORT" and prior_high is not None:
+            swept = bar_high > prior_high      # wick swept above prior high
+            reclaimed = bar_close < prior_high # closed back below it
+            if swept and reclaimed:
+                return True
+
+    return False
+
+
+# ── Range radar ────────────────────────────────────────────────────────────────
+def _range_radar(
+    side: str,
+    zone: str,
+    direction_reversal: bool,
+    timing_state: str,
+    noise_relation: str,
+    reclaim_conf: bool,
+) -> tuple[str, str, str]:
+    if zone == "neutral":
+        return "NO_TARGET", "NO_TRADE", "range_midpoint_no_room"
+
+    blocked_noise = noise_relation in {"destructive_at_base", "contested_at_base"}
+
+    if side == "LONG" and zone == "discount":
+        if direction_reversal:
+            return "TARGET_REVERSAL", "REVERSAL_WAIT", "anti_delta_long_at_range_discount"
+        if blocked_noise:
+            return "TARGET_RECLAIM", "WAIT", f"discount_edge_noise:{noise_relation}"
+        if reclaim_conf:
+            # Reclaim confirmed — no BOS needed in ranging market
+            return "TARGET_RECLAIM", "EXECUTION_READY", "reclaim_confirmed_discount_edge"
+        return "TARGET_RECLAIM", "WAIT", "delta_long_discount_reclaim_pending"
+
+    if side == "SHORT" and zone == "premium":
+        if direction_reversal:
+            return "TARGET_REVERSAL", "REVERSAL_WAIT", "anti_delta_short_at_range_premium"
+        if blocked_noise:
+            return "TARGET_RECLAIM", "WAIT", f"premium_edge_noise:{noise_relation}"
+        if reclaim_conf:
+            return "TARGET_RECLAIM", "EXECUTION_READY", "reclaim_confirmed_premium_edge"
+        return "TARGET_RECLAIM", "WAIT", "delta_short_premium_rejection_pending"
+
+    if side == "LONG" and zone == "premium":
+        return "NO_TARGET", "NO_TRADE", "range_long_into_premium"
+
+    if side == "SHORT" and zone == "discount":
+        return "NO_TARGET", "NO_TRADE", "range_short_into_discount"
+
+    return "NO_TARGET", "NO_TRADE", "range_no_valid_edge_response"
+
+
+# ── Main radar ─────────────────────────────────────────────────────────────────
+def _radar(
+    side: str,
+    structure: Dict[str, Any],
+    market_state: Dict[str, Any],
+    market_timing: Dict[str, Any],
+    ready: bool,
+    lifecycle: str,
+    direction_reversal: bool,
+    reclaim_conf: bool,
+) -> tuple[str, str, str]:
+    if not ready or side == "NONE":
+        return "NO_TARGET", "NO_TRADE", "delta_unavailable_or_flat"
+
+    condition  = str(structure.get("market_condition") or "STRUCTURE_UNCLEAR")
+    trend_side = _trend_side(structure.get("trend"))
+    zone       = str(structure.get("zone") or "neutral").lower()
+    bos        = bool(structure.get("bos"))
+    state      = str(market_state.get("state") or "UNKNOWN")
+    mechanism  = str(market_state.get("mechanism") or "UNKNOWN")
+    timing_state   = str(market_timing.get("timing_state") or "OBSERVE").upper()
+    noise_relation = str(market_timing.get("noise_relation") or "unavailable")
+    gap            = str(market_timing.get("gap") or "unknown")
+
+    if condition == "STRUCTURE_UNCLEAR":
+        return "NO_TARGET", "NO_TRADE", "structure_unavailable"
+
+    # SPEED_DECAYING alone does not kill — only kills if no reclaim & no favorable location
+    if lifecycle == "SPEED_DECAYING" and not reclaim_conf:
+        if not ((side == "LONG" and zone == "discount") or (side == "SHORT" and zone == "premium")):
+            return "NO_TARGET", "NO_TRADE", "delta_tempo_decaying_no_location"
+
+    # ── Ranging / no trend ─────────────────────────────────────────────────────
+    if condition in ("RANGING_NEUTRAL",) or trend_side == "NONE":
+        return _range_radar(
+            side=side,
+            zone=zone,
+            direction_reversal=direction_reversal,
+            timing_state=timing_state,
+            noise_relation=noise_relation,
+            reclaim_conf=reclaim_conf,
+        )
+
+    # ── Pullback conditions — use reclaim not BOS ──────────────────────────────
+    is_pullback = any(x in condition for x in ("PULLBACK", "RECLAIM", "COMPRESSION"))
+
+    if "FAILED_DOWN_AUCTION_RECLAIM" in state and side == "LONG":
+        exec_state = "EXECUTION_READY" if reclaim_conf else "RECLAIM_WAIT"
+        return "TARGET_RECLAIM", exec_state, "downside_sweep_reclaimed_delta_long"
+
+    if "FAILED_UP_AUCTION_RECLAIM" in state and side == "SHORT":
+        exec_state = "EXECUTION_READY" if reclaim_conf else "RECLAIM_WAIT"
+        return "TARGET_RECLAIM", exec_state, "upside_sweep_reclaimed_delta_short"
+
+    if mechanism == "PULLBACK_RECLAIM" and side == trend_side:
+        exec_state = "EXECUTION_READY" if reclaim_conf else "RECLAIM_WAIT"
+        return "TARGET_RECLAIM", exec_state, "trend_pullback_reclaim_pending"
+
+    # ── Trending — BOS valid here, reclaim also accepted ──────────────────────
+    if side == trend_side and (bos or reclaim_conf):
+        conf_type = "bos" if bos else "reclaim"
+        exec_state = "EXECUTION_READY"
+        return "TARGET_CONTINUATION", exec_state, f"delta_aligned_trend_{conf_type}_confirmed"
+
+    if side == trend_side and (
+        (side == "LONG"  and zone == "discount") or
+        (side == "SHORT" and zone == "premium")
+    ):
+        return "TARGET_RECLAIM", "WAIT", "delta_at_favorable_htf_location_awaiting_confirm"
+
+    if side != trend_side and (
+        (side == "LONG"  and zone == "premium") or
+        (side == "SHORT" and zone == "discount")
+    ):
+        return "NO_TARGET", "NO_TRADE", "countertrend_delta_at_poor_htf_location"
+
+    if timing_state == "OBSERVE" or gap in {
+        "no_actionable_base",
+        "awaiting_noise_resolution",
+        "awaiting_reclaim_close_and_hold",
+    }:
+        return "NO_TARGET", "WAIT", f"timing_pending:{gap}"
+
+    if noise_relation in {"destructive_at_base", "contested_at_base"}:
+        return "NO_TARGET", "WAIT", f"noise_blocks_launch:{noise_relation}"
+
+    return "NO_TARGET", "NO_TRADE", "no_structural_target_classified"
+
+
+# ── Local geometry with ATR buffer ─────────────────────────────────────────────
+def _local_geometry(side: str, ohlcv_arrays: tuple | None) -> Dict[str, Any]:
+    result = {
+        "geometry_status": "LOCAL_BARS_UNAVAILABLE",
+        "entry":        None,
+        "sl":           None,
+        "tp":           None,
+        "atr":          None,
+        "risk_pct":     None,
+        "reward_pct":   None,
+        "room_to_risk": None,
+        "geometry_reason": "local_15m_bars_unavailable",
+    }
+
+    if not ohlcv_arrays or len(ohlcv_arrays) < 5:
+        return result
+
+    try:
+        _, highs, lows, closes, _, _ = ohlcv_arrays
+        highs  = np.asarray(highs,  dtype=float)
+        lows   = np.asarray(lows,   dtype=float)
+        closes = np.asarray(closes, dtype=float)
+    except (TypeError, ValueError):
+        result["geometry_reason"] = "invalid_local_15m_arrays"
+        return result
+
+    usable = min(LOCAL_STRUCTURE_BARS, len(highs), len(lows), len(closes))
+
+    if usable < LOCAL_STRUCTURE_BARS:
+        result["geometry_reason"] = f"need_{LOCAL_STRUCTURE_BARS}_local_bars_have_{usable}"
+        return result
+
+    # Exclude live in-progress bar
+    completed_highs  = highs[ -(usable + 1):-1]
+    completed_lows   = lows[  -(usable + 1):-1]
+    completed_closes = closes[-(usable + 1):-1]
+
+    if len(completed_closes) < LOCAL_STRUCTURE_BARS:
+        result["geometry_reason"] = "insufficient_completed_15m_bars"
+        return result
+
+    if not all(
+        math.isfinite(v) and v > 0
+        for v in np.concatenate([completed_highs, completed_lows, completed_closes])
+    ):
+        result["geometry_reason"] = "non_finite_local_structure"
+        return result
+
+    # ATR from completed bars
+    prev_closes = completed_closes[:-1]
+    curr_highs  = completed_highs[1:]
+    curr_lows   = completed_lows[1:]
+    tr = np.maximum(
+        curr_highs - curr_lows,
+        np.maximum(
+            np.abs(curr_highs - prev_closes),
+            np.abs(curr_lows  - prev_closes),
+        ),
+    )
+    atr = float(np.mean(tr)) if len(tr) > 0 else 0.0
+
+    entry      = float(completed_closes[-1])
+    local_high = float(np.max(completed_highs))
+    local_low  = float(np.min(completed_lows))
+
+    if side == "LONG":
+        sl = local_low  - (atr * ATR_STOP_MULT)
+        tp = local_high
+        risk   = (entry - sl) / entry
+        reward = (tp - entry) / entry
+    elif side == "SHORT":
+        sl = local_high + (atr * ATR_STOP_MULT)
+        tp = local_low
+        risk   = (sl - entry) / entry
+        reward = (entry - tp) / entry
+    else:
+        result["geometry_reason"] = "delta_side_unavailable"
+        return result
+
+    if risk <= 0:
+        result["geometry_reason"] = "entry_not_inside_local_structure"
+        return result
+
+    if reward <= 0:
+        result["geometry_reason"] = "no_room_to_local_target"
+        return result
+
+    # Reject noise stops — must be at least MIN_RISK_PCT of entry
+    if risk < MIN_RISK_PCT:
+        result["geometry_status"] = "GEOMETRY_REJECTED"
+        result["geometry_reason"] = f"stop_too_tight_{risk*100:.4f}pct_min_{MIN_RISK_PCT*100:.2f}pct"
+        return result
+
+    room_to_risk = reward / risk
+
+    result.update({
+        "entry":        entry,
+        "sl":           sl,
+        "tp":           tp,
+        "atr":          round(atr, 8),
+        "risk_pct":     risk   * 100.0,
+        "reward_pct":   reward * 100.0,
+        "room_to_risk": room_to_risk,
+        "geometry_status": "LOCAL_STRUCTURE_VALID",
+        "geometry_reason": "local_12_bar_atr_buffered",
+    })
+
+    if room_to_risk < MIN_ROOM_TO_RISK:
+        result["geometry_status"] = "GEOMETRY_REJECTED"
+        result["geometry_reason"] = f"room_to_risk_below_{MIN_ROOM_TO_RISK:.2f}"
+
+    return result
+
+
+# ── Speed gate ─────────────────────────────────────────────────────────────────
+def _speed_gate(speed: float | None, ratio: float | None) -> tuple[bool, str]:
+    """
+    Research-proven thresholds: speed >= 0.50, acceleration >= 30%.
+    Returns (passes, reason).
+    """
+    if speed is None:
+        return False, "speed_unavailable"
+    if speed < MIN_SPEED:
+        return False, f"speed_below_floor_{speed:.3f}_min_{MIN_SPEED}"
+    if ratio is not None and ratio < MIN_ACCEL:
+        return False, f"acceleration_below_floor_{ratio:.3f}_min_{MIN_ACCEL}"
+    return True, "speed_gate_passed"
+
+
+# ── Main evaluate ──────────────────────────────────────────────────────────────
+def evaluate(
+    pair: str,
+    kraken_pair: str,
+    volume_flow: Dict[str, Any],
+    market_timing: Dict[str, Any],
+    signals: Dict[str, Dict[str, Any]],
+    log_dir: str | Path,
+    structure: Dict[str, Any] | None = None,
+    market_state: Dict[str, Any] | None = None,
+    ohlcv_arrays: tuple | None = None,
+) -> Dict[str, Any]:
+    del kraken_pair, signals
+
+    flow      = volume_flow or {}
+    structure = structure   or {}
+    market_state = market_state or {}
+    timing    = market_timing   or {}
+
+    delta  = _n(flow.get("delta"))
+    volume = _n(flow.get("volume"))
+    slope  = _n(flow.get("cvd_slope"))
+    ready  = bool(flow.get("ready")) and delta is not None and volume is not None and volume > 0
+
+    side  = "LONG" if ready and delta > 0 else "SHORT" if ready and delta < 0 else "NONE"
+    speed = abs(delta) / volume if ready else None
+
+    state_cache = _STATE[pair]
+    prior_speed = state_cache.get("speed")
+    prior_side  = state_cache.get("side")
+    ratio = speed / prior_speed if speed is not None and prior_speed and prior_speed > 0 else None
+
+    if speed is None:
+        lifecycle = "SPEED_MISSING"
+    elif prior_speed is None:
+        lifecycle = "SPEED_INITIALIZED"
+    elif ratio > 1.01:
+        lifecycle = "SPEED_INCREASING"
+    elif ratio < 0.99:
+        lifecycle = "SPEED_DECAYING"
+    else:
+        lifecycle = "SPEED_FLAT"
+
+    direction_reversal = (
+        prior_side in {"LONG", "SHORT"}
+        and side in {"LONG", "SHORT"}
+        and prior_side != side
+    )
+
+    if speed is not None:
+        state_cache["speed"] = speed
+    if side != "NONE":
+        state_cache["side"] = side
+
+    pressure_side = (
+        "LONG"  if str(flow.get("delta_state") or "").lower() == "buy"
+        else "SHORT" if str(flow.get("delta_state") or "").lower() == "sell"
+        else "NONE"
+    )
+    cvd_side = (
+        "LONG"  if slope is not None and slope > 0
+        else "SHORT" if slope is not None and slope < 0
+        else "NONE"
+    )
+
+    # Speed gate — research proven floor
+    speed_ok, speed_reason = _speed_gate(speed, ratio)
+
+    # Reclaim confirmation — replaces BOS in ranging/pullback conditions
+    reclaim_conf = _reclaim_confirmed(side, ohlcv_arrays) if side != "NONE" else False
+
+    radar_state, executioner_state, radar_reason = _radar(
+        side=side,
+        structure=structure,
+        market_state=market_state,
+        market_timing=timing,
+        ready=ready,
+        lifecycle=lifecycle,
+        direction_reversal=direction_reversal,
+        reclaim_conf=reclaim_conf,
+    )
+
+    geometry = _local_geometry(side, ohlcv_arrays)
+
+    # ── Shield assembly ────────────────────────────────────────────────────────
+    shields = []
+
+    if not ready:
+        shields.append(str(flow.get("reason") or "flow_unavailable"))
+
+    if not speed_ok and side != "NONE":
+        shields.append(speed_reason)
+
+    if side != "NONE" and pressure_side != side:
+        shields.append("pressure_not_aligned")
+
+    if side != "NONE" and cvd_side != side:
+        shields.append("cvd_not_aligned")
+
+    noise_relation = str(timing.get("noise_relation") or "")
+    if noise_relation in {"destructive_at_base", "contested_at_base"}:
+        shields.append(noise_relation)
+
+    if radar_state == "NO_TARGET":
+        shields.append(radar_reason)
+
+    if radar_state != "NO_TARGET" and geometry["geometry_status"] != "LOCAL_STRUCTURE_VALID":
+        shields.append(str(geometry["geometry_reason"]))
+
+    # ── Eligibility classification ─────────────────────────────────────────────
+    # EXECUTION_ELIGIBLE: all gates clear
+    # ELIGIBLE_WATCH: valid target + geometry, some gates still pending
+    # BUILDING: directional delta but incomplete
+    # REJECTED: wrong location
+    # NO_DATA: missing data
+
+    if not ready:
+        eligibility_state = "NO_DATA"
+        eligibility_blockers = ["market_data_unavailable"]
+        repair_text = "Restore market-data inputs; do not evaluate this card"
+    elif radar_state == "NO_TARGET" and executioner_state == "NO_TRADE":
+        eligibility_state = "REJECTED"
+        eligibility_blockers = [radar_reason]
+        repair_text = _repair_text(radar_reason, zone=str(structure.get("zone") or "neutral"))
+    elif not speed_ok:
+        eligibility_state = "BUILDING"
+        eligibility_blockers = [speed_reason]
+        repair_text = f"Wait for speed >= {MIN_SPEED} and acceleration >= {int((MIN_ACCEL-1)*100)}%"
+    elif geometry["geometry_status"] != "LOCAL_STRUCTURE_VALID":
+        eligibility_state = "BUILDING"
+        eligibility_blockers = ["geometry_below_minimum"]
+        repair_text = "Wait for a new local map with at least 1.50R"
+    elif executioner_state == "EXECUTION_READY" and not shields:
+        eligibility_state = "EXECUTION_ELIGIBLE"
+        eligibility_blockers = []
+        repair_text = "All gates clear — manual review"
+    elif executioner_state in ("WAIT", "RECLAIM_WAIT", "REVERSAL_WAIT"):
+        eligibility_state = "ELIGIBLE_WATCH"
+        eligibility_blockers = _active_gates(shields, executioner_state, cvd_side, side, reclaim_conf)
+        repair_text = _repair_text(radar_reason, zone=str(structure.get("zone") or "neutral"))
+    else:
+        eligibility_state = "BUILDING"
+        eligibility_blockers = _active_gates(shields, executioner_state, cvd_side, side, reclaim_conf)
+        repair_text = "Continue observing"
+
+    features = {
+        "pair":          pair,
+        "bias":          side,
+        "conviction":    min(1.0, speed or 0.0),
+        "action_state":  "observe",
+        "volume_flow":   flow,
+        "market_timing": timing,
+        "structure":     structure,
+        "indicators": {
+            "speed_score":      speed,
+            "speed_change_ratio": ratio,
+            "radar_state":      radar_state,
+            "geometry_status":  geometry["geometry_status"],
+        },
+    }
+
+    try:
+        adjustment, samples = KNNEngine("delta_tempo", Path(log_dir), min_samples=30).adjust(features)
+    except Exception:
+        adjustment, samples = 0.0, 0
+
+    knn_adjustment = adjustment if samples >= 30 else 0.0
+
+    return {
+        "schema_version":      4,
+        "pair":                pair,
+        "event":               _event_name(side, lifecycle, direction_reversal),
+        "delta_direction":     side,
+        "speed_score":         speed,
+        "prior_speed_score":   prior_speed,
+        "speed_change_ratio":  ratio,
+        "speed_gate_passed":   speed_ok,
+        "speed_gate_reason":   speed_reason,
+        "tempo_lifecycle":     lifecycle,
+        "direction_reversal":  direction_reversal,
+        "pressure_direction":  pressure_side,
+        "cvd_slope_direction": cvd_side,
+        "reclaim_confirmed":   reclaim_conf,
+        "close":               _n(flow.get("close")),
+        "radar_state":         radar_state,
+        "executioner_state":   executioner_state,
+        "radar_reason":        radar_reason,
+        "structure_state":     str(market_state.get("state")     or "UNKNOWN"),
+        "structure_mechanism": str(market_state.get("mechanism") or "UNKNOWN"),
+        "market_condition":    str(structure.get("market_condition") or "STRUCTURE_UNCLEAR"),
+        "trend":               str(structure.get("trend") or "unknown"),
+        "zone":                str(structure.get("zone")  or "neutral"),
+        "eq_pct":              _n(structure.get("eq_pct")),
+        "swing_high":          _n(structure.get("swing_high")),
+        "swing_low":           _n(structure.get("swing_low")),
+        "bos":                 bool(structure.get("bos")),
+        "timing_state":        str(timing.get("timing_state")  or "OBSERVE"),
+        "noise_relation":      str(timing.get("noise_relation") or "unavailable"),
+        "geometry_status":     geometry["geometry_status"],
+        "entry":               geometry["entry"],
+        "sl":                  geometry["sl"],
+        "tp":                  geometry["tp"],
+        "atr":                 geometry.get("atr"),
+        "risk_pct":            geometry["risk_pct"],
+        "reward_pct":          geometry["reward_pct"],
+        "room_to_risk":        geometry["room_to_risk"],
+        "geometry_reason":     geometry["geometry_reason"],
+        "risk_source":         "LOCAL_15M_ATR_BUFFERED",
+        "shield":              shields,
+        "eligibility": {
+            "eligibility_state":    eligibility_state,
+            "eligibility_blockers": eligibility_blockers,
+            "eligibility_reason":   repair_text,
+            "side":                 side,
+        },
+        "repair_text":    repair_text,
+        "next_condition": eligibility_blockers[0] if eligibility_blockers else "all_clear",
+        "knn_samples":    samples,
+        "knn_adjustment": knn_adjustment,
+        "knn_score":      max(0.0, min(1.0, (speed or 0.0) + knn_adjustment)),
+        "orders_enabled": False,
+        "reason":         radar_reason,
+    }
+
+
+# ── Helpers for eligibility ────────────────────────────────────────────────────
+def _active_gates(
+    shields: list,
+    executioner_state: str,
+    cvd_side: str,
+    delta_side: str,
+    reclaim_conf: bool,
+) -> list:
+    gates = []
+    if "cvd_not_aligned" in shields:
+        gates.append("cvd")
+    if "pressure_not_aligned" in shields:
+        gates.append("pressure")
+    if not reclaim_conf:
+        gates.append("reclaim_or_bos")
+    if executioner_state in ("WAIT", "RECLAIM_WAIT"):
+        gates.append("executioner")
+    return gates or ["observing"]
+
+
+def _repair_text(radar_reason: str, zone: str) -> str:
+    mapping = {
+        "range_midpoint_no_room":            "Wait for price to reach a premium or discount edge",
+        "range_long_into_premium":           "Wait for a verified premium-edge rejection",
+        "range_short_into_discount":         "Wait for a verified discount-edge reclaim",
+        "countertrend_delta_at_poor_htf_location": "Wrong location for this direction — stand aside",
+        "delta_tempo_decaying_no_location":  "Speed decaying with no favorable location — wait",
+        "structure_unavailable":             "Structure unclear — do not evaluate this card",
+        "delta_unavailable_or_flat":         "No directional Delta — continue observing",
+        "no_structural_target_classified":   "Continue observing",
+        "reclaim_confirmed_discount_edge":   "All gates clear — manual review",
+        "reclaim_confirmed_premium_edge":    "All gates clear — manual review",
+    }
+    for key, text in mapping.items():
+        if key in radar_reason:
+            return text
+    if "timing_pending" in radar_reason:
+        return "Wait for timing confirmation"
+    if "noise_blocks" in radar_reason:
+        return "Wait for noise to resolve"
+    if "reclaim" in radar_reason or "bos" in radar_reason:
+        return "Wait for reclaim confirmation (sweep + close back inside)"
+    return "Continue observing"

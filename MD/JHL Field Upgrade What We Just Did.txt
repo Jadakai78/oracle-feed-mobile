@@ -1,0 +1,277 @@
+JHL Field Upgrade: What We Just Did
+1. Raised Shadow from “idea” to live system
+Before:
+
+Shadow/Shield existed conceptually and in old Oracle code, but wasn’t plugged into your current Gimba stack.
+
+Gimba scanner.py wrote signals.json with VOL/RNG/RTS (and later TREND), but no Shadow overlay.
+
+Prop scanner (tak_scanner_v4_prop.py) had rich metadata but no unified Shadow/ledger.
+
+Now:
+
+shadow_sentinel.py evaluates field context and produces:
+
+verdict: shadow_claim, shadow_watch, shadow_veto, shadow_neutral.
+
+score: integer context score.
+
+reasons + evidence.
+
+shadow_audit_ledger.py + shadow_audit_adapter.py log Shadow decisions into shadow_audit_ledger.jsonl.
+
+Two bridges feed Shadow:
+
+shadow_bridge_prop.py attaches Shadow to Oracle/prop panel rows before logging.
+
+shadow_bridge_gimba.py attaches Shadow to each Gimba signals.json row and adapts them into a panel for the ledger.
+
+So both worlds—Gimba panel and Oracle battlefield—now share:
+
+Shadow verdicts per row.
+
+A common audit ledger for overnight learning.
+
+2. Gave Gimba a consensus + offense-mode brain
+We upgraded scanner.py (Gimba) to respect agreement and field type, instead of treating every WATCH the same.
+
+2.1 Consensus buckets
+New helper in scanner:
+
+python
+_consensus_bucket(row) -> str
+It looks at all four bots (VOL/RNG/RTS/TRD) and returns:
+
+all_4 – all four in same direction.
+
+three_of_4 – three bots aligned.
+
+two_of_4 – two aligned.
+
+split – BOTH long and short firing.
+
+solo – only one bot active.
+
+none – no WATCH bias.
+
+This is the “common indication” language you wanted: how many specialists are saying the same thing.
+
+We use it to scale conviction:
+
+all_4 / three_of_4 → conviction * 1.25, capped at 1.0.
+
+two_of_4 → conviction * 1.10.
+
+split / solo → conviction * 0.70.
+
+2.2 Offense modes
+New helper:
+
+python
+_offense_mode(row) -> str
+It uses structure, tempo, trap, and volume to classify the field type:
+
+dead – STRUCTURE_UNCLEAR + most tempos DEAD.
+
+trap_mode – high trap_score or very thin rvol.
+
+trend_mode – TRENDING_* structure states.
+
+range_mode – RANGING_NEUTRAL.
+
+mixed – everything else.
+
+We then apply mode-specific rules:
+
+dead:
+
+All bots: action_state = idle, conviction = 0.
+
+trap_mode:
+
+All bots: conviction *= 0.70 (shielded).
+
+trend_mode:
+
+TREND & VOL can run.
+
+RNG allowed but only at edges; otherwise conviction *= 0.60.
+
+range_mode:
+
+RNG favored.
+
+TREND trimmed: conviction *= 0.60.
+
+This is your offense plan: how we attack (or don’t) in each kind of field.
+
+3. Brought Trend up to “Jordan” with KNN
+Trend is your HTF power player; we gave it the same learning loop as VOL/RNG/RTS.
+
+3.1 Trend features in knn_engine.py
+We extended knn_engine.py with:
+
+python
+def _features_trend(record: dict) -> Optional[List[float]]:
+    ind = record.get("indicators", {}) or {}
+    ...
+    d1_trend, h4_trend, zone, eq_pct, pullback_depth,
+    rsi_h1, rvol_m15, speed_score_h1, speed_score_m15
+Registered under:
+
+python
+FEATURE_FN = {
+    "gimba_volatile": _features_volatile,
+    "gimba_range": _features_range,
+    "rts_liquidation": _features_rts,
+    "gimba_trend": _features_trend,
+}
+This lets KNNEngine("gimba_trend", ...) learn from trend–structure–tempo patterns that historically worked vs failed.
+
+3.2 gimba_trend.evaluate_with_knn(...)
+We added a wrapper to gimba_trend.py:
+
+python
+def evaluate_with_knn(pair, kraken_pair, current_price, fg_score=50, log_dir=None) -> dict:
+    result = evaluate(...)
+    engine = KNN("gimba_trend", log_dir, min_samples=30)
+    adj, n = engine.adjust(result)
+    if n >= 30:
+        result["conviction"] = clamp(raw + adj)
+        result["knn_adj"] = adj
+        result["knn_samples"] = n
+    else:
+        result["knn_adj"] = 0.0
+        result["knn_samples"] = n
+    return result
+So Trend:
+
+Logs to gimba_trend.jsonl every cycle.
+
+Uses those logs to adjust conviction once there’s enough history.
+
+Shows meaningful KNN(n) and knn_adj in the scanner and reader.
+
+4. Scanner wiring: all four bots + Shadow
+The new scanner (you renamed it to scanner.py) now:
+
+Evaluates specialists:
+
+python
+gv  = gimba_volatile.evaluate_with_knn(..., LOG_DIR)
+gr  = gimba_range.evaluate_with_knn(..., LOG_DIR)
+rts = rts_liquidation.evaluate_with_knn(..., LOG_DIR)
+gt  = gimba_trend.evaluate_with_knn(..., LOG_DIR)
+strx = structure_bias.evaluate(...)
+Applies existing structure amplification logic for:
+
+Range at edges.
+
+Trend with HTF structure.
+
+Vol/RTS with trend.
+
+Builds a row:
+
+python
+row_dict = {
+    "pair": pair,
+    "gimba_volatile": gv,
+    "gimba_range": gr,
+    "rts_liq": rts,
+    "gimba_trend": gt,
+    "structure": strx,
+}
+Computes:
+
+python
+cons = _consensus_bucket(row_dict)
+mode = _offense_mode(row_dict)
+Scales convictions by consensus + mode (as described above).
+
+Logs every specialist to its JSONL file for KNN.
+
+Builds payload = {"ts", "cycle", "signals": results}.
+
+Attaches Shadow:
+
+python
+payload = attach_shadow_to_gimba_payload(payload)
+shadow_summary = audit_gimba_payload_to_shadow_ledger(payload)
+Writes signals.json.
+
+This means every row in signals.json now has:
+
+4 specialists with KNN + structure-adjusted conviction.
+
+Consensus + mode implicitly baked into conviction.
+
+diagnostics.shadow_sentinel describing Shield’s verdict.
+
+5. Panels and shell now surface all of this
+Alongside the back-end changes, you wired the displays:
+
+Reader (read.py):
+
+Shows alignment (ALL 4 / 3 of 4 / 2 of 4 / SPLIT / SOLO).
+
+Shows structure tag (with why when unclear).
+
+Shows Shadow pill: SHD:CLAIM / WATCH / VETO / NEUTR + score.
+
+HTML Live Shell:
+
+Scanner panel: Shadow tag in the tag row, plus structure and trap.
+
+Reader panel: Shadow tag next to alignment.
+
+Market panel: Shadow tag alongside structure/zone/trap.
+
+So you can see, in one glance per pair:
+
+What bots want to do (VOL/RNG/RTS/TRD).
+
+How much they agree (consensus bucket).
+
+Where in the environment you are (mode from structure/tempo/trap).
+
+Whether the shield approves (Shadow verdict).
+
+6. Files you now have (core ones)
+Gimba core:
+
+scanner.py (consensus + modes + Trend KNN + Shadow).
+
+gimba_volatile.py / gimba_range.py / rts_liquidation.py.
+
+gimba_trend.py (with evaluate_with_knn).
+
+structure_bias.py.
+
+knn_engine.py (Trend-enabled).
+
+Shadow + audit:
+
+shadow_sentinel.py.
+
+shadow_audit_ledger.py.
+
+shadow_audit_adapter.py.
+
+shadow_bridge_gimba.py.
+
+shadow_bridge_prop.py.
+
+Display:
+
+read.py (looping, with Shadow).
+
+JHL-Live-Shell-with-Shadow.html.
+
+From here, tuning is mostly:
+
+Adjusting offense-mode thresholds (when is it really trap_mode vs just “spicy”?).
+
+Adjusting consensus scaling factors.
+
+Using the ledger to see which combinations of mode + consensus + Shadow actually print money.

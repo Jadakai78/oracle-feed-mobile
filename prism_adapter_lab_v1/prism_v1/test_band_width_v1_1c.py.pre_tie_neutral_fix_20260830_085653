@@ -1,0 +1,108 @@
+﻿import unittest
+
+from band_width_v1_1c import (
+    MIN_BARS_FOR_FULL_HISTORY,
+    PRIOR_WINDOW_COUNT,
+    WINDOW_BARS,
+    build_band_width_map,
+    build_band_width_state,
+    classify_width_state,
+)
+
+
+def make_bands(widths):
+    lower = [100.0] * len(widths)
+    upper = [100.0 + float(width) for width in widths]
+    return upper, lower
+
+
+class BandWidthV11CTests(unittest.TestCase):
+    def test_full_history_available_for_390_bars(self):
+        upper, lower = make_bands([1.0] * 25 + [2.0] * WINDOW_BARS)
+        result = build_band_width_state(upper, lower)
+        self.assertEqual(MIN_BARS_FOR_FULL_HISTORY, 390)
+        self.assertEqual(result.availability, "available")
+        self.assertEqual(result.state, "expanded")
+        self.assertEqual(len(result.prior_widths), PRIOR_WINDOW_COUNT)
+        self.assertAlmostEqual(result.current_width, 2.0)
+        self.assertAlmostEqual(result.percentile, 1.0)
+
+    def test_exactly_365_bars_is_partial_without_slope(self):
+        upper, lower = make_bands([2.0] * WINDOW_BARS)
+        result = build_band_width_state(upper, lower)
+        self.assertEqual(result.availability, "partial")
+        self.assertEqual(result.state, "unavailable")
+        self.assertEqual(result.prior_widths, ())
+        self.assertIsNone(result.width_slope)
+        self.assertEqual(result.reason, "no_prior_width_for_slope")
+
+    def test_366_bars_is_partial_with_one_prior_width(self):
+        upper, lower = make_bands([1.0] + [2.0] * WINDOW_BARS)
+        result = build_band_width_state(upper, lower)
+        self.assertEqual(result.availability, "partial")
+        self.assertEqual(result.state, "unavailable")
+        self.assertEqual(len(result.prior_widths), 1)
+        self.assertAlmostEqual(
+            result.prior_widths[0],
+            (364.0 * 2.0 + 1.0) / 365.0,
+        )
+        self.assertIsNotNone(result.width_slope)
+        self.assertEqual(result.reason, "insufficient_prior_width_history")
+
+    def test_insufficient_bars_fails_closed(self):
+        upper, lower = make_bands([2.0] * (WINDOW_BARS - 1))
+        result = build_band_width_state(upper, lower)
+        self.assertEqual(result.availability, "unavailable")
+        self.assertIsNone(result.current_width)
+        self.assertEqual(result.reason, "insufficient_current_window")
+
+    def test_length_mismatch_fails_closed(self):
+        result = build_band_width_state(
+            [102.0] * WINDOW_BARS,
+            [100.0] * (WINDOW_BARS - 1),
+        )
+        self.assertEqual(result.availability, "unavailable")
+        self.assertEqual(result.reason, "upper_lower_length_mismatch")
+
+    def test_available_terrain_bandwidth_mismatch_fails_closed(self):
+        upper, lower = make_bands([1.0] * 25 + [2.0] * WINDOW_BARS)
+        result = build_band_width_state(upper, lower, terrain_bandwidth=1.5)
+        self.assertEqual(result.availability, "unavailable")
+        self.assertEqual(result.state, "unavailable")
+        self.assertAlmostEqual(result.current_width, 2.0)
+        self.assertEqual(result.reason, "available_terrain_bandwidth_mismatch")
+
+    def test_current_width_is_excluded_from_prior_history(self):
+        upper, lower = make_bands(list(range(1, 26)) + [100.0] * WINDOW_BARS)
+        result = build_band_width_state(upper, lower)
+        self.assertEqual(result.availability, "available")
+        self.assertEqual(len(result.prior_widths), 25)
+        self.assertAlmostEqual(result.current_width, 100.0)
+        self.assertLess(max(result.prior_widths), 100.0)
+        self.assertEqual(result.state, "expanded")
+
+    def test_thresholds_and_map_shape(self):
+        self.assertEqual(classify_width_state(1.0, [1.0] * 25)[0], "contracted")
+        self.assertEqual(classify_width_state(2.0, [1.0] * 25)[0], "expanded")
+        self.assertEqual(classify_width_state(1.5, [1.0, 2.0] * 13)[0], "neutral")
+
+        upper, lower = make_bands([1.0] * 25 + [2.0] * WINDOW_BARS)
+        result = build_band_width_map(upper, lower)
+
+        self.assertEqual(result["availability"], "available")
+        self.assertEqual(
+            set(result.keys()),
+            {
+                "state",
+                "availability",
+                "current_width",
+                "prior_widths",
+                "percentile",
+                "width_slope",
+                "reason",
+            },
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

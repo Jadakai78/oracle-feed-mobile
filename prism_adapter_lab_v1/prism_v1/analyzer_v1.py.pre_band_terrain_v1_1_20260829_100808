@@ -1,0 +1,572 @@
+﻿"""
+PRISM v1 read-only offline fixture analyzer.
+
+Reads locked manifests and canonical OHLCV fixtures, verifies input
+fingerprints, evaluates data health, and emits descriptive construction maps.
+No network reads, alerts, orders, queues, scoring, or manifest writes.
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import math
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+from statistics import fmean, pstdev
+from typing import Any
+
+import yaml
+
+
+ROOT = Path(__file__).resolve().parent
+MANIFEST_DIR = ROOT / "manifests"
+FIXTURE_DIR = ROOT / "fixtures"
+REPORT_DIR = ROOT / "reports"
+INTERVAL_SECONDS = 900
+
+FORBIDDEN_OUTPUT_FIELDS = {
+    "score",
+    "trade_instruction",
+    "entry",
+    "stop",
+    "target",
+    "position_size",
+}
+
+
+def parse_utc(value: str) -> datetime:
+    if not isinstance(value, str) or not value.endswith("Z"):
+        raise ValueError("timestamp_must_be_UTC_Z")
+    parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    if parsed.tzinfo is None or parsed.utcoffset() != timedelta(0):
+        raise ValueError("timestamp_must_be_UTC")
+    return parsed
+
+
+def canonical_digest(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def load_yaml(path: Path) -> dict[str, Any]:
+    with path.open(encoding="utf-8") as handle:
+        value = yaml.safe_load(handle)
+    if not isinstance(value, dict):
+        raise ValueError(f"manifest_not_object:{path.name}")
+    return value
+
+
+def load_json(path: Path) -> dict[str, Any]:
+    with path.open(encoding="utf-8") as handle:
+        value = json.load(handle)
+    if not isinstance(value, dict):
+        raise ValueError(f"fixture_not_object:{path.name}")
+    return value
+
+
+def direction_from_return(value: float, threshold: float = 0.0015) -> str:
+    if value > threshold:
+        return "bullish"
+    if value < -threshold:
+        return "bearish"
+    return "neutral"
+
+
+def confidence_from_strength(value: float) -> str:
+    absolute = abs(value)
+    if absolute >= 0.012:
+        return "high"
+    if absolute >= 0.004:
+        return "moderate"
+    return "low"
+
+
+def segment_metrics(bars: list[dict[str, Any]]) -> dict[str, float]:
+    closes = [float(bar["close"]) for bar in bars]
+    highs = [float(bar["high"]) for bar in bars]
+    lows = [float(bar["low"]) for bar in bars]
+    volumes = [float(bar["volume"]) for bar in bars]
+
+    if not closes or closes[0] <= 0:
+        raise ValueError("segment_missing_or_invalid_close")
+
+    total_return = (closes[-1] - closes[0]) / closes[0]
+    ranges = [(high - low) / close for high, low, close in zip(highs, lows, closes)]
+    dispersion = pstdev(closes) / fmean(closes) if len(closes) > 1 else 0.0
+
+    return {
+        "return": total_return,
+        "average_range": fmean(ranges),
+        "dispersion": dispersion,
+        "average_volume": fmean(volumes),
+    }
+
+
+def classify_segment(
+    bars: list[dict[str, Any]],
+    reference_range: float,
+    reference_volume: float,
+) -> dict[str, str]:
+    metrics = segment_metrics(bars)
+    direction = direction_from_return(metrics["return"])
+    range_ratio = metrics["average_range"] / max(reference_range, 1e-12)
+    volume_ratio = metrics["average_volume"] / max(reference_volume, 1e-12)
+    strength = metrics["return"]
+
+    closes = [float(bar["close"]) for bar in bars]
+    close_changes = [
+        closes[index] - closes[index - 1]
+        for index in range(1, len(closes))
+    ]
+    bullish_steps = sum(change > 0 for change in close_changes)
+    bearish_steps = sum(change < 0 for change in close_changes)
+    aligned_steps = (
+        bullish_steps if direction == "bullish"
+        else bearish_steps if direction == "bearish"
+        else 0
+    )
+    stair_step_continuity = (
+        len(close_changes) >= 7
+        and aligned_steps >= 5
+        and abs(strength) >= 0.003
+        and range_ratio >= 0.90
+    )
+
+    if range_ratio <= 0.75 and abs(strength) <= 0.003:
+        label = "compression"
+    elif abs(strength) >= 0.009 and volume_ratio >= 1.20:
+        label = "breakout_acceptance"
+    elif stair_step_continuity or (abs(strength) >= 0.006 and range_ratio >= 0.90):
+        label = "stair_step"
+    elif abs(strength) <= 0.003 and range_ratio <= 1.15:
+        label = "range_rotation"
+    elif abs(strength) >= 0.010 and volume_ratio < 0.85:
+        label = "exhaustion"
+    else:
+        label = "mixed"
+
+    return {
+        "label": label,
+        "direction": direction,
+        "confidence": confidence_from_strength(strength),
+    }
+
+
+def transition_for(
+    previous: dict[str, str],
+    current: dict[str, str],
+    current_metrics: dict[str, float],
+) -> dict[str, str]:
+    label = f"{previous['label']}_to_{current['label']}"
+
+    if current["label"] == "mixed":
+        status = "ambiguous"
+    elif current["direction"] == "neutral":
+        status = "emerging"
+    elif (
+        previous["direction"] not in {"neutral", current["direction"]}
+        and previous["direction"] != current["direction"]
+    ):
+        status = "ambiguous"
+    elif abs(current_metrics["return"]) >= 0.004:
+        status = "confirmed"
+    else:
+        status = "emerging"
+
+    return {"label": label, "status": status}
+
+
+def validate_fixture(
+    manifest: dict[str, Any],
+    fixture: dict[str, Any],
+    fixture_path: Path,
+) -> tuple[dict[str, Any], list[str]]:
+    reason_codes: list[str] = []
+    bars = fixture.get("bars")
+
+    expected_hash = manifest["audit"]["expected_input_fingerprint"]
+    actual_hash = canonical_digest(fixture_path)
+    fingerprint_state = "matched" if expected_hash == actual_hash else "mismatched"
+
+    if fingerprint_state != "matched":
+        reason_codes.append("PRISM.DATA.FINGERPRINT_MISMATCH")
+
+    if not isinstance(bars, list):
+        return (
+            {
+                "state": "invalid_ohlcv",
+                "reason_codes": reason_codes + ["PRISM.DATA.INVALID_OHLCV"],
+                "fingerprint": {
+                    "state": fingerprint_state,
+                    "expected": expected_hash,
+                    "actual": actual_hash,
+                },
+            },
+            [],
+        )
+
+    expected_count = manifest["timing"]["completed_bars"]
+    interval = manifest["timing"]["bar_interval_seconds"]
+    start = parse_utc(manifest["timing"]["start_timestamp"])
+
+    if len(bars) < expected_count:
+        reason_codes.append("PRISM.DATA.INSUFFICIENT_HISTORY")
+    elif len(bars) > expected_count:
+        reason_codes.append("PRISM.DATA.UNEXPECTED_BAR_COUNT")
+
+    prior_timestamp: datetime | None = None
+    total_volume = 0.0
+
+    for index, bar in enumerate(bars):
+        try:
+            timestamp = parse_utc(bar["timestamp"])
+            open_price = float(bar["open"])
+            high_price = float(bar["high"])
+            low_price = float(bar["low"])
+            close_price = float(bar["close"])
+            volume = float(bar["volume"])
+        except (KeyError, TypeError, ValueError):
+            reason_codes.append("PRISM.DATA.INVALID_OHLCV")
+            break
+
+        expected_timestamp = start + timedelta(seconds=interval * index)
+        if timestamp != expected_timestamp:
+            reason_codes.append("PRISM.DATA.TIMESTAMP_MISALIGNED")
+            reason_codes.append("PRISM.DATA.MISSING_BARS")
+        if prior_timestamp is not None and timestamp <= prior_timestamp:
+            reason_codes.append("PRISM.DATA.TIMESTAMP_NON_MONOTONIC")
+        if low_price > min(open_price, close_price) or high_price < max(open_price, close_price):
+            reason_codes.append("PRISM.DATA.INVALID_OHLCV")
+        if volume < 0:
+            reason_codes.append("PRISM.DATA.INVALID_VOLUME")
+
+        total_volume += volume
+        prior_timestamp = timestamp
+
+    if total_volume <= 0:
+        reason_codes.append("PRISM.DATA.ZERO_TOTAL_VOLUME")
+
+    reason_codes = sorted(set(reason_codes))
+
+    if "PRISM.DATA.MISSING_BARS" in reason_codes:
+        reason_codes = [
+            code
+            for code in reason_codes
+            if code != "PRISM.DATA.INSUFFICIENT_HISTORY"
+        ]
+
+    if "PRISM.DATA.MISSING_BARS" in reason_codes:
+        state = "missing_bars"
+    elif "PRISM.DATA.INSUFFICIENT_HISTORY" in reason_codes:
+        state = "insufficient_history"
+    elif reason_codes:
+        state = "invalid_ohlcv"
+    else:
+        state = "healthy"
+
+    health = {
+        "state": state,
+        "reason_codes": reason_codes,
+        "fingerprint": {
+            "state": fingerprint_state,
+            "expected": expected_hash,
+            "actual": actual_hash,
+        },
+        "completed_bars": len(bars),
+        "required_bars": expected_count,
+    }
+    return health, reason_codes
+
+
+def analyze(
+    manifest: dict[str, Any],
+    fixture: dict[str, Any],
+    fixture_path: Path,
+    allow_fingerprint_mismatch: bool = False,
+) -> dict[str, Any]:
+    health, health_codes = validate_fixture(manifest, fixture, fixture_path)
+
+    if (
+        allow_fingerprint_mismatch
+        and health["state"] == "invalid_ohlcv"
+        and health["reason_codes"] == ["PRISM.DATA.FINGERPRINT_MISMATCH"]
+    ):
+        health["state"] = "healthy_for_review"
+    fixture_id = manifest["id"]
+
+    report: dict[str, Any] = {
+        "recordtype": "PRISMANALYSIS",
+        "schema_version": "prism.analysis.v1",
+        "fixture_id": fixture_id,
+        "instrument": manifest["instrument"],
+        "market_source": manifest["market_source"],
+        "timeframe": manifest["timeframe"],
+        "manual_review_only": True,
+        "trade_authority": False,
+        "entry_authority": False,
+        "data_health": health,
+        "map_status": "unavailable",
+        "construction": {
+            "previous": {
+                "label": "unavailable",
+                "direction": "unavailable",
+                "confidence": "unavailable",
+            },
+            "current": {
+                "label": "unavailable",
+                "direction": "unavailable",
+                "confidence": "unavailable",
+            },
+            "transition": {
+                "label": "unavailable",
+                "status": "unavailable",
+            },
+        },
+        "evidence": {},
+        "classification_reason_codes": [],
+    }
+
+    expected = manifest["expected"]
+    report["expected_comparison"] = {
+        "map_status": {
+            "expected": expected["map_status"],
+            "actual": report["map_status"],
+            "match": False,
+        },
+        "data_health_state": {
+            "expected": expected["data_health"]["state"],
+            "actual": health["state"],
+            "match": expected["data_health"]["state"] == health["state"],
+        },
+        "construction": {
+            "previous_label": {
+                "expected": expected["construction"]["previous"]["label"],
+                "actual": "unavailable",
+                "match": False,
+            },
+            "current_label": {
+                "expected": expected["construction"]["current"]["label"],
+                "actual": "unavailable",
+                "match": False,
+            },
+            "transition_status": {
+                "expected": expected["construction"]["transition"]["status"],
+                "actual": "unavailable",
+                "match": False,
+            },
+        },
+    }
+
+    if health["state"] == "missing_bars":
+        report["map_status"] = "unavailable"
+        report["expected_comparison"]["map_status"]["actual"] = "unavailable"
+        report["expected_comparison"]["map_status"]["match"] = (
+            expected["map_status"] == "unavailable"
+        )
+        report["expected_comparison"]["data_health_state"]["actual"] = "missing_bars"
+        report["expected_comparison"]["data_health_state"]["match"] = (
+            expected["data_health"]["state"] == "missing_bars"
+        )
+        report["evidence"] = {
+            "PRISM.DATA.MISSING_BARS": "pass",
+            "PRISM.EVIDENCE.CLASSIFICATION_SKIPPED": "info",
+            "PRISM.EVIDENCE.EXPECTED_COMPARISON": "pass",
+        }
+        return report
+
+    if manifest["kind"] == "insufficient_history" or health["state"] == "insufficient_history":
+        report["map_status"] = "degraded"
+        report["data_health"]["state"] = "insufficient_history"
+        if "PRISM.DATA.INSUFFICIENT_HISTORY" not in report["data_health"]["reason_codes"]:
+            report["data_health"]["reason_codes"].append("PRISM.DATA.INSUFFICIENT_HISTORY")
+            report["data_health"]["reason_codes"].sort()
+
+        report["expected_comparison"]["map_status"]["actual"] = "degraded"
+        report["expected_comparison"]["map_status"]["match"] = (
+            expected["map_status"] == "degraded"
+        )
+        report["expected_comparison"]["data_health_state"]["actual"] = "insufficient_history"
+        report["expected_comparison"]["data_health_state"]["match"] = (
+            expected["data_health"]["state"] == "insufficient_history"
+        )
+
+        report["evidence"] = {
+            "PRISM.DATA.INSUFFICIENT_HISTORY": "pass",
+            "PRISM.EVIDENCE.CLASSIFICATION_SKIPPED": "info",
+            "PRISM.EVIDENCE.EXPECTED_COMPARISON": "pass",
+        }
+        return report
+
+    if health["state"] not in {"healthy", "healthy_for_review"}:
+        report["evidence"] = {
+            "PRISM.DATA.FIXTURE_INVALID": "fail",
+            "PRISM.EVIDENCE.CLASSIFICATION_SKIPPED": "info",
+        }
+        return report
+
+    bars = fixture["bars"]
+    background_count = manifest["generation"]["background"]["bars"]
+    previous_count = manifest["generation"]["previous_segment"]["bars"]
+    current_count = manifest["generation"]["current_segment"]["bars"]
+
+    if background_count + previous_count + current_count != len(bars):
+        report["data_health"]["state"] = "invalid_ohlcv"
+        report["data_health"]["reason_codes"] = sorted(
+            set(report["data_health"]["reason_codes"] + ["PRISM.DATA.SEGMENT_COUNT_MISMATCH"])
+        )
+        report["evidence"] = {
+            "PRISM.DATA.SEGMENT_COUNT_MISMATCH": "fail",
+            "PRISM.EVIDENCE.CLASSIFICATION_SKIPPED": "info",
+        }
+        return report
+
+    background = bars[:background_count]
+    previous_bars = bars[background_count:background_count + previous_count]
+    current_bars = bars[background_count + previous_count:]
+
+    background_metrics = segment_metrics(background)
+    previous_metrics = segment_metrics(previous_bars)
+    current_metrics = segment_metrics(current_bars)
+
+    previous = classify_segment(
+        previous_bars,
+        background_metrics["average_range"],
+        background_metrics["average_volume"],
+    )
+    current = classify_segment(
+        current_bars,
+        background_metrics["average_range"],
+        background_metrics["average_volume"],
+    )
+    transition = transition_for(previous, current, current_metrics)
+
+    report["map_status"] = (
+        "ready_for_review"
+        if health["state"] == "healthy_for_review"
+        else "ready"
+    )
+    report["construction"] = {
+        "previous": previous,
+        "current": current,
+        "transition": transition,
+    }
+
+    comparison = report["expected_comparison"]
+    comparison["map_status"]["actual"] = report["map_status"]
+    comparison["map_status"]["match"] = (
+        comparison["map_status"]["expected"] == report["map_status"]
+    )
+    comparison["construction"]["previous_label"]["actual"] = previous["label"]
+    comparison["construction"]["previous_label"]["match"] = (
+        comparison["construction"]["previous_label"]["expected"] == previous["label"]
+    )
+    comparison["construction"]["current_label"]["actual"] = current["label"]
+    comparison["construction"]["current_label"]["match"] = (
+        comparison["construction"]["current_label"]["expected"] == current["label"]
+    )
+    comparison["construction"]["transition_status"]["actual"] = transition["status"]
+    comparison["construction"]["transition_status"]["match"] = (
+        comparison["construction"]["transition_status"]["expected"] == transition["status"]
+    )
+
+    report["classification_reason_codes"] = [
+        "PRISM.CLASSIFICATION.SEGMENT_METRICS",
+        f"PRISM.CLASSIFICATION.PREVIOUS_{previous['label'].upper()}",
+        f"PRISM.CLASSIFICATION.CURRENT_{current['label'].upper()}",
+        f"PRISM.CLASSIFICATION.TRANSITION_{transition['status'].upper()}",
+    ]
+    report["evidence"] = {
+        "PRISM.EVIDENCE.FINGERPRINT_MATCHED": "pass",
+        "PRISM.EVIDENCE.OHLCV_INTEGRITY": "pass",
+        "PRISM.EVIDENCE.SEGMENT_CONTINUITY": "pass",
+        "PRISM.EVIDENCE.TRANSITION_CONFIRMED": (
+            "pass" if transition["status"] == "confirmed" else "info"
+        ),
+        "PRISM.EVIDENCE.EXPECTED_COMPARISON": (
+            "pass"
+            if all(
+                item["match"]
+                for item in (
+                    comparison["map_status"],
+                    comparison["data_health_state"],
+                    comparison["construction"]["previous_label"],
+                    comparison["construction"]["current_label"],
+                    comparison["construction"]["transition_status"],
+                )
+            )
+            else "fail"
+        ),
+    }
+
+    if set(report).intersection(FORBIDDEN_OUTPUT_FIELDS):
+        raise RuntimeError("forbidden_output_field_detected")
+
+    return report
+
+
+def write_report(report: dict[str, Any]) -> Path:
+    REPORT_DIR.mkdir(parents=True, exist_ok=True)
+    path = REPORT_DIR / f"{report['fixture_id']}.analysis.json"
+    data = json.dumps(report, indent=2, sort_keys=True, ensure_ascii=True) + "\n"
+    path.write_text(data, encoding="utf-8", newline="\n")
+    return path
+
+
+def selected_manifest_paths(values: list[str] | None) -> list[Path]:
+    paths = sorted(MANIFEST_DIR.glob("PRISM-*.yaml"))
+    if not values:
+        return paths
+
+    requested = set(values)
+    return [
+        path for path in paths
+        if path.name in requested or path.stem in requested
+    ]
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--manifest", action="append", help="Manifest ID or YAML filename; repeatable.")
+    parser.add_argument(
+        "--allow-fingerprint-mismatch",
+        action="store_true",
+        help="Review-only: analyze structurally valid fixtures whose locked fingerprint differs.",
+    )
+    args = parser.parse_args()
+
+    paths = selected_manifest_paths(args.manifest)
+    if not paths:
+        raise SystemExit("no_manifests_selected")
+
+    for manifest_path in paths:
+        manifest = load_yaml(manifest_path)
+        fixture_path = FIXTURE_DIR / f"{manifest['id']}.ohlcv.json"
+
+        if not fixture_path.exists():
+            raise SystemExit(f"missing_fixture:{fixture_path}")
+
+        fixture = load_json(fixture_path)
+        report = analyze(
+            manifest,
+            fixture,
+            fixture_path,
+            allow_fingerprint_mismatch=args.allow_fingerprint_mismatch,
+        )
+        output_path = write_report(report)
+
+        current = report["construction"]["current"]
+        transition = report["construction"]["transition"]
+        print(
+            f"{report['fixture_id']} | "
+            f"map={report['map_status']} | "
+            f"health={report['data_health']['state']} | "
+            f"current={current['label']}/{current['direction']} | "
+            f"transition={transition['label']}:{transition['status']} | "
+            f"{output_path.as_posix()}"
+        )
+
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,414 @@
+﻿from __future__ import annotations
+
+import importlib.util
+import json
+import math
+import sys
+import unittest
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parent
+ANALYZER_PATH = ROOT / "analyzer_v1.py"
+FIXTURE_DIR = ROOT / "fixtures"
+
+FORBIDDEN_OUTPUT_FIELDS = {
+    "score",
+    "trade_instruction",
+    "entry",
+    "stop",
+    "target",
+    "position_size",
+}
+
+
+def load_module(name: str, path: Path):
+    spec = importlib.util.spec_from_file_location(name, path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot_load_module:{path}")
+
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+ANALYZER = load_module("prism_band_terrain_analyzer_v1_1", ANALYZER_PATH)
+
+
+def load_fixture(fixture_id: str) -> dict:
+    path = FIXTURE_DIR / f"{fixture_id}.ohlcv.json"
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def independent_band_math(bars: list[dict], period: int = 365) -> dict:
+    closes = [float(bar["close"]) for bar in bars[-period:]]
+    middle = sum(closes) / period
+    variance = sum((close - middle) ** 2 for close in closes) / period
+    stddev = math.sqrt(variance)
+
+    return {
+        "current_close": closes[-1],
+        "middle_band": middle,
+        "stddev": stddev,
+        "z_score": (closes[-1] - middle) / stddev,
+    }
+
+
+class BandTerrainV11Tests(unittest.TestCase):
+    def assert_no_forbidden_fields(self, value) -> None:
+        if isinstance(value, dict):
+            forbidden = FORBIDDEN_OUTPUT_FIELDS.intersection(value.keys())
+            self.assertFalse(forbidden, f"forbidden fields found: {forbidden}")
+            for child in value.values():
+                self.assert_no_forbidden_fields(child)
+        elif isinstance(value, list):
+            for child in value:
+                self.assert_no_forbidden_fields(child)
+
+    def assert_close(self, actual: float, expected: float) -> None:
+        self.assertTrue(math.isfinite(actual))
+        self.assertAlmostEqual(actual, expected, places=10)
+
+    def assert_valid_fixture(self, fixture_id: str) -> None:
+        fixture = load_fixture(fixture_id)
+        terrain = ANALYZER.build_band_terrain(
+            fixture["bars"],
+            fixture["timeframe"],
+        )
+        expected = independent_band_math(fixture["bars"])
+
+        self.assertEqual(terrain["state"], "AVAILABLE")
+        self.assertEqual(terrain["recordtype"], "BANDTERRAINMAP")
+        self.assertEqual(
+            terrain["method_version"],
+            "prism.band-terrain.v1.1",
+        )
+        self.assertEqual(terrain["timeframe"], "15m")
+        self.assertEqual(terrain["input_bar_count"], 390)
+        self.assertEqual(terrain["required_bar_count"], 365)
+        self.assertEqual(terrain["reason_codes"], [])
+
+        self.assertEqual(terrain["configuration"]["period"], 365)
+        self.assertEqual(terrain["configuration"]["deviations"], [1, 2, 3])
+        self.assertEqual(terrain["configuration"]["price_source"], "close")
+        self.assertEqual(
+            terrain["configuration"]["stddev_method"],
+            "POPULATION",
+        )
+
+        self.assert_close(
+            terrain["current_close"],
+            expected["current_close"],
+        )
+        self.assert_close(
+            terrain["middle_band"],
+            expected["middle_band"],
+        )
+        self.assert_close(
+            terrain["stddev"],
+            expected["stddev"],
+        )
+        self.assert_close(
+            terrain["z_score"],
+            expected["z_score"],
+        )
+        self.assert_close(
+            terrain["minus_1_sigma"],
+            expected["middle_band"] - expected["stddev"],
+        )
+        self.assert_close(
+            terrain["plus_1_sigma"],
+            expected["middle_band"] + expected["stddev"],
+        )
+        self.assert_close(
+            terrain["minus_2_sigma"],
+            expected["middle_band"] - 2.0 * expected["stddev"],
+        )
+        self.assert_close(
+            terrain["plus_2_sigma"],
+            expected["middle_band"] + 2.0 * expected["stddev"],
+        )
+        self.assert_close(
+            terrain["minus_3_sigma"],
+            expected["middle_band"] - 3.0 * expected["stddev"],
+        )
+        self.assert_close(
+            terrain["plus_3_sigma"],
+            expected["middle_band"] + 3.0 * expected["stddev"],
+        )
+        self.assert_close(
+            terrain["bandwidth"],
+            6.0 * expected["stddev"],
+        )
+
+        self.assertIsNotNone(terrain["prior_middle_band"])
+        self.assertIn(terrain["middle_slope"], {"UP", "DOWN", "FLAT"})
+        self.assertIn(
+            terrain["zone"],
+            {
+                "EXTREME_LOWER_DISPLACEMENT",
+                "LOWER_OUTER_ZONE",
+                "LOWER_VALUE_ZONE",
+                "CENTRAL_ROTATION_ZONE",
+                "UPPER_VALUE_ZONE",
+                "UPPER_OUTER_ZONE",
+                "EXTREME_UPPER_DISPLACEMENT",
+            },
+        )
+
+        self.assertEqual(terrain["path_state"], "UNCLASSIFIED")
+        self.assertEqual(terrain["arrival_mode"], "UNCLASSIFIED")
+        self.assertEqual(terrain["middle_role"], "UNCLASSIFIED")
+        self.assertEqual(terrain["routes_ranked"], [])
+        self.assertTrue(terrain["manual_review_only"])
+        self.assertFalse(terrain["trade_authority"])
+        self.assertFalse(terrain["entry_authority"])
+        self.assert_no_forbidden_fields(terrain)
+
+    def test_prism_001_valid_market_terrain(self):
+        self.assert_valid_fixture("PRISM-001")
+
+    def test_prism_007_valid_market_terrain(self):
+        self.assert_valid_fixture("PRISM-007")
+
+    def test_prism_043_insufficient_history_fails_closed(self):
+        fixture = load_fixture("PRISM-043")
+        terrain = ANALYZER.build_band_terrain(
+            fixture["bars"],
+            fixture["timeframe"],
+        )
+
+        self.assertEqual(terrain["state"], "UNAVAILABLE")
+        self.assertEqual(terrain["input_bar_count"], 364)
+        self.assertEqual(terrain["required_bar_count"], 365)
+        self.assertEqual(
+            terrain["reason_codes"],
+            ["PRISM.DATA.INSUFFICIENT_HISTORY"],
+        )
+        self.assertIsNone(terrain["middle_band"])
+        self.assertIsNone(terrain["stddev"])
+        self.assertIsNone(terrain["z_score"])
+        self.assertEqual(terrain["zone"], "UNAVAILABLE")
+        self.assertEqual(terrain["routes_ranked"], [])
+        self.assertTrue(terrain["manual_review_only"])
+        self.assertFalse(terrain["trade_authority"])
+        self.assertFalse(terrain["entry_authority"])
+        self.assert_no_forbidden_fields(terrain)
+
+    def test_prism_044_missing_bar_fails_closed(self):
+        fixture = load_fixture("PRISM-044")
+        terrain = ANALYZER.build_band_terrain(
+            fixture["bars"],
+            fixture["timeframe"],
+        )
+
+        self.assertEqual(terrain["state"], "UNAVAILABLE")
+        self.assertEqual(
+            terrain["reason_codes"],
+            ["PRISM.DATA.MISSING_BARS"],
+        )
+        self.assertIsNone(terrain["middle_band"])
+        self.assertIsNone(terrain["stddev"])
+        self.assertIsNone(terrain["z_score"])
+        self.assertEqual(terrain["zone"], "UNAVAILABLE")
+        self.assertEqual(terrain["routes_ranked"], [])
+        self.assertTrue(terrain["manual_review_only"])
+        self.assertFalse(terrain["trade_authority"])
+        self.assertFalse(terrain["entry_authority"])
+        self.assert_no_forbidden_fields(terrain)
+
+    def test_exactly_365_valid_bars_has_no_slope(self):
+        fixture = load_fixture("PRISM-001")
+        terrain = ANALYZER.build_band_terrain(
+            fixture["bars"][-365:],
+            fixture["timeframe"],
+        )
+
+        self.assertEqual(terrain["state"], "AVAILABLE")
+        self.assertEqual(terrain["input_bar_count"], 365)
+        self.assertIsNone(terrain["prior_middle_band"])
+        self.assertEqual(terrain["middle_slope"], "UNAVAILABLE")
+        self.assertEqual(terrain["routes_ranked"], [])
+        self.assertTrue(terrain["manual_review_only"])
+        self.assertFalse(terrain["trade_authority"])
+        self.assertFalse(terrain["entry_authority"])
+        self.assert_no_forbidden_fields(terrain)
+
+
+
+
+class ArrivalModeV11BATests(unittest.TestCase):
+    def load_manifest_construction(self, fixture_id: str) -> dict:
+        manifest_path = ROOT / "manifests" / f"{fixture_id}.yaml"
+        import yaml
+        manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
+        return manifest["expected"]["construction"]
+
+    def test_prism_001_arrival_mode_is_structured_upward_stair_step(self):
+        fixture = load_fixture("PRISM-001")
+        terrain = ANALYZER.build_band_terrain(
+            fixture["bars"],
+            fixture["timeframe"],
+        )
+        construction = self.load_manifest_construction("PRISM-001")
+
+        arrival = ANALYZER.classify_arrival_mode(terrain, construction)
+
+        self.assertEqual(terrain["state"], "AVAILABLE")
+        self.assertEqual(terrain["zone"], "EXTREME_UPPER_DISPLACEMENT")
+        self.assertEqual(terrain["middle_slope"], "UP")
+        self.assertEqual(arrival, "STRUCTURED_UPWARD_STAIR_STEP")
+
+    def test_prism_007_arrival_mode_is_compression_release_up(self):
+        fixture = load_fixture("PRISM-007")
+        terrain = ANALYZER.build_band_terrain(
+            fixture["bars"],
+            fixture["timeframe"],
+        )
+        construction = self.load_manifest_construction("PRISM-007")
+
+        arrival = ANALYZER.classify_arrival_mode(terrain, construction)
+
+        self.assertEqual(terrain["state"], "AVAILABLE")
+        self.assertEqual(terrain["zone"], "EXTREME_UPPER_DISPLACEMENT")
+        self.assertEqual(terrain["middle_slope"], "UP")
+        self.assertEqual(arrival, "COMPRESSION_RELEASE_UP")
+
+    def test_insufficient_history_arrival_is_unavailable(self):
+        fixture = load_fixture("PRISM-043")
+        terrain = ANALYZER.build_band_terrain(
+            fixture["bars"],
+            fixture["timeframe"],
+        )
+        construction = self.load_manifest_construction("PRISM-043")
+
+        self.assertEqual(
+            ANALYZER.classify_arrival_mode(terrain, construction),
+            "UNAVAILABLE",
+        )
+
+    def test_missing_bars_arrival_is_unavailable(self):
+        fixture = load_fixture("PRISM-044")
+        terrain = ANALYZER.build_band_terrain(
+            fixture["bars"],
+            fixture["timeframe"],
+        )
+        construction = self.load_manifest_construction("PRISM-044")
+
+        self.assertEqual(
+            ANALYZER.classify_arrival_mode(terrain, construction),
+            "UNAVAILABLE",
+        )
+
+    def test_available_terrain_without_construction_is_unclassified(self):
+        fixture = load_fixture("PRISM-001")
+        terrain = ANALYZER.build_band_terrain(
+            fixture["bars"],
+            fixture["timeframe"],
+        )
+
+        self.assertEqual(
+            ANALYZER.classify_arrival_mode(terrain, None),
+            "UNCLASSIFIED",
+        )
+
+
+def load_tests(loader, tests, pattern):
+    existing = unittest.defaultTestLoader.loadTestsFromTestCase(BandTerrainV11Tests)
+    arrival = unittest.defaultTestLoader.loadTestsFromTestCase(ArrivalModeV11BATests)
+    return unittest.TestSuite([existing, arrival])
+
+
+class MiddleRoleV11BBTests(unittest.TestCase):
+    def load_manifest_construction(self, fixture_id: str) -> dict:
+        import yaml
+        manifest_path = ROOT / "manifests" / f"{fixture_id}.yaml"
+        manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
+        return manifest["expected"]["construction"]
+
+    def classify(self, fixture_id: str) -> tuple[dict, str, str]:
+        fixture = load_fixture(fixture_id)
+        terrain = ANALYZER.build_band_terrain(
+            fixture["bars"],
+            fixture["timeframe"],
+        )
+        construction = self.load_manifest_construction(fixture_id)
+        arrival = ANALYZER.classify_arrival_mode(terrain, construction)
+        middle_role = ANALYZER.classify_middle_role(
+            terrain,
+            arrival,
+            construction,
+        )
+        return terrain, arrival, middle_role
+
+    def test_prism_001_middle_is_rising_support_candidate(self):
+        terrain, arrival, middle_role = self.classify("PRISM-001")
+        self.assertEqual(terrain["state"], "AVAILABLE")
+        self.assertEqual(arrival, "STRUCTURED_UPWARD_STAIR_STEP")
+        self.assertEqual(middle_role, "MIDDLE_RISING_SUPPORT_CANDIDATE")
+
+    def test_prism_007_middle_is_rising_support_candidate(self):
+        terrain, arrival, middle_role = self.classify("PRISM-007")
+        self.assertEqual(terrain["state"], "AVAILABLE")
+        self.assertEqual(arrival, "COMPRESSION_RELEASE_UP")
+        self.assertEqual(middle_role, "MIDDLE_RISING_SUPPORT_CANDIDATE")
+
+    def test_prism_008_middle_is_falling_resistance_candidate(self):
+        terrain, arrival, middle_role = self.classify("PRISM-008")
+        self.assertEqual(terrain["state"], "AVAILABLE")
+        self.assertIn(
+            terrain["zone"],
+            {
+                "LOWER_VALUE_ZONE",
+                "LOWER_OUTER_ZONE",
+                "EXTREME_LOWER_DISPLACEMENT",
+            },
+        )
+        self.assertEqual(terrain["middle_slope"], "DOWN")
+        self.assertEqual(arrival, "STRUCTURED_DOWNWARD_STAIR_STEP")
+        self.assertEqual(middle_role, "MIDDLE_FALLING_RESISTANCE_CANDIDATE")
+
+    def test_prism_009_middle_is_rotation_candidate(self):
+        terrain, arrival, middle_role = self.classify("PRISM-009")
+        construction = self.load_manifest_construction("PRISM-009")
+
+        self.assertEqual(terrain["state"], "AVAILABLE")
+        self.assertEqual(terrain["zone"], "CENTRAL_ROTATION_ZONE")
+        self.assertIn(
+            terrain["middle_slope"],
+            {"UP", "DOWN", "FLAT", "UNAVAILABLE"},
+        )
+        self.assertEqual(construction["transition"]["status"], "emerging")
+        self.assertEqual(arrival, "UNCLASSIFIED")
+        self.assertEqual(middle_role, "MIDDLE_ROTATION_CANDIDATE")
+
+    def test_unavailable_terrain_middle_role_is_unavailable(self):
+        for fixture_id in ("PRISM-043", "PRISM-044"):
+            with self.subTest(fixture_id=fixture_id):
+                terrain, arrival, middle_role = self.classify(fixture_id)
+                self.assertEqual(terrain["state"], "UNAVAILABLE")
+                self.assertEqual(arrival, "UNAVAILABLE")
+                self.assertEqual(middle_role, "MIDDLE_UNAVAILABLE")
+
+    def test_available_terrain_without_construction_is_unclassified(self):
+        fixture = load_fixture("PRISM-001")
+        terrain = ANALYZER.build_band_terrain(
+            fixture["bars"],
+            fixture["timeframe"],
+        )
+        middle_role = ANALYZER.classify_middle_role(
+            terrain,
+            "STRUCTURED_UPWARD_STAIR_STEP",
+            None,
+        )
+        self.assertEqual(middle_role, "MIDDLE_UNCLASSIFIED")
+
+
+def load_tests(loader, tests, pattern):
+    terrain = unittest.defaultTestLoader.loadTestsFromTestCase(BandTerrainV11Tests)
+    arrival = unittest.defaultTestLoader.loadTestsFromTestCase(ArrivalModeV11BATests)
+    middle = unittest.defaultTestLoader.loadTestsFromTestCase(MiddleRoleV11BBTests)
+    return unittest.TestSuite([terrain, arrival, middle])
+if __name__ == "__main__":
+    unittest.main(verbosity=2)

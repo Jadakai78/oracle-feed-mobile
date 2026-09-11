@@ -1,0 +1,187 @@
+﻿from __future__ import annotations
+
+from dataclasses import dataclass
+from math import isfinite
+from statistics import fmean
+from typing import Mapping, Sequence
+
+WINDOW_BARS = 365
+PRIOR_WINDOW_COUNT = 25
+MIN_BARS_FOR_WIDTH_SLOPE = 366
+MIN_BARS_FOR_FULL_HISTORY = WINDOW_BARS + PRIOR_WINDOW_COUNT
+
+
+class BandWidthError(ValueError):
+    pass
+
+
+@dataclass(frozen=True)
+class BandWidthState:
+    state: str
+    availability: str
+    current_width: float | None
+    prior_widths: tuple[float, ...]
+    percentile: float | None
+    width_slope: float | None
+    reason: str | None
+
+
+def _number(value, label):
+    try:
+        value = float(value)
+    except (TypeError, ValueError) as exc:
+        raise BandWidthError(f"{label} must be numeric") from exc
+    if not isfinite(value):
+        raise BandWidthError(f"{label} must be finite")
+    return value
+
+
+def _series(values, label):
+    if isinstance(values, (str, bytes)):
+        raise BandWidthError(f"{label} must be a numeric sequence")
+    values = tuple(_number(value, label) for value in values)
+    if not values:
+        raise BandWidthError(f"{label} cannot be empty")
+    return values
+
+
+def _width(upper, lower, start):
+    upper_window = upper[start:start + WINDOW_BARS]
+    lower_window = lower[start:start + WINDOW_BARS]
+    if len(upper_window) != WINDOW_BARS or len(lower_window) != WINDOW_BARS:
+        raise BandWidthError("width window is incomplete")
+    gaps = tuple(a - b for a, b in zip(upper_window, lower_window))
+    if any(gap < 0.0 for gap in gaps):
+        raise BandWidthError("upper band must be greater than or equal to lower band")
+    return fmean(gaps)
+
+
+def classify_width_state(current_width, prior_widths):
+    current = _number(current_width, "current_width")
+    prior = _series(prior_widths, "prior_widths")
+    if current < 0.0 or any(width < 0.0 for width in prior):
+        raise BandWidthError("width values cannot be negative")
+    percentile = sum(width <= current for width in prior) / len(prior)
+    if percentile <= 0.20:
+        return "contracted", percentile
+    if percentile >= 0.80:
+        return "expanded", percentile
+    return "neutral", percentile
+
+
+def build_band_width_state(
+    upper_band,
+    lower_band,
+    *,
+    terrain_bandwidth=None,
+    mismatch_tolerance=1e-9,
+):
+    upper = _series(upper_band, "upper_band")
+    lower = _series(lower_band, "lower_band")
+
+    if len(upper) != len(lower):
+        return BandWidthState(
+            "unavailable", "unavailable", None, (), None, None,
+            "upper_lower_length_mismatch",
+        )
+
+    try:
+        tolerance = _number(mismatch_tolerance, "mismatch_tolerance")
+    except BandWidthError:
+        return BandWidthState(
+            "unavailable", "unavailable", None, (), None, None,
+            "invalid_mismatch_tolerance",
+        )
+
+    if tolerance < 0.0:
+        return BandWidthState(
+            "unavailable", "unavailable", None, (), None, None,
+            "invalid_mismatch_tolerance",
+        )
+
+    bars = len(upper)
+
+    if bars < WINDOW_BARS:
+        return BandWidthState(
+            "unavailable", "unavailable", None, (), None, None,
+            "insufficient_current_window",
+        )
+
+    try:
+        current_width = _width(upper, lower, bars - WINDOW_BARS)
+    except BandWidthError as exc:
+        return BandWidthState(
+            "unavailable", "unavailable", None, (), None, None,
+            str(exc),
+        )
+
+    if terrain_bandwidth is not None:
+        try:
+            terrain_width = _number(terrain_bandwidth, "terrain_bandwidth")
+        except BandWidthError:
+            return BandWidthState(
+                "unavailable", "unavailable", current_width, (), None, None,
+                "invalid_terrain_bandwidth",
+            )
+        if abs(terrain_width - current_width) > tolerance:
+            return BandWidthState(
+                "unavailable", "unavailable", current_width, (), None, None,
+                "available_terrain_bandwidth_mismatch",
+            )
+
+    if bars < MIN_BARS_FOR_WIDTH_SLOPE:
+        return BandWidthState(
+            "unavailable", "partial", current_width, (), None, None,
+            "no_prior_width_for_slope",
+        )
+
+    prior_start = max(0, bars - WINDOW_BARS - PRIOR_WINDOW_COUNT)
+
+    try:
+        prior_widths = tuple(
+            _width(upper, lower, index)
+            for index in range(prior_start, bars - WINDOW_BARS)
+        )
+    except BandWidthError as exc:
+        return BandWidthState(
+            "unavailable", "unavailable", current_width, (), None, None,
+            str(exc),
+        )
+
+    slope = current_width - prior_widths[-1]
+
+    if len(prior_widths) < PRIOR_WINDOW_COUNT:
+        return BandWidthState(
+            "unavailable", "partial", current_width, prior_widths, None, slope,
+            "insufficient_prior_width_history",
+        )
+
+    state, percentile = classify_width_state(current_width, prior_widths)
+
+    return BandWidthState(
+        state, "available", current_width, prior_widths, percentile, slope, None
+    )
+
+
+def build_band_width_map(
+    upper_band,
+    lower_band,
+    *,
+    terrain_bandwidth=None,
+    mismatch_tolerance=1e-9,
+):
+    result = build_band_width_state(
+        upper_band,
+        lower_band,
+        terrain_bandwidth=terrain_bandwidth,
+        mismatch_tolerance=mismatch_tolerance,
+    )
+    return {
+        "state": result.state,
+        "availability": result.availability,
+        "current_width": result.current_width,
+        "prior_widths": list(result.prior_widths),
+        "percentile": result.percentile,
+        "width_slope": result.width_slope,
+        "reason": result.reason,
+    }

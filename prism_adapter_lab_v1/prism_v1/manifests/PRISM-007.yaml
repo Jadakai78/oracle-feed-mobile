@@ -1,0 +1,79 @@
+schema_version: prism.fixture.v1
+id: PRISM-007
+instrument:
+  base: DOGE
+  quote: USD
+  canonical_symbol: DOGE/USD
+timeframe: 15m
+market_source:
+  venue: fixture
+  venue_symbol: DOGE/USD
+  product_type: spot
+  source_timezone: UTC
+kind: valid_market
+seed: 1007
+timing:
+  start_timestamp: '2025-01-01T00:00:00Z'
+  completed_bars: 390
+  bar_interval_seconds: 900
+  as_of_bar_index: 389
+generation:
+  canonicalization: prism.ohlcv.canonical.v1
+  baseline:
+    price: 100.0
+    true_range: 1.0
+    volume: 1000.0
+  background:
+    bars: 358
+    profile: low_volatility_balance
+    direction: neutral
+    recipe: compression_background
+  previous_segment:
+    bars: 24
+    profile: compression
+    direction: neutral
+    recipe: tightening_compression
+  current_segment:
+    bars: 8
+    profile: breakout_acceptance
+    direction: bullish
+    recipe: bullish_breakout_acceptance
+expected:
+  map_status: ready
+  data_health:
+    state: healthy
+  expected_data_health_reason_codes: []
+  expected_classification_reason_codes:
+  - PRISM.CLASSIFICATION.CONSTRUCTION_CONFIRMED
+  construction:
+    previous:
+      label: compression
+      direction: neutral
+      confidence_at_least: moderate
+    current:
+      label: breakout_acceptance
+      direction: bullish
+      confidence_at_least: high
+      primary: bullish_breakout_acceptance
+      secondary_contains:
+      - compression
+    transition:
+      label: compression_to_breakout_acceptance
+      status: confirmed
+  required_evidence:
+  - PRISM.EVIDENCE.SEGMENT_CONTINUITY
+  - PRISM.EVIDENCE.TRANSITION_CONFIRMED
+  required_evidence_results:
+    PRISM.EVIDENCE.SEGMENT_CONTINUITY: pass
+    PRISM.EVIDENCE.TRANSITION_CONFIRMED: pass
+  forbidden_output_fields:
+  - score
+  - trade_instruction
+  - entry
+  - stop
+  - target
+  - position_size
+audit:
+  ruleset_version: prism.v1.0.0
+  generator_version: prism.fixture-generator.v1.0.0
+  expected_input_fingerprint: 27e6ea1cb681328251085ff03f3f26877378a7e4eec813d105ffa99fb40be132

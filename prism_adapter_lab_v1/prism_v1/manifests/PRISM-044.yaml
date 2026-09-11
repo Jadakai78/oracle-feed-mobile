@@ -1,0 +1,76 @@
+schema_version: prism.fixture.v1
+id: PRISM-044
+instrument:
+  base: ETH
+  quote: USD
+  canonical_symbol: ETH/USD
+timeframe: 15m
+market_source:
+  venue: fixture
+  venue_symbol: ETH/USD
+  product_type: spot
+  source_timezone: UTC
+kind: missing_bar
+seed: 1044
+timing:
+  start_timestamp: '2025-01-01T00:00:00Z'
+  completed_bars: 390
+  bar_interval_seconds: 900
+  as_of_bar_index: 389
+generation:
+  canonicalization: prism.ohlcv.canonical.v1
+  baseline:
+    price: 100.0
+    true_range: 1.0
+    volume: 1000.0
+  background:
+    bars: 358
+    profile: balanced_range
+    direction: neutral
+    recipe: missing_bar_background
+  previous_segment:
+    bars: 24
+    profile: range_rotation
+    direction: neutral
+    recipe: missing_bar_previous
+  current_segment:
+    bars: 8
+    profile: stair_step
+    direction: bullish
+    recipe: missing_bar_current
+expected:
+  map_status: unavailable
+  data_health:
+    state: missing_bars
+  expected_data_health_reason_codes:
+  - PRISM.DATA.MISSING_BARS
+  expected_classification_reason_codes: []
+  construction:
+    previous:
+      label: unavailable
+      direction: unavailable
+      confidence_at_least: unavailable
+    current:
+      label: unavailable
+      direction: unavailable
+      confidence_at_least: unavailable
+      primary: unavailable_due_to_missing_bars
+      secondary_contains: []
+    transition:
+      label: unavailable_due_to_missing_bars
+      status: unavailable
+  required_evidence:
+  - PRISM.DATA.MISSING_BARS
+  required_evidence_results:
+    PRISM.DATA.MISSING_BARS: pass
+  forbidden_output_fields:
+  - score
+  - trade_instruction
+  - entry
+  - stop
+  - target
+  - position_size
+audit:
+  ruleset_version: prism.v1.0.0
+  generator_version: prism.fixture-generator.v1.0.0
+  expected_input_fingerprint: 3269164e93df8166fbabb3622cc6cb3b1b75f3ebfe34a53a93f4610940fd4624

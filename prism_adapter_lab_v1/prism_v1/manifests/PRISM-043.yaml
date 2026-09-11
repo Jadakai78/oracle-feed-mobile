@@ -1,0 +1,76 @@
+schema_version: prism.fixture.v1
+id: PRISM-043
+instrument:
+  base: ZEC
+  quote: USD
+  canonical_symbol: ZEC/USD
+timeframe: 15m
+market_source:
+  venue: fixture
+  venue_symbol: ZEC/USD
+  product_type: spot
+  source_timezone: UTC
+kind: insufficient_history
+seed: 1043
+timing:
+  start_timestamp: '2025-01-01T00:00:00Z'
+  completed_bars: 364
+  bar_interval_seconds: 900
+  as_of_bar_index: 363
+generation:
+  canonicalization: prism.ohlcv.canonical.v1
+  baseline:
+    price: 100.0
+    true_range: 1.0
+    volume: 1000.0
+  background:
+    bars: 332
+    profile: truncated_history
+    direction: neutral
+    recipe: insufficient_history_background
+  previous_segment:
+    bars: 24
+    profile: unavailable
+    direction: neutral
+    recipe: unavailable_due_to_history
+  current_segment:
+    bars: 8
+    profile: unavailable
+    direction: neutral
+    recipe: unavailable_due_to_history
+expected:
+  map_status: degraded
+  data_health:
+    state: insufficient_history
+  expected_data_health_reason_codes:
+  - PRISM.DATA.INSUFFICIENT_HISTORY
+  expected_classification_reason_codes: []
+  construction:
+    previous:
+      label: unavailable
+      direction: unavailable
+      confidence_at_least: unavailable
+    current:
+      label: unavailable
+      direction: unavailable
+      confidence_at_least: unavailable
+      primary: unavailable_due_to_insufficient_history
+      secondary_contains: []
+    transition:
+      label: unavailable_due_to_insufficient_history
+      status: unavailable
+  required_evidence:
+  - PRISM.DATA.INSUFFICIENT_HISTORY
+  required_evidence_results:
+    PRISM.DATA.INSUFFICIENT_HISTORY: pass
+  forbidden_output_fields:
+  - score
+  - trade_instruction
+  - entry
+  - stop
+  - target
+  - position_size
+audit:
+  ruleset_version: prism.v1.0.0
+  generator_version: prism.fixture-generator.v1.0.0
+  expected_input_fingerprint: ee5291e5927cf80f1f0b5d5f025908b5e72bc018494c08b07d1c7b6fe333bbde

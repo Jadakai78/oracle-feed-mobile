@@ -1,0 +1,448 @@
+"""outcome_evaluator.py — Resolve JHL watch observations into market outcomes.
+
+This does not place orders or alter scanner signals. It updates only schema-v2
+training records after enough completed 15m candles exist to evaluate the
+published entry, stop, and target geometry.
+
+Positive: TP is reached before SL.
+Negative: SL is reached before TP.
+Neutral: both are crossed in one candle (ordering unknowable), or the horizon
+expires without either level being reached.
+"""
+from __future__ import annotations
+
+import json
+import time
+import urllib.parse
+import urllib.request
+import os
+from pathlib import Path
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
+KRAKEN_API = "https://api.kraken.com/0/public"
+INTERVAL_MINUTES = 15
+HORIZON_BARS = 16
+REFRESH_SECONDS = 300
+LOG_DIR = Path(__file__).parent / "training_logs"
+BOT_LOGS = (
+    "gimba_volatile",
+    "gimba_range",
+    "rts_liquidation",
+    "gimba_trend",
+    "gimba_drive",
+    "gimba_pulse",
+    "shadow_volatile",
+    "shadow_trend_recovery",
+)
+PAIR_MAP = {
+    "SOL/USD": "SOLUSD", "BTC/USD": "XBTUSD", "ETH/USD": "ETHUSD",
+    "XRP/USD": "XRPUSD", "ADA/USD": "ADAUSD", "DOGE/USD": "XDGUSD",
+    "LINK/USD": "LINKUSD", "AVAX/USD": "AVAXUSD", "DOT/USD": "DOTUSD",
+    "MATIC/USD": "MATICUSD", "AAVE/USD": "AAVEUSD", "LTC/USD": "XLTCZUSD",
+}
+
+
+def _number(value: Any) -> Optional[float]:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _parse_ts(value: Any) -> Optional[datetime]:
+    if not value:
+        return None
+    try:
+        text = str(value).replace(" UTC", "+00:00").replace("Z", "+00:00")
+        parsed = datetime.fromisoformat(text)
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return parsed.astimezone(timezone.utc)
+    except (TypeError, ValueError):
+        return None
+
+
+def _request(path: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    query = urllib.parse.urlencode(params)
+    with urllib.request.urlopen(f"{KRAKEN_API}{path}?{query}", timeout=12) as response:
+        payload = json.loads(response.read())
+    if payload.get("error"):
+        raise RuntimeError("; ".join(payload["error"]))
+    return payload.get("result") or {}
+
+
+def _ohlc(pair: str, since_epoch: int) -> List[List[Any]]:
+    kraken_pair = PAIR_MAP.get(pair)
+    if not kraken_pair:
+        return []
+    result = _request("/OHLC", {
+        "pair": kraken_pair,
+        "interval": INTERVAL_MINUTES,
+        "since": max(0, since_epoch),
+    })
+    key = next((name for name in result if name != "last"), None)
+    return list(result.get(key) or []) if key else []
+
+
+def _pulse_horizon(
+    candles: Sequence[List[Any]],
+    reference_close: float,
+    observer_direction: str,
+    breakout_side: str,
+    breakout_level: Optional[float],
+) -> Dict[str, Any]:
+    divisor = max(abs(reference_close), 1e-9)
+    closes = [reference_close] + [float(row[4]) for row in candles]
+    highs = [float(row[2]) for row in candles]
+    lows = [float(row[3]) for row in candles]
+    final_close = float(candles[-1][4])
+    raw_return = (final_close - reference_close) / divisor
+    direction = 1.0 if observer_direction == "UP" else -1.0 if observer_direction == "DOWN" else 0.0
+    path = sum(abs(right - left) for left, right in zip(closes, closes[1:]))
+    efficiency = abs(final_close - reference_close) / path if path > 0 else 0.0
+    if observer_direction == "DOWN":
+        mfe = max((reference_close - low) / divisor for low in lows)
+        mae = min(0.0, min((reference_close - high) / divisor for high in highs))
+    else:
+        mfe = max((high - reference_close) / divisor for high in highs)
+        mae = min(0.0, min((low - reference_close) / divisor for low in lows))
+    break_status: Optional[str] = None
+    if breakout_level is not None and breakout_side in {"UP", "DOWN"}:
+        if breakout_side == "UP":
+            held = all(float(row[3]) >= breakout_level for row in candles)
+        else:
+            held = all(float(row[2]) <= breakout_level for row in candles)
+        break_status = "HELD" if held else "FAILED"
+    return {
+        "net_directional_return": round(raw_return * direction if direction else raw_return, 6),
+        "realized_range": round((max(highs) - min(lows)) / divisor, 6),
+        "directional_efficiency": round(efficiency, 6),
+        "mfe": round(mfe, 6),
+        "mae": round(mae, 6),
+        "local_break_status": break_status,
+    }
+
+
+def _resolve_pulse(record: Dict[str, Any], now_epoch: int) -> Optional[Dict[str, Any]]:
+    current = record.get("outcome") or {}
+    if (
+        str(current.get("status") or "").lower() == "resolved"
+        and isinstance(current.get("horizons"), dict)
+        and "16bar" in current["horizons"]
+    ):
+        return None
+
+    diagnostics = record.get("diagnostics") or {}
+    observed = _parse_ts(record.get("ts"))
+    reference_close = _number(diagnostics.get("reference_close"))
+    start_epoch = diagnostics.get("reference_bar_start")
+    if observed is None or reference_close is None:
+        return {
+            "status": "resolved",
+            "label": None,
+            "reason": "pulse_missing_observer_reference",
+            "evaluated_at": datetime.now(timezone.utc).isoformat(),
+        }
+    start_epoch = int(start_epoch or (observed.timestamp() // (INTERVAL_MINUTES * 60) * (INTERVAL_MINUTES * 60)))
+    if now_epoch < start_epoch + INTERVAL_MINUTES * 60:
+        return None
+
+    try:
+        rows = _ohlc(str(record.get("pair")), start_epoch)
+    except Exception as exc:
+        return {
+            "status": "pending",
+            "label": None,
+            "reason": f"evaluator_fetch_error:{type(exc).__name__}",
+        }
+
+    candles = [row for row in rows if len(row) >= 5 and int(float(row[0])) > start_epoch]
+    observer_direction = str(diagnostics.get("observer_direction") or "NEUTRAL").upper()
+    breakout_side = str(diagnostics.get("breakout_side") or "NEUTRAL").upper()
+    breakout_level = _number(diagnostics.get("breakout_level"))
+    horizons: Dict[str, Any] = {}
+    for label, count in (("15m", 1), ("30m", 2), ("60m", 4), ("16bar", HORIZON_BARS)):
+        if len(candles) >= count:
+            horizons[label] = _pulse_horizon(
+                candles[:count],
+                reference_close,
+                observer_direction,
+                breakout_side,
+                breakout_level,
+            )
+
+    if not horizons:
+        return None
+    status = "resolved" if "16bar" in horizons else "pending"
+    return {
+        "status": status,
+        "label": None,
+        "reason": "pulse_observer_forward_metrics",
+        "evaluated_at": datetime.now(timezone.utc).isoformat(),
+        "observer_state": record.get("state") or record.get("setup_type"),
+        "observer_direction": observer_direction,
+        "horizons": horizons,
+    }
+
+
+
+def _shadow_horizon(
+    candles: List[List[Any]],
+    reference_price: float,
+    side: str,
+    invalidation_level: Optional[float],
+) -> Dict[str, Any]:
+    if not candles or reference_price == 0:
+        return {}
+    divisor = max(abs(reference_price), 1e-9)
+    highs = [float(row[2]) for row in candles]
+    lows = [float(row[3]) for row in candles]
+    closes = [reference_price] + [float(row[4]) for row in candles]
+    final_close = float(candles[-1][4])
+    raw_return = (final_close - reference_price) / divisor
+    direction = 1.0 if side == "LONG" else -1.0 if side == "SHORT" else 0.0
+    net_return = raw_return * direction if direction else raw_return
+    path = sum(abs(right - left) for left, right in zip(closes, closes[1:]))
+    efficiency = abs(final_close - reference_price) / path if path else 0.0
+    if side == "LONG":
+        mfe = max((high - reference_price) / divisor for high in highs)
+        mae = min(0.0, min((low - reference_price) / divisor for low in lows))
+    elif side == "SHORT":
+        mfe = max((reference_price - low) / divisor for low in lows)
+        mae = min(0.0, min((reference_price - high) / divisor for high in highs))
+    else:
+        mfe = max(abs(high - reference_price) / divisor for high in highs)
+        mae = 0.0
+    hold_fail = None
+    if invalidation_level is not None and side in {"LONG", "SHORT"}:
+        violated = any(float(row[3]) < invalidation_level for row in candles) if side == "LONG" else any(float(row[2]) > invalidation_level for row in candles)
+        hold_fail = "FAILED" if violated else "HELD"
+    return {
+        "net_directional_return": round(net_return, 6),
+        "realized_range": round((max(highs) - min(lows)) / divisor, 6),
+        "directional_efficiency": round(efficiency, 6),
+        "mfe": round(mfe, 6),
+        "mae": round(mae, 6),
+        "hold_fail": hold_fail,
+    }
+
+
+def _resolve_shadow(record: Dict[str, Any], now_epoch: int) -> Optional[Dict[str, Any]]:
+    current = record.get("outcome") or {}
+    if str(current.get("status") or "").lower() == "resolved" and isinstance(current.get("horizons"), dict) and "16bar" in current["horizons"]:
+        return None
+    observed = _parse_ts(record.get("ts"))
+    reference_price = _number(record.get("reference_price"))
+    reference_bar_ts = record.get("reference_bar_ts")
+    if observed is None or reference_price is None:
+        return {"status": "resolved", "label": None, "reason": "shadow_missing_reference_price_or_ts", "evaluated_at": datetime.now(timezone.utc).isoformat()}
+    start_epoch = int(reference_bar_ts) if reference_bar_ts is not None else int(observed.timestamp() // (INTERVAL_MINUTES * 60) * (INTERVAL_MINUTES * 60))
+    if now_epoch < start_epoch + INTERVAL_MINUTES * 60:
+        return None
+    try:
+        rows = _ohlc(str(record.get("pair")), start_epoch)
+    except Exception as exc:
+        return {"status": "pending", "label": None, "reason": f"evaluator_fetch_error:{type(exc).__name__}"}
+    candles = [row for row in rows if len(row) >= 5 and int(float(row[0])) > start_epoch]
+    if not candles:
+        return None
+    side = str(record.get("side") or "NONE").upper()
+    invalidation_level = _number(record.get("invalidation_level"))
+    horizons: Dict[str, Any] = {}
+    for label, count in (("15m", 1), ("30m", 2), ("60m", 4), ("16bar", HORIZON_BARS)):
+        if len(candles) >= count:
+            horizons[label] = _shadow_horizon(candles[:count], reference_price, side, invalidation_level)
+    if not horizons:
+        return None
+    return {
+        "status": "resolved" if "16bar" in horizons else "pending",
+        "label": None,
+        "reason": "shadow_candidate_forward_metrics",
+        "evaluated_at": datetime.now(timezone.utc).isoformat(),
+        "setup_family": record.get("setup_family") or record.get("setup_type"),
+        "side": side,
+        "horizons": horizons,
+    }
+
+
+def _resolve(record: Dict[str, Any], now_epoch: int) -> Optional[Dict[str, Any]]:
+    """Return an outcome object, or None while insufficient future candles exist."""
+    if int(record.get("schema_version") or 0) < 2:
+        return None
+    bot = str(record.get("bot") or "")
+    if bot == "gimba_pulse":
+        return _resolve_pulse(record, now_epoch)
+    if bot in ("shadow_volatile", "shadow_trend_recovery"):
+        return _resolve_shadow(record, now_epoch)
+    if str(record.get("action") or "").lower() != "watch":
+        return None
+    current = record.get("outcome") or {}
+    if str(current.get("status") or "").lower() == "resolved":
+        return None
+
+    side = str(record.get("bias") or "").upper()
+    entry = _number(record.get("entry"))
+    stop = _number(record.get("sl"))
+    target = _number(record.get("tp"))
+    observed = _parse_ts(record.get("ts"))
+    if side not in {"LONG", "SHORT"} or None in {entry, stop, target} or observed is None:
+        return {
+            "status": "resolved", "label": None,
+            "reason": "neutral_missing_trade_geometry_or_timestamp",
+            "evaluated_at": datetime.now(timezone.utc).isoformat(),
+        }
+
+    start_epoch = int(observed.timestamp() // (INTERVAL_MINUTES * 60) * (INTERVAL_MINUTES * 60))
+    if now_epoch < start_epoch + HORIZON_BARS * INTERVAL_MINUTES * 60:
+        return None
+
+    try:
+        rows = _ohlc(str(record.get("pair")), start_epoch)
+    except Exception as exc:
+        return {
+            "status": "pending", "label": None,
+            "reason": f"evaluator_fetch_error:{type(exc).__name__}",
+        }
+
+    # Ignore the signal candle and use only completed candles after publication.
+    candles = [row for row in rows if len(row) >= 5 and int(float(row[0])) > start_epoch]
+    candles = candles[:HORIZON_BARS]
+    if len(candles) < HORIZON_BARS:
+        return None
+
+    mfe = 0.0
+    mae = 0.0
+    for index, row in enumerate(candles, start=1):
+        high = float(row[2])
+        low = float(row[3])
+        if side == "LONG":
+            target_hit = high >= target
+            stop_hit = low <= stop
+            mfe = max(mfe, high - entry)
+            mae = min(mae, low - entry)
+        else:
+            target_hit = low <= target
+            stop_hit = high >= stop
+            mfe = max(mfe, entry - low)
+            mae = min(mae, entry - high)
+
+        base = {
+            "evaluated_at": datetime.now(timezone.utc).isoformat(),
+            "horizon_bars": HORIZON_BARS,
+            "mfe": round(mfe, 10),
+            "mae": round(mae, 10),
+            "first_hit_bar": index,
+        }
+        if target_hit and stop_hit:
+            return {
+                **base,
+                "status": "resolved",
+                "label": None,
+                "reason": "neutral_stop_and_target_same_candle",
+            }
+        if target_hit:
+            return {
+                **base,
+                "status": "resolved",
+                "label": 1,
+                "reason": "target_before_invalidation",
+            }
+        if stop_hit:
+            return {
+                **base,
+                "status": "resolved",
+                "label": -1,
+                "reason": "invalidation_before_target",
+            }
+
+    return {
+        "status": "resolved",
+        "label": None,
+        "reason": "neutral_horizon_expired",
+        "evaluated_at": datetime.now(timezone.utc).isoformat(),
+        "horizon_bars": HORIZON_BARS,
+        "mfe": round(mfe, 10),
+        "mae": round(mae, 10),
+    }
+
+
+def evaluate_log(path: Path) -> Tuple[int, int]:
+    if not path.exists():
+        return 0, 0
+    changed = 0
+    evaluated = 0
+    now_epoch = int(time.time())
+    records: List[Dict[str, Any]] = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        try:
+            record = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        outcome = _resolve(record, now_epoch)
+        if outcome is not None:
+            evaluated += 1
+            if outcome != (record.get("outcome") or {}):
+                record["outcome"] = outcome
+                changed += 1
+        records.append(record)
+
+    if changed:
+        temp_path = path.with_suffix(path.suffix + ".tmp")
+
+        temp_path.write_text(
+            "".join(
+                json.dumps(record, ensure_ascii=False) + "\n"
+                for record in records
+            ),
+            encoding="utf-8",
+        )
+
+        replaced = False
+        last_error = None
+
+        for attempt in range(10):
+            try:
+                os.replace(temp_path, path)
+                replaced = True
+                break
+            except PermissionError as exc:
+                last_error = exc
+                time.sleep(0.5)
+
+        if not replaced:
+            raise PermissionError(
+                f"Could not replace {path.name} after 10 retries; "
+                "scanner may still be writing the log."
+            ) from last_error
+
+    return evaluated, changed
+
+
+def run_once() -> None:
+    total_evaluated = 0
+    total_changed = 0
+    for bot in BOT_LOGS:
+        evaluated, changed = evaluate_log(LOG_DIR / f"{bot}.jsonl")
+        total_evaluated += evaluated
+        total_changed += changed
+    stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    print(f"[{stamp}] Outcome evaluator: checked={total_evaluated} resolved_or_updated={total_changed}")
+
+
+def main() -> None:
+    print(f"JHL outcome evaluator — {INTERVAL_MINUTES}m bars, {HORIZON_BARS}-bar horizon, refresh {REFRESH_SECONDS}s")
+    while True:
+        try:
+            run_once()
+        except Exception as exc:
+            print(f"Outcome evaluator error: {type(exc).__name__}: {exc}")
+        time.sleep(REFRESH_SECONDS)
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\nOutcome evaluator stopped.")

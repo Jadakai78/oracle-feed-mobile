@@ -1,0 +1,79 @@
+﻿schema_version: prism.fixture.v1
+id: PRISM-008
+instrument:
+  base: XRP
+  quote: USD
+  canonical_symbol: XRP/USD
+timeframe: 15m
+market_source:
+  venue: fixture
+  venue_symbol: XRP/USD
+  product_type: spot
+  source_timezone: UTC
+kind: valid_market
+seed: 1008
+timing:
+  start_timestamp: '2025-01-01T00:00:00Z'
+  completed_bars: 390
+  bar_interval_seconds: 900
+  as_of_bar_index: 389
+generation:
+  canonicalization: prism.ohlcv.canonical.v1
+  baseline:
+    price: 100.0
+    true_range: 1.0
+    volume: 1000.0
+  background:
+    bars: 358
+    profile: balanced_range
+    direction: neutral
+    recipe: range_rotation_background
+  previous_segment:
+    bars: 24
+    profile: range_rotation
+    direction: neutral
+    recipe: range_rotation
+  current_segment:
+    bars: 8
+    profile: stair_step
+    direction: bearish
+    recipe: bearish_stair_step
+expected:
+  map_status: ready
+  data_health:
+    state: healthy
+  expected_data_health_reason_codes: []
+  expected_classification_reason_codes:
+  - PRISM.CLASSIFICATION.CONSTRUCTION_CONFIRMED
+  construction:
+    previous:
+      label: range_rotation
+      direction: neutral
+      confidence_at_least: moderate
+    current:
+      label: stair_step
+      direction: bearish
+      confidence_at_least: high
+      primary: bearish_stair_step
+      secondary_contains:
+      - range_rotation
+    transition:
+      label: range_rotation_to_stair_step
+      status: confirmed
+  required_evidence:
+  - PRISM.EVIDENCE.SEGMENT_CONTINUITY
+  - PRISM.EVIDENCE.TRANSITION_CONFIRMED
+  required_evidence_results:
+    PRISM.EVIDENCE.SEGMENT_CONTINUITY: pass
+    PRISM.EVIDENCE.TRANSITION_CONFIRMED: pass
+  forbidden_output_fields:
+  - score
+  - trade_instruction
+  - entry
+  - stop
+  - target
+  - position_size
+audit:
+  ruleset_version: prism.v1.0.0
+  generator_version: prism.fixture-generator.v1.0.0
+  expected_input_fingerprint: 1a3671baf1f7faa30d51ed6ede7b8c6c9e0559c0aeb9eb68512da0f6a465096f

@@ -1,0 +1,79 @@
+schema_version: prism.fixture.v1
+id: PRISM-001
+instrument:
+  base: BTC
+  quote: USD
+  canonical_symbol: BTC/USD
+timeframe: 15m
+market_source:
+  venue: fixture
+  venue_symbol: BTC/USD
+  product_type: spot
+  source_timezone: UTC
+kind: valid_market
+seed: 1001
+timing:
+  start_timestamp: '2025-01-01T00:00:00Z'
+  completed_bars: 390
+  bar_interval_seconds: 900
+  as_of_bar_index: 389
+generation:
+  canonicalization: prism.ohlcv.canonical.v1
+  baseline:
+    price: 100.0
+    true_range: 1.0
+    volume: 1000.0
+  background:
+    bars: 358
+    profile: balanced_range
+    direction: neutral
+    recipe: range_rotation_background
+  previous_segment:
+    bars: 24
+    profile: range_rotation
+    direction: neutral
+    recipe: range_rotation
+  current_segment:
+    bars: 8
+    profile: stair_step
+    direction: bullish
+    recipe: bullish_stair_step
+expected:
+  map_status: ready
+  data_health:
+    state: healthy
+  expected_data_health_reason_codes: []
+  expected_classification_reason_codes:
+  - PRISM.CLASSIFICATION.CONSTRUCTION_CONFIRMED
+  construction:
+    previous:
+      label: range_rotation
+      direction: neutral
+      confidence_at_least: moderate
+    current:
+      label: stair_step
+      direction: bullish
+      confidence_at_least: high
+      primary: bullish_stair_step
+      secondary_contains:
+      - range_rotation
+    transition:
+      label: range_rotation_to_stair_step
+      status: confirmed
+  required_evidence:
+  - PRISM.EVIDENCE.SEGMENT_CONTINUITY
+  - PRISM.EVIDENCE.TRANSITION_CONFIRMED
+  required_evidence_results:
+    PRISM.EVIDENCE.SEGMENT_CONTINUITY: pass
+    PRISM.EVIDENCE.TRANSITION_CONFIRMED: pass
+  forbidden_output_fields:
+  - score
+  - trade_instruction
+  - entry
+  - stop
+  - target
+  - position_size
+audit:
+  ruleset_version: prism.v1.0.0
+  generator_version: prism.fixture-generator.v1.0.0
+  expected_input_fingerprint: cfd091669668d850f8d0c38474a02728e74eaa5de1bc2bec16bec2e78f01d5a6

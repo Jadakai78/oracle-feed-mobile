@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#081015">
+<title>JHL Market Edge — Eight Gates</title>
+<style>
+:root{
+  --bg:#081015;--panel:#0d1b24;--line:#1e3040;--text:#e4eff5;--muted:#7fa0b0;
+  --good:#3dd68c;--warn:#f5c842;--bad:#ff5f6d;--blue:#5fb3ff;--violet:#a87fff;
+  --ready-bg:#0b2a1e;--watch-bg:#2a1f06;--build-bg:#081e30;--rej-bg:#2a0c10;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:radial-gradient(circle at top,#102535 0,#081015 40rem);color:var(--text);font:13px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,sans-serif;min-height:100vh}
+
+/* ── Header ── */
+header{position:sticky;top:0;z-index:9;background:rgba(8,16,21,.95);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:12px max(12px,calc((100vw - 1640px)/2));display:flex;justify-content:space-between;align-items:center;gap:12px}
+h1{font-size:17px;letter-spacing:.1em}
+.sub{color:var(--muted);font-size:11px;margin-top:2px}
+#feed-status{color:var(--blue);font-size:11px}
+button{color:var(--text);background:#112231;border:1px solid #2d4a60;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer}
+button:hover{border-color:var(--good)}
+
+/* ── Banner ── */
+.banner{background:#0c2030;border:1px solid #2a4a5e;border-radius:10px;padding:9px 14px;color:#b8d8f0;font-size:12px;font-weight:700;text-align:center;margin-bottom:12px}
+
+/* ── Summary pills ── */
+#summary{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.pill{border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-size:11px;color:var(--muted)}
+.pill b{color:var(--text)}
+.pill.p-ready{border-color:var(--good);color:var(--good)}
+.pill.p-ready b{color:var(--good)}
+.pill.p-watch{border-color:var(--warn);color:var(--warn)}
+.pill.p-watch b{color:var(--warn)}
+
+/* ── Tabs ── */
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;margin-bottom:4px}
+.tab{white-space:nowrap;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);font-size:12px;cursor:pointer}
+.tab.active{border-color:var(--good);color:var(--good);background:#0c2a1e}
+
+/* ── Three-panel layout ── */
+.layout{display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:12px;max-width:1640px;margin:auto}
+@media(max-width:1100px){.layout{grid-template-columns:1fr}}
+.panel{background:#0d1b24e8;border:1px solid var(--line);border-radius:13px;overflow:hidden}
+.panel-head{font-size:11px;letter-spacing:.12em;padding:11px 14px;border-bottom:1px solid var(--line);color:#9ec8da;font-weight:700}
+.panel-note{padding:7px 14px;border-bottom:1px solid var(--line);font-size:11px;color:var(--muted)}
+.panel-body{padding:8px}
+
+/* ── Cards ── */
+.card{border:1px solid #1a3040;background:#0a1820;border-radius:10px;padding:11px;margin-bottom:9px}
+.card:last-child{margin-bottom:0}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
+.pair{font-size:18px;font-weight:800;letter-spacing:.02em}
+.event-label{font-size:11px;color:var(--blue);margin-top:2px}
+
+/* Status badges */
+.badge{display:inline-block;border-radius:999px;padding:4px 9px;font-size:10px;font-weight:800;letter-spacing:.06em;border:1px solid}
+.EXECUTION_ELIGIBLE{color:var(--good);border-color:var(--good);background:var(--ready-bg)}
+.ELIGIBLE_WATCH{color:var(--warn);border-color:var(--warn);background:var(--watch-bg)}
+.BUILDING{color:var(--blue);border-color:var(--blue);background:var(--build-bg)}
+.REJECTED,.NO_DATA{color:var(--bad);border-color:var(--bad);background:var(--rej-bg)}
+
+/* Metric grid */
+.metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin:8px 0}
+.metric{background:#081520;border:1px solid #1a3040;border-radius:8px;padding:8px 9px}
+.metric label{display:block;color:var(--muted);font-size:9px;letter-spacing:.1em;margin-bottom:3px}
+.metric strong{font-size:14px}
+
+/* Rows */
+.row{display:flex;justify-content:space-between;gap:10px;border-top:1px solid #162535;padding:7px 0;font-size:12px}
+.row span:first-child{color:var(--muted);white-space:nowrap;flex-shrink:0}
+.row span:last-child{text-align:right;word-break:break-word}
+
+/* Colors */
+.ok{color:var(--good)}.bad{color:var(--bad)}.warn{color:var(--warn)}.blue{color:var(--blue)}.muted{color:var(--muted)}
+.shield-text{color:#ff9fa5}.fix-text{color:#a8d8f0}.clear-text{color:var(--good);font-weight:700}
+
+/* Entry card special */
+.entry-card{border-color:#2a6050;background:#081e18}
+
+/* Chips */
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0}
+.chip{font-size:10px;padding:3px 7px;border:1px solid #2a5040;border-radius:999px;color:#7dd4b0}
+
+/* Reclaim tag */
+.reclaim-tag{font-size:10px;padding:3px 8px;border:1px solid var(--good);border-radius:999px;color:var(--good);display:inline-block;margin-top:4px}
+.bos-tag{font-size:10px;padding:3px 8px;border:1px solid var(--blue);border-radius:999px;color:var(--blue);display:inline-block;margin-top:4px}
+.no-confirm{font-size:10px;padding:3px 8px;border:1px solid #3a4a50;border-radius:999px;color:var(--muted);display:inline-block;margin-top:4px}
+
+.empty{border:1px dashed #1e3a4a;border-radius:10px;padding:18px;color:var(--muted);text-align:center;font-size:12px}
+.foot{color:var(--muted);font-size:11px;margin-top:10px;text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>JHL MARKET EDGE</h1>
+    <div class="sub">EIGHT GATES · 49 pairs · top-12 dynamic · no orders</div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <span id="feed-status">Waiting for signals.json</span>
+    <button id="refresh-btn">Refresh</button>
+  </div>
+</header>
+
+<div style="padding:12px max(12px,calc((100vw - 1640px)/2)) 0">
+  <div class="banner">ORDERS DISABLED · 49-PAIR SCAN · TOP-12 SURFACED · EXECUTION_ELIGIBLE = alert and manual review only</div>
+  <div id="summary"></div>
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-tier="ALL">All</button>
+    <button class="tab" data-tier="EXECUTION_ELIGIBLE">Ready</button>
+    <button class="tab" data-tier="ELIGIBLE_WATCH">Watch</button>
+    <button class="tab" data-tier="BUILDING">Building</button>
+    <button class="tab" data-tier="REJECTED">Rejected</button>
+    <button class="tab" data-tier="QUARANTINED">Quarantined</button>
+    <button class="tab" data-tier="NO_DATA">No data</button>
+  </div>
+</div>
+
+<div style="padding:8px max(12px,calc((100vw - 1640px)/2))">
+  <div class="layout" id="layout">
+    <section class="panel">
+      <div class="panel-head">FIELD / MARKET STATE</div>
+      <div class="panel-note">Structure, location, pressure, timing</div>
+      <div class="panel-body" id="panel-field"><div class="empty">Loading…</div></div>
+    </section>
+    <section class="panel">
+      <div class="panel-head">EIGHT GATES TEMPO</div>
+      <div class="panel-note">Speed · reclaim · gate states</div>
+      <div class="panel-body" id="panel-tempo"><div class="empty">Loading…</div></div>
+    </section>
+    <section class="panel">
+      <div class="panel-head">ENTRY CARDS</div>
+      <div class="panel-note">Manual review only — EXECUTION_ELIGIBLE</div>
+      <div class="panel-body" id="panel-entries"><div class="empty">No entry cards. Waiting for full confluence.</div></div>
+    </section>
+  </div>
+  <div class="foot">Auto-refreshes every 15s · Completed 15m bars · 49 pairs scanned · top-12 surfaced · Eight Gates</div>
+</div>
+
+<script>
+const el = id => document.getElementById(id);
+const esc = v => String(v ?? '—').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num = (v, d=4) => {const n=Number(v); return Number.isFinite(n) ? n.toLocaleString(undefined,{maximumFractionDigits:d,minimumFractionDigits:d>2?2:0}) : '—'};
+
+let allRows = [], activeTier = 'ALL';
+
+function getElig(row) {
+  // Eight Gates schema v4: eligibility is top-level
+  if (row.eligibility) return {eligibility_state: row.eligibility, eligibility_blockers: row.rejected_at ? [row.rejected_at] : [], eligibility_reason: row.rejected_at || 'passing', side: row.side || 'NONE'};
+  // Delta 2.0 fallback
+  const d = row.delta_tempo || {};
+  if (d.eligibility) return d.eligibility;
+  return {eligibility_state: 'BUILDING', eligibility_blockers: ['legacy_feed'], eligibility_reason: 'Awaiting scan snapshot', side: d.delta_direction || 'NONE'};
+}
+
+function getState(row) { return String(row.eligibility || getElig(row).eligibility_state || 'BUILDING'); }
+
+// ── Field panel card ──────────────────────────────────────────────────────────
+function fieldCard(row) {
+  // Eight Gates v4 schema
+  const isV4 = !!row.gates;
+  const htf = row.htf_direction || (row.structure||{}).trend || 'UNKNOWN';
+  const htfClass = htf === 'UP' ? 'ok' : htf === 'DOWN' ? 'bad' : 'muted';
+  const delta = row.delta_norm != null ? row.delta_norm : null;
+  const pressLabel = delta > 0.2 ? 'BUY PRESSURE' : delta < -0.2 ? 'SELL PRESSURE' : 'BALANCED';
+  const pressClass = delta > 0.2 ? 'ok' : delta < -0.2 ? 'bad' : 'muted';
+  const scoreBar = row.score != null ? `<div style="height:3px;background:linear-gradient(90deg,${row.score>=70?'var(--good)':row.score>=55?'var(--warn)':'var(--blue)'} ${row.score}%,#1a3040 ${row.score}%);border-radius:2px;margin-top:6px"></div>` : '';
+  const rejNote = row.rejected_at ? `<div style="font-size:10px;color:var(--bad);margin-top:4px">Rejected @ ${esc(row.rejected_at)}</div>` : '';
+  // Legacy Delta 2.0 support
+  const s = row.structure || {}; const d = row.delta_tempo || {}; const f = row.volume_flow || {};
+  const cond = isV4 ? `HTF ${htf}` : (s.market_condition || 'UNKNOWN');
+  const condClass = isV4 ? htfClass : (cond.includes('RANGING') ? 'warn' : cond.includes('TRENDING_UP') ? 'ok' : cond.includes('TRENDING_DOWN') ? 'bad' : 'muted');
+  return `<div class="card">
+    <div class="card-top">
+      <div><div class="pair">${esc(row.pair)}</div><div class="event-label">${esc(cond)} ${isV4&&row.score!=null?'· Score '+row.score:''}</div></div>
+      <span class="badge ${getState(row)}">${getState(row).replace(/_/g,' ')}</span>
+    </div>
+    ${scoreBar}
+    <div class="row"><span>HTF Direction</span><span class="${htfClass}">${esc(htf)}</span></div>
+    <div class="row"><span>Pressure</span><span class="${pressClass}">${pressLabel}</span></div>
+    <div class="row"><span>Speed</span><span>${row.speed!=null?Number(row.speed).toFixed(3)+'  '+(row.speed>=0.5?'✓ pass':'✗ below floor'):(d.speed_score!=null?Number(d.speed_score).toFixed(3):'—')}</span></div>
+    <div class="row"><span>Rel Vol</span><span>${row.rel_vol!=null?Number(row.rel_vol).toFixed(2)+'×':'—'}</span></div>
+    <div class="row"><span>ATR</span><span class="muted">${row.atr!=null?Number(row.atr).toFixed(6):'—'}</span></div>
+    ${rejNote}
+  </div>`;
+}
+
+// ── Tempo panel card ──────────────────────────────────────────────────────────
+function tempoCard(row) {
+  // Eight Gates v4 — show gate pass/fail ladder
+  if (row.gates) {
+    const side = row.side || 'NONE';
+    if (side === 'NONE' && !row.rejected_at) return '';
+    const sideClass = side === 'LONG' ? 'ok' : side === 'SHORT' ? 'bad' : 'muted';
+    const geo = row.geometry || {};
+    const reclaim = geo.reclaim_confirmed;
+    let confirmTag = reclaim
+      ? `<span class="reclaim-tag">RECLAIM ✓</span>`
+      : `<span class="no-confirm">structure hold</span>`;
+    const speedOk = row.speed >= 0.5;
+    const speedClass = speedOk ? 'ok' : 'bad';
+    const gateNames = ['data_integrity','higher_timeframe_direction','local_alignment','pressure_confirmation','participation','noise_no_chase','trigger_risk','publish_learn'];
+    const gateLabels = ['Data','HTF Dir','Alignment','Pressure','Participation','Noise','Trigger','Publish'];
+    const gateRows = gateNames.map((g,i) => {
+      const gate = (row.gates||{})[g] || {};
+      const pass = gate.status === 'PASS';
+      return `<div class="row"><span>${gateLabels[i]}</span><span class="${pass?'ok':'bad'}">${pass?'✓':'✗'} ${esc(gate.reason||gate.status||'—')}</span></div>`;
+    }).join('');
+    return `<div class="card">
+      <div class="card-top">
+        <div>
+          <div class="pair">${esc(row.pair)} <span class="${sideClass}" style="font-size:14px">${side}</span></div>
+          <div class="event-label">Score ${row.score} · ${esc(row.eligibility)}</div>
+        </div>
+        <span class="badge ${getState(row)}">${getState(row).replace(/_/g,' ')}</span>
+      </div>
+      <div class="row"><span>Speed</span><span class="${speedClass}">${num(row.speed,3)} ${speedOk?'✓ pass':'✗ below 0.50'}</span></div>
+      <div class="row"><span>Accel</span><span>${num(row.accel,2)}× ${row.accel>=1.3?'✓':'—'}</span></div>
+      <div class="row"><span>Confirmation</span><span>${confirmTag}</span></div>
+      ${gateRows}
+    </div>`;
+  }
+  // Delta 2.0 legacy fallback
+  const d = row.delta_tempo || {};
+  if (!d.delta_direction || d.delta_direction === 'NONE') return '';
+  const side = d.delta_direction;
+  const sideClass = side === 'LONG' ? 'ok' : 'bad';
+  const elig = getElig(row);
+  const blockers = (elig.eligibility_blockers || []).join(', ') || 'CLEAR';
+  const blockClass = blockers === 'CLEAR' ? 'clear-text' : '';
+  const shieldArr = Array.isArray(d.shield) ? d.shield : [];
+  const shieldText = shieldArr.length ? shieldArr.join(', ') : 'clear';
+  const shieldClass = shieldArr.length ? 'shield-text' : 'clear-text';
+  let confirmTag = d.reclaim_confirmed
+    ? `<span class="reclaim-tag">RECLAIM ✓</span>`
+    : d.bos ? `<span class="bos-tag">BOS ✓</span>`
+    : `<span class="no-confirm">awaiting confirm</span>`;
+  const speedOk = d.speed_gate_passed;
+  const speedClass = speedOk ? 'ok' : 'bad';
+  const speedLabel = speedOk ? `${num(d.speed_score,3)} ✓` : `${num(d.speed_score,3)} ✗`;
+  return `<div class="card">
+    <div class="card-top">
+      <div><div class="pair">${esc(row.pair)} <span class="${sideClass}" style="font-size:14px">${side}</span></div>
+        <div class="event-label">${esc(d.event||'NO_DELTA')} · ${esc(d.radar_state||'NO_TARGET')}</div></div>
+      <span class="badge ${getState(row)}">${getState(row).replace(/_/g,' ')}</span>
+    </div>
+    <div class="row"><span>Speed</span><span class="${speedClass}">${speedLabel}</span></div>
+    <div class="row"><span>Confirmation</span><span>${confirmTag}</span></div>
+    <div class="row"><span>Gates</span><span class="${blockClass}">${esc(blockers)}</span></div>
+    <div class="row"><span>FIX</span><span class="fix-text">${esc(d.repair_text||elig.eligibility_reason||'Continue observing')}</span></div>
+  </div>`;
+}
+
+// ── Entry panel card ──────────────────────────────────────────────────────────
+function entryCard(row) {
+  const state = getState(row);
+  if (state !== 'EXECUTION_ELIGIBLE') return '';
+
+  // Eight Gates v4
+  if (row.gates) {
+    const geo = row.geometry || {};
+    const side = row.side || 'NONE';
+    const sideClass = side === 'LONG' ? 'ok' : 'bad';
+    const r = geo.room_to_risk;
+    const rLabel = r != null ? `${Number(r).toFixed(2)}R` : '—';
+    const rClass = r >= 2.5 ? 'ok' : r >= 1.5 ? 'warn' : 'bad';
+    const reclaim = geo.reclaim_confirmed;
+    return `<div class="card entry-card">
+      <div class="card-top">
+        <div><div class="pair">${esc(row.pair)} <span class="${sideClass}">${side}</span></div>
+          <div class="event-label">Score ${row.score} · Eight Gates</div></div>
+        <span class="badge EXECUTION_ELIGIBLE">READY</span>
+      </div>
+      <div class="metrics">
+        <div class="metric"><label>ENTRY</label><strong>${num(geo.entry,6)}</strong></div>
+        <div class="metric"><label>STOP</label><strong>${num(geo.sl,6)}</strong></div>
+        <div class="metric"><label>TARGET 1</label><strong>${num(geo.tp1,6)}</strong></div>
+        <div class="metric"><label>R MULTIPLE</label><strong class="${rClass}">${rLabel}</strong></div>
+      </div>
+      <div class="row"><span>ATR</span><span class="muted">${num(row.atr,6)}</span></div>
+      <div class="row"><span>Risk %</span><span>${num(geo.risk_pct,4)}%</span></div>
+      <div class="row"><span>Speed</span><span class="ok">${num(row.speed,3)} ✓</span></div>
+      <div class="row"><span>Confirm</span><span class="${reclaim?'ok':'blue'}">${reclaim?'RECLAIM ✓':'Structure hold'}</span></div>
+      <div style="border-top:1px solid #1e3040;padding-top:8px;margin-top:4px;font-size:11px;color:var(--muted)">
+        No order sent. Manual review and placement only.
+      </div>
+    </div>`;
+  }
+
+  // Delta 2.0 legacy fallback
+  const d = row.delta_tempo || {};
+  const side = d.delta_direction || 'NONE';
+  const sideClass = side === 'LONG' ? 'ok' : 'bad';
+  const r = d.room_to_risk;
+  const rLabel = r != null ? `${Number(r).toFixed(2)}R` : '—';
+  const rClass = r >= 2.5 ? 'ok' : r >= 1.5 ? 'warn' : 'bad';
+  return `<div class="card entry-card">
+    <div class="card-top">
+      <div><div class="pair">${esc(row.pair)} <span class="${sideClass}">${side}</span></div>
+        <div class="event-label">${esc(d.event||'DELTA')} · ${esc(d.radar_state||'TARGET')}</div></div>
+      <span class="badge EXECUTION_ELIGIBLE">READY</span>
+    </div>
+    <div class="metrics">
+      <div class="metric"><label>ENTRY</label><strong>${num(d.entry,6)}</strong></div>
+      <div class="metric"><label>STOP</label><strong>${num(d.sl,6)}</strong></div>
+      <div class="metric"><label>TARGET</label><strong>${num(d.tp,6)}</strong></div>
+      <div class="metric"><label>R MULTIPLE</label><strong class="${rClass}">${rLabel}</strong></div>
+    </div>
+    <div class="row"><span>Speed</span><span class="ok">${num(d.speed_score,3)} ✓</span></div>
+    <div class="row"><span>Confirm</span><span class="${d.reclaim_confirmed?'ok':'blue'}">${d.reclaim_confirmed?'RECLAIM ✓':d.bos?'BOS ✓':'—'}</span></div>
+    <div style="border-top:1px solid #1e3040;padding-top:8px;margin-top:4px;font-size:11px;color:var(--muted)">
+      No order sent. Manual review and placement only.
+    </div>
+  </div>`;
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function render() {
+  const filtered = activeTier === 'ALL' ? allRows : allRows.filter(r => getState(r) === activeTier);
+
+  // Field panel — all rows in filtered set
+  el('panel-field').innerHTML = filtered.length
+    ? filtered.map(fieldCard).join('')
+    : '<div class="empty">No pairs in this view.</div>';
+
+  // Tempo panel
+  const tempoHtml = filtered.map(tempoCard).filter(Boolean).join('');
+  el('panel-tempo').innerHTML = tempoHtml || '<div class="empty">No directional gate data on current scan.</div>';
+
+  // Entry panel — only EXECUTION_ELIGIBLE
+  const entryHtml = filtered.map(entryCard).filter(Boolean).join('');
+  el('panel-entries').innerHTML = entryHtml || '<div class="empty">No entry cards. Waiting for full gate confluence.</div>';
+
+  // Summary pills — use payload summary if v4, else count from rows
+  const counts = {};
+  allRows.forEach(r => { const k = getState(r); counts[k] = (counts[k]||0)+1; });
+  const totalScanned = allRows.length;
+  el('summary').innerHTML = [
+    ['EXECUTION_ELIGIBLE','p-ready','Ready'],
+    ['ELIGIBLE_WATCH','p-watch','Watch'],
+    ['BUILDING','','Building'],
+    ['REJECTED','','Rejected'],
+    ['QUARANTINED','','Quarantined'],
+    ['NO_DATA','','No data'],
+  ].map(([k,cls,label]) =>
+    `<span class="pill ${cls}"><b>${counts[k]||0}</b> ${label}</span>`
+  ).join('') + `<span class="pill"><b>${totalScanned}</b> of 49 scanned</span>`;
+}
+
+// ── Load ──────────────────────────────────────────────────────────────────────
+const ORDER = {EXECUTION_ELIGIBLE:0,ELIGIBLE_WATCH:1,BUILDING:2,QUARANTINED:3,REJECTED:4,NO_DATA:5};
+
+async function load() {
+  try {
+    const res = await fetch('./signals.json?ts=' + Date.now(), {cache:'no-store'});
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const payload = await res.json();
+    // Eight Gates v4: use top_12 for display; all_pairs available for full view
+    if (payload.top_12) {
+      allRows = payload.top_12;
+    } else if (Array.isArray(payload.signals)) {
+      allRows = payload.signals; // legacy Delta 2.0
+    } else {
+      allRows = [];
+    }
+    allRows.sort((a,b) => (ORDER[getState(a)]??9) - (ORDER[getState(b)]??9));
+    const ts = payload.generated_at || payload.ts || new Date().toISOString();
+    const scanned = (payload.universe||{}).scanned_pairs || allRows.length;
+    el('feed-status').textContent = `Live ${ts.replace('T',' ').slice(0,19)} UTC · ${scanned} pairs scanned · top-${allRows.length} shown`;
+    render();
+  } catch(err) {
+    el('feed-status').textContent = 'Feed error: ' + err.message;
+    el('panel-field').innerHTML = '<div class="empty">Waiting for signals.json. Keep scanner and web server running.</div>';
+  }
+}
+
+// ── Events ────────────────────────────────────────────────────────────────────
+el('refresh-btn').onclick = load;
+el('tabs').onclick = e => {
+  const btn = e.target.closest('[data-tier]');
+  if (!btn) return;
+  activeTier = btn.dataset.tier;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === btn));
+  render();
+};
+
+load();
+setInterval(load, 15000);
+</script>
+</body>
+</html>
