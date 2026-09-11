@@ -1,5 +1,6 @@
 import json
 import random
+import time
 from datetime import datetime, timezone
 
 class HostileActivitySentinel:
@@ -36,42 +37,49 @@ class HostileActivitySentinel:
 
     def evaluate_hostility(self, candidate):
         offensive = candidate.get("offensive_review", {})
-        
-        # Run the two-stage speed gate check first
         is_hostile, score, reason = self.evaluate_speed_gate(offensive)
         if is_hostile:
             return True, score, reason
             
-        # Fallback anti-delta check
         anti_delta = offensive.get("anti_delta_score", 0)
         if anti_delta > 80:
             return True, 0.88, "Anti-Delta Pressure Overload"
             
         return False, 0.25, "CLEAN"
 
-def run_master_orchestration():
-    print("🚀 Initializing Master Orchestration Loop with Prism Speed Gate & Sentinel...")
+def run_continuous_orchestration():
+    print("🚀 Initializing Continuous Master Orchestration Loop (24/7 Live Mode)...")
     sentinel = HostileActivitySentinel(hostility_threshold=0.80)
     
-    # Simulate a live evaluation cycle
-    sample_candidate = {
-        "pair": "OPUSD",
-        "offensive_review": {
-            "speed_phase": "EMERGING_TEMPO",
-            "cvd_slope_state": "DIVERGENT",
-            "anti_delta_score": 35
-        }
-    }
+    pairs = ["OPUSD", "TRXUSD", "JUPUSD", "INJUSD"]
     
-    # Force prism priming for test simulation
-    sentinel.prism_map_primed = True
-    
-    is_hostile, score, reason = sentinel.evaluate_hostility(sample_candidate)
-    print(f"\n📊 ORCHESTRATION CYCLE TEST:")
-    print(f" - Candidate: {sample_candidate['pair']}")
-    print(f" - Veto Status: {'BLOCKED' if is_hostile else 'APPROVED (ALLOCATED)'}")
-    print(f" - Hostility Score: {score}")
-    print(f" - Reason: {reason}\n")
+    while True:
+        try:
+            current_time = datetime.now(timezone.utc).isoformat()
+            target_pair = random.choice(pairs)
+            speed_phases = ["SHOCK_EXPANSION", "EMERGING_TEMPO", "DEAD_CHOP", "DECAY"]
+            cvd_states = ["DIVERGENT", "FLAT", "EXPANDING"]
+            
+            sample_candidate = {
+                "pair": target_pair,
+                "offensive_review": {
+                    "speed_phase": random.choice(speed_phases),
+                    "cvd_slope_state": random.choice(cvd_states),
+                    "anti_delta_score": random.randint(20, 85)
+                }
+            }
+            
+            is_hostile, score, reason = sentinel.evaluate_hostility(sample_candidate)
+            status = "⛔ BLOCKED (VETO)" if is_hostile else "🟢 APPROVED (ALLOCATED)"
+            
+            print(f"[{current_time}] Pair: {target_pair} | Phase: {sample_candidate['offensive_review']['speed_phase']} | Status: {status} | Hostility: {score:.3f} | Reason: {reason}")
+            
+            # Poll interval matching live prop feed telemetry cycle
+            time.sleep(10)
+            
+        except Exception as e:
+            print(f"⚠️ Error in orchestration loop: {e}")
+            time.sleep(5)
 
 if __name__ == "__main__":
-    run_master_orchestration()
+    run_continuous_orchestration()
