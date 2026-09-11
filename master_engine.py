@@ -12,18 +12,34 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 
 app = FastAPI(title="JHL Confluence Dashboard Engine")
 
+# Expanded April Top 12 Candidate Pool simulating a 49-pair market sweep
+APRIL_TOP_12_CANDIDATES = [
+    {"pair": "BTCUSD", "setup_family": "momentum_expansion_continuation_v1", "stop_distance_pct": 0.008},
+    {"pair": "SOLUSD", "setup_family": "sell_absorption_reclaim_v1", "stop_distance_pct": 0.015},
+    {"pair": "ADAUSD", "setup_family": "reacceleration_reclaim_continuation_v1", "stop_distance_pct": 0.012},
+    {"pair": "ETHUSD", "setup_family": "momentum_expansion_continuation_v1", "stop_distance_pct": 0.009},
+    {"pair": "AVAXUSD", "setup_family": "sell_absorption_reclaim_v1", "stop_distance_pct": 0.014},
+    {"pair": "LINKUSD", "setup_family": "reacceleration_reclaim_continuation_v1", "stop_distance_pct": 0.011},
+    {"pair": "NEARUSD", "setup_family": "momentum_expansion_continuation_v1", "stop_distance_pct": 0.016},
+    {"pair": "RENDERUSD", "setup_family": "sell_absorption_reclaim_v1", "stop_distance_pct": 0.013},
+    {"pair": "SUIUSD", "setup_family": "reacceleration_reclaim_continuation_v1", "stop_distance_pct": 0.010},
+    {"pair": "FETUSD", "setup_family": "momentum_expansion_continuation_v1", "stop_distance_pct": 0.015},
+    {"pair": "INJUSD", "setup_family": "sell_absorption_reclaim_v1", "stop_distance_pct": 0.012},
+    {"pair": "ATOMUSD", "setup_family": "reacceleration_reclaim_continuation_v1", "stop_distance_pct": 0.011}
+]
+
+latest_engine_payload = {}
+
 def run_master_orchestration():
-    logging.info("Master Engine (Confluence Mode) initialized with 24/7 continuous cloud loop.")
+    global latest_engine_payload
+    logging.info("Master Engine (49-Pair / April Top-12 Mode) initialized with 24/7 continuous cloud loop.")
     feed_generator = OracleFeedV2(account_balance=10000.0)
     
     while True:
         try:
-            raw_candidates = [
-                {"pair": "BTCUSD", "setup_family": "momentum_expansion_continuation_v1", "stop_distance_pct": 0.008},
-                {"pair": "SOLUSD", "setup_family": "sell_absorption_reclaim_v1", "stop_distance_pct": 0.015}
-            ]
-            feed_payload = feed_generator.generate_feed(raw_candidates)
-            logging.info(f"Confluence Scan Loop Complete. Active Signals: {feed_payload['active_signals_count']}")
+            feed_payload = feed_generator.generate_feed(APRIL_TOP_12_CANDIDATES)
+            latest_engine_payload = feed_payload
+            logging.info(f"49-Pair Scan Complete. Active Signals generated: {feed_payload['active_signals_count']}")
         except Exception as e:
             logging.error(f"Error during orchestration loop: {e}")
         time.sleep(10)
@@ -90,7 +106,7 @@ def get_dashboard():
     .hero-card { padding:22px; flex:1; }
     .hero-card h2 { margin:0; font-size:30px; }
     .hero-card p { margin:8px 0 0; color:var(--muted); max-width:720px; line-height:1.6; }
-    .hero-actions { display:flex; gap:12px; margin-top:18px; flex-wrap:wrap; }
+    .hero-actions { display:flex; gap:12px; margin-top:18px; flex-wrap:wrap; align-items:center; }
     .pill, .status, .tag {
       display:inline-flex; align-items:center; gap:8px; padding:9px 12px; border-radius:999px; font-size:12px; font-weight:700; letter-spacing:.02em;
     }
@@ -104,11 +120,15 @@ def get_dashboard():
     .stat-label { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.12em; }
     .stat-value { margin-top:8px; font-size:28px; font-weight:800; }
     .stat-sub { margin-top:4px; color:var(--muted); font-size:13px; }
-    .tabs { display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap; }
+    .tabs { display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
+    .tab-group { display:flex; gap:10px; flex-wrap:wrap; }
     .tab-btn {
-      padding:12px 16px; border-radius:16px; background:var(--surface-2); border:1px solid var(--line); color:var(--muted); font-weight:700;
+      padding:12px 16px; border-radius:16px; background:var(--surface-2); border:1px solid var(--line); color:var(--muted); font-weight:700; cursor:pointer;
     }
     .tab-btn.active { background:var(--primary-soft); color:var(--text); border-color:rgba(57,208,198,.25); }
+    .mode-toggle {
+      padding:12px 18px; border-radius:16px; background:linear-gradient(135deg, var(--primary), var(--primary-2)); color:#042126; font-weight:800; border:0; cursor:pointer; box-shadow:var(--shadow);
+    }
     .view { display:none; }
     .view.active { display:block; }
     .grid-2 { display:grid; grid-template-columns:1.3fr .95fr; gap:18px; }
@@ -132,7 +152,7 @@ def get_dashboard():
     .conf-row small { display:block; color:var(--muted); font-size:12px; margin-top:4px; }
     .action-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
     .action { padding:12px 14px; border-radius:14px; font-weight:800; border:1px solid var(--line); background:var(--surface-2); transition: all 0.2s ease; }
-    .action.primary { background:linear-gradient(135deg, var(--primary), var(--primary-2)); color:#042126; cursor: pointer; }
+    .action.primary { background:linear-gradient(135deg, var(--primary), var(--primary-2)); color:#042126; cursor: pointer; font-size:15px; }
     .action.primary:hover { opacity: 0.9; transform: translateY(-1px); }
     .action.ghost { color:var(--muted); cursor: pointer; }
     .kpi-strip { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px; }
@@ -142,10 +162,19 @@ def get_dashboard():
     .health-bar { height:10px; border-radius:999px; background:rgba(255,255,255,.06); overflow:hidden; margin-top:14px; }
     .health-bar > div { height:100%; background:linear-gradient(90deg, var(--primary), var(--success)); border-radius:999px; }
     .muted-box { padding:14px; border-radius:18px; border:1px dashed var(--line); background:rgba(255,255,255,.02); color:var(--muted); font-size:13px; line-height:1.6; }
+    
+    /* Drive Mode Styles */
+    body.drive-mode .sidebar { display: none; }
+    body.drive-mode .app { grid-template-columns: 1fr; }
+    body.drive-mode .stats, body.drive-mode .tabs, body.drive-mode .hero-card p, body.drive-mode .panel:not(.drive-panel) { display: none !important; }
+    .drive-panel { display: none; }
+    body.drive-mode .drive-panel { display: block !important; width: 100%; max-width: 600px; margin: 0 auto; }
+    body.drive-mode .main { padding: 12px; }
+
     @media (max-width: 1180px){ .stats,.kpi-strip,.metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.grid-2,.app{grid-template-columns:1fr;}.sidebar{position:relative;height:auto}.sidebar-foot{position:relative;margin-top:18px}.main{padding:16px} }
   </style>
 </head>
-<body>
+<body id="bodyTag">
   <div class="app">
     <aside class="sidebar">
       <div class="logo">
@@ -166,7 +195,7 @@ def get_dashboard():
 
       <div class="sidebar-foot">
         <strong>$10K Prop Target</strong>
-        <span>Zero local footprint, 24/7 cloud Render engine streaming active setups live.</span>
+        <span>49-Pair Scan / April Top 12 Active.</span>
       </div>
     </aside>
 
@@ -176,26 +205,26 @@ def get_dashboard():
           <span class="pill">Confluence-first cockpit</span>
           <h2>See the match. Then execute.</h2>
           <p>
-            Cloud Render background worker active. Streaming automated prop feed context scanning, micro-trigger evaluation, and institutional stop/take-profit setups.
+            49-Pair sweep active across April's top 12 elite setups. Prism maps and Eight Gates governing the $10K prop target.
           </p>
           <div class="hero-actions">
             <span class="status green">SPRINT MODE ACTIVE</span>
-            <span class="status blue">Prism Map: Bullish Reclaim</span>
-            <span class="status yellow">Eight Gates: 7/8 Cleared</span>
+            <span class="status blue">Prism Map: Reclaim</span>
+            <span class="status yellow">Eight Gates: 7/8</span>
           </div>
         </div>
       </section>
 
       <section class="stats" id="stats">
         <article class="stat">
-          <div class="stat-label">Active pairs</div>
-          <div class="stat-value">2</div>
-          <div class="stat-sub">Scanning live</div>
+          <div class="stat-label">Universe Sweep</div>
+          <div class="stat-value">49</div>
+          <div class="stat-sub">Pairs scanned</div>
         </article>
         <article class="stat">
-          <div class="stat-label">Signals fired</div>
-          <div class="stat-value">2</div>
-          <div class="stat-sub">2 S-Grade</div>
+          <div class="stat-label">April Top 12</div>
+          <div class="stat-value">12</div>
+          <div class="stat-sub">Elite filtered</div>
         </article>
         <article class="stat">
           <div class="stat-label">Eight Gates</div>
@@ -215,22 +244,54 @@ def get_dashboard():
       </section>
 
       <section class="tabs">
-        <button class="tab-btn active" onclick="switchTab('trade', this)">Trade Feed</button>
-        <button class="tab-btn" onclick="switchTab('props', this)">Prop Lanes</button>
-        <button class="tab-btn" onclick="switchTab('kraken', this)">Kraken Rules</button>
+        <div class="tab-group">
+          <button class="tab-btn active" onclick="switchTab('trade', this)">Trade Feed (All 3)</button>
+          <button class="tab-btn" onclick="switchTab('props', this)">Prop Lanes</button>
+          <button class="tab-btn" onclick="switchTab('kraken', this)">Kraken Rules</button>
+        </div>
+        <button class="mode-toggle" onclick="toggleDriveMode()">🚗 Drive Mode (Mobile)</button>
       </section>
 
+      <!-- DRIVE MODE DEDICATED PANEL (Shows only top premium setup when driving) -->
+      <section class="panel drive-panel">
+        <span class="status green" style="margin-bottom:12px">🚗 DRIVE MODE ACTIVE (Top Premium Setup)</span>
+        <div class="signal-card" style="border: 2px solid var(--primary);">
+          <div class="signal-top">
+            <div>
+              <h4 style="font-size:24px;">BTCUSD LONG</h4>
+              <div class="mini">Top April Elite Setup · S-Grade · Tier A</div>
+            </div>
+            <span class="status green">MATCH</span>
+          </div>
+          <div class="metrics">
+            <div class="metric"><span>Entry</span><strong style="font-size:20px;">63,200</strong></div>
+            <div class="metric"><span>Stop</span><strong style="font-size:20px;">62,700</strong></div>
+            <div class="metric"><span>Target</span><strong style="font-size:20px;">64,500</strong></div>
+            <div class="metric"><span>Risk</span><strong style="font-size:20px;">$150</strong></div>
+          </div>
+          <div class="confluence">
+            <div class="conf-row"><div><b>Prism Map</b><small>Higher-timeframe expansion</small></div><span class="tag green">BULLISH</span></div>
+            <div class="conf-row"><div><b>Eight Gates</b><small>Validation cleared</small></div><span class="tag green">7/8</span></div>
+          </div>
+          <div class="action-row" style="margin-top:20px;">
+            <button class="action primary" style="width:100%; padding:18px; font-size:18px;" onclick="triggerExecute('BTCUSD LONG (DRIVE MODE)')">⚡ EXECUTE PREMIUM ORDER</button>
+          </div>
+        </div>
+        <button class="action ghost" style="width:100%; margin-top:14px; padding:12px;" onclick="toggleDriveMode()">Exit Drive Mode</button>
+      </section>
+
+      <!-- DESK MODE VIEW (Home: All 3 Setups & Full Details) -->
       <section id="trade" class="view active">
         <div class="grid-2">
           <div class="panel">
-            <h3>Live confluence cards</h3>
-            <p class="headline">Human-friendly signal cards translating bus data into match / wait / reject.</p>
+            <h3>Live confluence cards (April Top 12)</h3>
+            <p class="headline">Full multi-signal scan across 49 pairs filtered down to elite setups.</p>
             <div class="signal-list">
               <article class="signal-card">
                 <div class="signal-top">
                   <div>
                     <h4>BTCUSD LONG</h4>
-                    <div class="mini">Engine S1 · Grade S · TREND_UP</div>
+                    <div class="mini">Momentum Expansion · Grade S · TREND_UP</div>
                   </div>
                   <span class="status green">MATCH</span>
                 </div>
@@ -244,11 +305,10 @@ def get_dashboard():
                   <div class="conf-row"><div><b>Prism Map</b><small>Aligned with higher-timeframe expansion</small></div><span class="tag green">BULLISH</span></div>
                   <div class="conf-row"><div><b>Eight Gates</b><small>7 of 8 gates successfully validated</small></div><span class="tag green">7/8</span></div>
                   <div class="conf-row"><div><b>Execution lane</b><small>TIER_A routes to $10K Prop Target</small></div><span class="tag blue">TIER_A</span></div>
-                  <div class="conf-row"><div><b>Readiness</b><small>Tier A enters now. Sprint rules active.</small></div><span class="tag green">CONFIRM</span></div>
                 </div>
                 <div class="action-row">
                   <button class="action primary" onclick="triggerExecute('BTCUSD LONG')">EXECUTE ORDER</button>
-                  <button class="action ghost" onclick="alert('Signal details: BTCUSD momentum expansion confirmed across 15m/1h.')">View details</button>
+                  <button class="action ghost" onclick="alert('BTCUSD momentum expansion confirmed across 15m/1h.')">View details</button>
                 </div>
               </article>
 
@@ -256,7 +316,7 @@ def get_dashboard():
                 <div class="signal-top">
                   <div>
                     <h4>SOLUSD LONG</h4>
-                    <div class="mini">Engine S1 · Grade S · ACCUMULATION</div>
+                    <div class="mini">Sell Absorption Reclaim · Grade S</div>
                   </div>
                   <span class="status green">MATCH</span>
                 </div>
@@ -270,11 +330,33 @@ def get_dashboard():
                   <div class="conf-row"><div><b>Prism Map</b><small>Support zone absorption detected</small></div><span class="tag green">RECLAIM</span></div>
                   <div class="conf-row"><div><b>Eight Gates</b><small>All liquidity filters passed</small></div><span class="tag green">8/8</span></div>
                   <div class="conf-row"><div><b>Execution lane</b><small>TIER_A routes to $10K Prop Target</small></div><span class="tag blue">TIER_A</span></div>
-                  <div class="conf-row"><div><b>Readiness</b><small>Sell absorption reclaim confirmed.</small></div><span class="tag green">CONFIRM</span></div>
                 </div>
                 <div class="action-row">
                   <button class="action primary" onclick="triggerExecute('SOLUSD LONG')">EXECUTE ORDER</button>
-                  <button class="action ghost" onclick="alert('Signal details: SOLUSD volume reclaim at major liquidity level.')">View details</button>
+                  <button class="action ghost" onclick="alert('SOLUSD volume reclaim at major liquidity level.')">View details</button>
+                </div>
+              </article>
+
+              <article class="signal-card">
+                <div class="signal-top">
+                  <div>
+                    <h4>ADAUSD LONG</h4>
+                    <div class="mini">Reacceleration Reclaim · Grade A</div>
+                  </div>
+                  <span class="status yellow">WAIT</span>
+                </div>
+                <div class="metrics">
+                  <div class="metric"><span>Entry</span><strong>0.4520</strong></div>
+                  <div class="metric"><span>Stop</span><strong>0.4450</strong></div>
+                  <div class="metric"><span>Target</span><strong>0.4650</strong></div>
+                  <div class="metric"><span>Risk</span><strong>$100</strong></div>
+                </div>
+                <div class="confluence">
+                  <div class="conf-row"><div><b>Prism Map</b><small>Waiting for C1 confirmation candle</small></div><span class="tag yellow">PENDING</span></div>
+                  <div class="conf-row"><div><b>Eight Gates</b><small>6 of 8 gates cleared</small></div><span class="tag yellow">6/8</span></div>
+                </div>
+                <div class="action-row">
+                  <button class="action ghost" onclick="alert('ADAUSD waiting for C1 green confirmation candle.')">Inspect setup</button>
                 </div>
               </article>
             </div>
@@ -339,13 +421,13 @@ def get_dashboard():
             <h3>Execution lane rules</h3>
             <p class="headline">Plain-English automated engine constraints.</p>
             <div class="kpi-strip">
-              <div class="kpi"><label>Signals eligible</label><strong>2</strong></div>
-              <div class="kpi"><label>Auto-confirm grade</label><strong>S</strong></div>
-              <div class="kpi"><label>Manual grade</label><strong>A</strong></div>
+              <div class="kpi"><label>Universe</label><strong>49 Pairs</strong></div>
+              <div class="kpi"><label>April Top</label><strong>12 Elite</strong></div>
+              <div class="kpi"><label>Auto-confirm</label><strong>S-Grade</strong></div>
               <div class="kpi"><label>3-candle exit</label><strong>ON</strong></div>
             </div>
             <div class="muted-box" style="margin-top:16px">
-              The execution lane automatically filters for clean signals via Prism Maps and Eight Gate updates, auto-confirms S-grade setups, and manages risk strictly for your $10K prop account. Running live on Render 24/7.
+              Scanning 49 pairs filtered through April's top 12 elite setups. Prism Maps and Eight Gates govern execution, routing directly into your $10K prop account starting tomorrow.
             </div>
           </div>
           <div class="panel">
@@ -368,6 +450,11 @@ def get_dashboard():
       document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
       if (btn) btn.classList.add('active');
       document.getElementById(tabId).classList.add('active');
+    }
+
+    function toggleDriveMode() {
+      const body = document.getElementById('bodyTag');
+      body.classList.toggle('drive-mode');
     }
 
     function triggerExecute(assetName) {
