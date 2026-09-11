@@ -1,7 +1,12 @@
 import json
 import random
 import time
+import os
+import threading
 from datetime import datetime, timezone
+from flask import Flask
+
+app = Flask(__name__)
 
 class HostileActivitySentinel:
     def __init__(self, hostility_threshold=0.80):
@@ -9,21 +14,14 @@ class HostileActivitySentinel:
         self.prism_map_primed = False
 
     def evaluate_speed_gate(self, candidate_telemetry):
-        """
-        Enforces the two-stage Prism-Awakened Speed Gate:
-        1. Raw SHOCK_EXPANSION primes the map but triggers an immediate VETO (no chasing).
-        2. EMERGING_TEMPO or DEAD_CHOP subsequent states unlock execution.
-        """
         speed_phase = candidate_telemetry.get("speed_phase")
         cvd_slope = candidate_telemetry.get("cvd_slope_state")
         anti_delta = candidate_telemetry.get("anti_delta_score", 0)
         
-        # Stage 1: Raw Shock Awakening
         if speed_phase == "SHOCK_EXPANSION":
             self.prism_map_primed = True
             return True, 0.99, "PRISM_AWAKENING: Raw shock ignored, map primed for emerging speed."
             
-        # Stage 2: Checking if we have a primed map for emerging/dead tempo
         if not self.prism_map_primed:
             return True, 0.95, "VETO: Prism map unprimed. Awaiting initial high-speed shock."
             
@@ -48,9 +46,8 @@ class HostileActivitySentinel:
         return False, 0.25, "CLEAN"
 
 def run_continuous_orchestration():
-    print("🚀 Initializing Continuous Master Orchestration Loop (24/7 Live Mode)...")
+    print("🚀 Initializing Continuous Master Orchestration Loop (Background Thread)...")
     sentinel = HostileActivitySentinel(hostility_threshold=0.80)
-    
     pairs = ["OPUSD", "TRXUSD", "JUPUSD", "INJUSD"]
     
     while True:
@@ -73,13 +70,21 @@ def run_continuous_orchestration():
             status = "⛔ BLOCKED (VETO)" if is_hostile else "🟢 APPROVED (ALLOCATED)"
             
             print(f"[{current_time}] Pair: {target_pair} | Phase: {sample_candidate['offensive_review']['speed_phase']} | Status: {status} | Hostility: {score:.3f} | Reason: {reason}")
-            
-            # Poll interval matching live prop feed telemetry cycle
             time.sleep(10)
             
         except Exception as e:
             print(f"⚠️ Error in orchestration loop: {e}")
             time.sleep(5)
 
+@app.route("/")
+def health_check():
+    return "Sniper Execution Engine & Prism Speed-Gate Active", 200
+
 if __name__ == "__main__":
-    run_continuous_orchestration()
+    # Start the continuous engine in a background thread so it doesn't block the web server
+    engine_thread = threading.Thread(target=run_continuous_orchestration, daemon=True)
+    engine_thread.start()
+    
+    # Bind to Render's required port
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
