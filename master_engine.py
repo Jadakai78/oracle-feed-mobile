@@ -6,22 +6,21 @@ import threading
 from datetime import datetime, timezone
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import urllib.parse
+import urllib.request
 
-# Import authentic prop symbols and live data source from pair_universe.py
 try:
     from pair_universe import PROP_SYMBOLS, MarketDataSource
 except ImportError:
     PROP_SYMBOLS = ["BTC", "ETH", "SOL", "XRP", "ETC", "ADA", "AVAX", "DOGE", "LINK", "UNI", "INJ", "OP", "JUP", "TRX"]
     class MarketDataSource:
-        def _live_quote(self, base):
-            return None
+        pass
 
 active_positions = [
     {
         "id": "pos_001",
         "pair": "ETCUSD",
         "setup_family": "reacceleration_divergent_absorption_v1",
-        "entry": 24.50, # Will be updated by live fetch if available
+        "entry": 24.50,
         "stop": 23.80,
         "target": 26.50,
         "risk_usd": 30,
@@ -76,6 +75,28 @@ class HostileActivitySentinel:
             
         return False, 0.25, "CLEAN"
 
+def fetch_kraken_live_price(base_symbol):
+    """Directly query Kraken public ticker using pair_universe aliases or standard USD format."""
+    candidates = [f"{base_symbol}USD", f"X{base_symbol}USD", f"XXBTZUSD" if base_symbol == "BTC" else f"{base_symbol}USDT"]
+    for candidate in candidates:
+        url = f"https://api.kraken.com/0/public/Ticker?pair={urllib.parse.quote(candidate, safe='')}"
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "JHL-Oracle/1.0"})
+            with urllib.request.urlopen(req, timeout=5) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+            if payload.get("error"):
+                continue
+            result = payload.get("result") or {}
+            for _, ticker in result.items():
+                c_vals = ticker.get("c")
+                if c_vals and len(c_vals) > 0:
+                    val = float(c_vals[0])
+                    if val > 0:
+                        return val
+        except Exception:
+            continue
+    return None
+
 class DashboardRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed_path = urllib.parse.urlparse(self.path)
@@ -99,18 +120,16 @@ class DashboardRequestHandler(BaseHTTPRequestHandler):
             sentinel = HostileActivitySentinel()
             sentinel.prism_map_primed = True
             
-            mds = MarketDataSource()
             sampled_bases = random.sample(PROP_SYMBOLS, 4)
             signals = []
             
             for base in sampled_bases:
                 pair_name = f"{base}USD"
-                quote = mds._live_quote(base)
+                live_price = fetch_kraken_live_price(base)
                 
-                if quote and quote.get("last_price"):
-                    entry = float(quote["last_price"])
+                if live_price:
+                    entry = live_price
                 else:
-                    # Realistic fallback if quote times out momentarily
                     entry = round(random.uniform(0.50, 150.0), 4)
                 
                 stop = round(entry * 0.98, 4)
@@ -246,7 +265,7 @@ class DashboardRequestHandler(BaseHTTPRequestHandler):
         return
 
 def run_continuous_orchestration():
-    print(f"🚀 Initializing Orchestration Loop with pair_universe MarketDataSource...")
+    print(f"🚀 Initializing Orchestration Loop across {len(PROP_SYMBOLS)} Prop Symbols...")
     sentinel = HostileActivitySentinel(hostility_threshold=0.80)
     sentinel.prism_map_primed = True
     while True:
