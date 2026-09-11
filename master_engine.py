@@ -55,7 +55,7 @@ def run_master_orchestration():
         "momentum_expansion_continuation_v1",
         "sell_absorption_reclaim_v1",
         "reacceleration_reclaim_continuation_v1",
-        "reacceleration_divergent_absorption_v1" # Unicorn Cluster
+        "reacceleration_divergent_absorption_v1"
     ]
     
     while True:
@@ -104,7 +104,6 @@ def run_master_orchestration():
                     cvd_slope = random.choice(["EXPANDING", "FLAT", "DIVERGENT"])
                     rts_state = random.choices(["ALIGNED", "NEUTRAL", "LIQUIDATION_WARNING"], weights=[0.65, 0.25, 0.10])[0]
                     
-                    # Run candidate through the dedicated Adversarial Hostile Sentinel Immune System
                     is_hostile, hostility_score, hostility_reason = sentinel.evaluate_hostility({
                         "offensive_review": {
                             "speed_phase": speed_phase,
@@ -114,7 +113,6 @@ def run_master_orchestration():
                         }
                     })
                     
-                    # Unicorn Identification (Reacceleration + CVD Divergent -> 1.62R EV)
                     is_unicorn = (speed_phase == "REACCELERATION" and cvd_slope == "DIVERGENT")
                     
                     if is_hostile:
@@ -160,7 +158,6 @@ def run_master_orchestration():
                     "signals": formatted_signals
                 }
             
-            # Active Position Telemetry with Automated Stall-Close Override
             for pos in active_positions:
                 pos["time_in_range_mins"] = pos.get("time_in_range_mins", 0) + 1
                 pos["health_score"] = max(50, pos["health_score"] + random.randint(-2, 3))
@@ -324,4 +321,3 @@ if __name__ == "__main__":
     import os
     port = int(os.environ.get("PORT", 10000))
     uvicorn.run(app, host="0.0.0.0", port=port)
-"""
