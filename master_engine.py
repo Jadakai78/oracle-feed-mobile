@@ -1,5 +1,6 @@
 import time
 import json
+import random
 import logging
 import threading
 from datetime import datetime, timezone
@@ -12,7 +13,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 
 app = FastAPI(title="JHL Confluence Dashboard Engine - December Mode")
 
-DECEMBER_TOP_12_CANDIDATES = [
+MASTER_CANDIDATE_POOL = [
     {"pair": "BTCUSD", "setup_family": "momentum_expansion_continuation_v1", "stop_distance_pct": 0.008, "base_price": 77250.0},
     {"pair": "SOLUSD", "setup_family": "sell_absorption_reclaim_v1", "stop_distance_pct": 0.015, "base_price": 142.50},
     {"pair": "ADAUSD", "setup_family": "reacceleration_reclaim_continuation_v1", "stop_distance_pct": 0.012, "base_price": 0.4520},
@@ -31,14 +32,15 @@ latest_engine_payload = {}
 
 def run_master_orchestration():
     global latest_engine_payload
-    logging.info("Master Engine (December Mode / 49-Pair Unified Architecture) initialized 24/7.")
+    logging.info("Master Engine (December Mode / Dynamic 49-Pair Rotation) initialized 24/7.")
     feed_generator = OracleFeedV2(account_balance=10000.0)
     
     while True:
         try:
-            feed_payload = feed_generator.generate_feed(DECEMBER_TOP_12_CANDIDATES)
+            shuffled_candidates = random.sample(MASTER_CANDIDATE_POOL, len(MASTER_CANDIDATE_POOL))
+            feed_payload = feed_generator.generate_feed(shuffled_candidates[:3])
             latest_engine_payload = feed_payload
-            logging.info(f"December Mode Scan Loop Complete. Active Elite Signals: {feed_payload['active_signals_count']}")
+            logging.info(f"December Mode Dynamic Scan Complete. Active Rotated Signals: {feed_payload['active_signals_count']}")
         except Exception as e:
             logging.error(f"Error during December Mode orchestration loop: {e}")
         time.sleep(10)
@@ -193,7 +195,7 @@ def get_dashboard():
 
       <div class="sidebar-foot">
         <strong>December Mode Active</strong>
-        <span>Unified Architecture · Realistic Baselines.</span>
+        <span>Dynamic 49-Pair Rotation Enabled.</span>
       </div>
     </aside>
 
@@ -203,7 +205,7 @@ def get_dashboard():
           <span class="pill">December Mode Architecture</span>
           <h2>See the live match. Then execute.</h2>
           <p>
-            49-pair universe sweep filtered through December/April unified elite setups. Real-time dynamic market baselines governing your $10K prop account starting tomorrow.
+            49-pair universe sweep with dynamic rotation filtering through December/April unified elite setups. Real-time dynamic market baselines governing your $10K prop account starting tomorrow.
           </p>
           <div class="hero-actions">
             <span class="status green">DECEMBER SPRINT ACTIVE</span>
@@ -222,7 +224,7 @@ def get_dashboard():
         <article class="stat">
           <div class="stat-label">Elite Top 12</div>
           <div class="stat-value">12</div>
-          <div class="stat-sub">December filtered</div>
+          <div class="stat-sub">Dynamic rotation</div>
         </article>
         <article class="stat">
           <div class="stat-label">Eight Gates</div>
@@ -243,7 +245,7 @@ def get_dashboard():
 
       <section class="tabs">
         <div class="tab-group">
-          <button class="tab-btn active" onclick="switchTab('trade', this)">Trade Feed (December Top 3)</button>
+          <button class="tab-btn active" onclick="switchTab('trade', this)">Trade Feed (Rotating Top Setups)</button>
           <button class="tab-btn" onclick="switchTab('props', this)">Prop Lanes</button>
           <button class="tab-btn" onclick="switchTab('kraken', this)">December Rules</button>
         </div>
@@ -278,12 +280,12 @@ def get_dashboard():
         <button class="action ghost" style="width:100%; margin-top:14px; padding:12px;" onclick="toggleDriveMode()">Exit Drive Mode</button>
       </section>
 
-      <!-- DESK MODE VIEW (Home: December Mode All 3 Setups & Full Details) -->
+      <!-- DESK MODE VIEW (Home: December Mode Rotated Setups & Full Details) -->
       <section id="trade" class="view active">
         <div class="grid-2">
           <div class="panel">
-            <h3>Live confluence cards (December Mode Top 12)</h3>
-            <p class="headline">Full multi-signal scan across 49 pairs with realistic current market baselines.</p>
+            <h3>Live confluence cards (December Dynamic Rotation)</h3>
+            <p class="headline">Active 49-pair scan with dynamic rotation across December elite setups.</p>
             <div class="signal-list">
               <article class="signal-card">
                 <div class="signal-top">
@@ -425,7 +427,7 @@ def get_dashboard():
               <div class="kpi"><label>3-candle exit</label><strong>ON</strong></div>
             </div>
             <div class="muted-box" style="margin-top:16px">
-              December Mode unified architecture active. Scanning 49 pairs filtered through December/April elite setups. Prism Maps and Eight Gates govern execution for your $10K prop account starting tomorrow.
+              December Mode unified architecture active with dynamic rotation. Scanning 49 pairs filtered through December/April elite setups. Prism Maps and Eight Gates govern execution for your $10K prop account starting tomorrow.
             </div>
           </div>
           <div class="panel">
