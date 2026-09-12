@@ -371,21 +371,22 @@
     function closeTelemetryModal() {
       document.getElementById('telemetryModal').classList.remove('open');
     }
-    async function triggerExecute(pair, setup_family, entry, stop, target, risk_usd, allocation_size) {
+    async function triggerExecute(pair, setup_family, entry, stop, target, is_long, risk_usd, allocation_size) {
       if (allocation_size === 0) {
         alert("Execution blocked: This setup is flagged as hostile by the Sentinel immune system!");
         return;
       }
-      if (confirm(`Execute Binary Hunter Trade for ${pair} (${setup_family}) at Size $${allocation_size}?`)) {
+      const dirText = is_long ? "LONG" : "SHORT";
+      if (confirm(`Execute Binary Hunter Trade for ${pair} (${dirText} | ${setup_family}) at Size $${allocation_size}?`)) {
         try {
           const res = await fetch('/api/execute', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pair, setup_family, entry, stop, target, risk_usd, allocation_size })
+            body: JSON.stringify({ pair, setup_family, entry, stop, target, is_long, risk_usd, allocation_size })
           });
           const data = await res.json();
           if (data.status === 'SUCCESS') {
-            alert(`Binary hunter order dispatched for ${pair}!`);
+            alert(`Binary hunter order dispatched for ${pair} (${dirText})!`);
             switchTab('health');
             fetchData();
           } else {
@@ -435,11 +436,12 @@
             const isUnicorn = sig.setup_family === 'reacceleration_divergent_absorption_v1';
             const statusClass = isVetoed ? 'red' : (isUnicorn ? 'green' : 'yellow');
             const tierLabel = isVetoed ? '⛔ HOSTILE VETO' : (isUnicorn ? '🦄 UNICORN TOP-TIER ($1,500)' : 'SECONDARY ($750)');
+            const dirLabel = sig.direction || (sig.is_long ? 'LONG' : 'SHORT');
             const cardHtml = `
               <article class="signal-card" style="${isVetoed ? 'border: 2px solid var(--danger); opacity: 0.7;' : (isUnicorn ? 'border: 2px solid var(--primary); background: rgba(57,208,198,.04);' : '')}">
                 <div class="signal-top">
                   <div>
-                    <h4>${sig.pair} LONG</h4>
+                    <h4>${sig.pair} ${dirLabel}</h4>
                     <div class="mini">${sig.setup_family} · ${tierLabel}</div>
                   </div>
                   <span class="status ${statusClass}">${sig.status}</span>
@@ -454,7 +456,7 @@
                   <div class="conf-row"><div><b>Prism Map</b><small>${sig.prism_map}</small></div><span class="tag ${isVetoed ? 'red' : 'green'}">${isVetoed ? 'BLOCKED' : 'CLEAN'}</span></div>
                 </div>
                 <div class="action-row">
-                  <button class="action primary" style="${isVetoed ? 'background: var(--line); color: var(--muted); cursor: not-allowed;' : ''}" onclick="triggerExecute('${sig.pair}', '${sig.setup_family}', ${sig.entry}, ${sig.stop}, ${sig.target}, ${sig.risk_usd}, ${sig.allocation_size})">${isVetoed ? 'HOSTILE VETOED' : 'EXECUTE HUNT'}</button>
+                  <button class="action primary" style="${isVetoed ? 'background: var(--line); color: var(--muted); cursor: not-allowed;' : ''}" onclick="triggerExecute('${sig.pair}', '${sig.setup_family}', ${sig.entry}, ${sig.stop}, ${sig.target}, ${sig.is_long}, ${sig.risk_usd}, ${sig.allocation_size})">${isVetoed ? 'HOSTILE VETOED' : 'EXECUTE HUNT'}</button>
                   <button class="action ghost" onclick="alert('Hostility Score: ${sig.hostility_score} | Allocation: $${sig.allocation_size}')">View details</button>
                 </div>
               </article>
@@ -462,11 +464,12 @@
             container.innerHTML += cardHtml;
           });
           const topNonVetoed = feedData.signals.find(s => s.allocation_size > 0) || feedData.signals[0];
+          const topDirLabel = topNonVetoed.direction || (topNonVetoed.is_long ? 'LONG' : 'SHORT');
           driveContainer.innerHTML = `
             <div class="signal-card" style="border: 2px solid var(--primary);">
               <div class="signal-top">
                 <div>
-                  <h4 style="font-size:24px;">${topNonVetoed.pair} LONG</h4>
+                  <h4 style="font-size:24px;">${topNonVetoed.pair} ${topDirLabel}</h4>
                   <div class="mini">${topNonVetoed.setup_family} · Size: $${topNonVetoed.allocation_size}</div>
                 </div>
                 <span class="status green">SCORE ${topNonVetoed.score}</span>
@@ -478,7 +481,7 @@
                 <div class="metric"><span>Allocation</span><strong style="font-size:16px; color:var(--primary);">$${topNonVetoed.allocation_size}</strong></div>
               </div>
               <div class="action-row" style="margin-top:20px;">
-                <button class="action primary" style="width:100%; padding:18px; font-size:18px;" onclick="triggerExecute('${topNonVetoed.pair}', '${topNonVetoed.setup_family}', ${topNonVetoed.entry}, ${topNonVetoed.stop}, ${topNonVetoed.target}, ${topNonVetoed.risk_usd}, ${topNonVetoed.allocation_size})">⚡ EXECUTE HUNT ($${topNonVetoed.allocation_size})</button>
+                <button class="action primary" style="width:100%; padding:18px; font-size:18px;" onclick="triggerExecute('${topNonVetoed.pair}', '${topNonVetoed.setup_family}', ${topNonVetoed.entry}, ${topNonVetoed.stop}, ${topNonVetoed.target}, ${topNonVetoed.is_long}, ${topNonVetoed.risk_usd}, ${topNonVetoed.allocation_size})">⚡ EXECUTE HUNT ($${topNonVetoed.allocation_size})</button>
               </div>
             </div>
           `;
@@ -491,11 +494,12 @@
           currentPositionsData.forEach((pos) => {
             const isCritical = pos.health_score < 75 || pos.rts_state === 'LIQUIDATION_WARNING' || pos.time_in_range_mins > 15;
             const statusClass = isCritical ? 'red' : 'green';
+            const posDirLabel = pos.direction || (pos.is_long ? 'LONG' : 'SHORT');
             const healthCard = `
               <article class="position-card" style="${isCritical ? 'border: 2px solid var(--danger);' : ''}">
                 <div class="position-top">
                   <div>
-                    <h4>${pos.pair} LONG</h4>
+                    <h4>${pos.pair} ${posDirLabel}</h4>
                     <div class="mini">${pos.setup_family} · Range: ${pos.time_in_range_mins || 0}m</div>
                   </div>
                   <span class="status ${statusClass}">HEALTH: ${pos.health_score}</span>
