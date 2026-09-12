@@ -21,7 +21,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 import uvicorn
 from oracle_feed_v2 import OracleFeedV2
-from pair_universe import PairUniverse, PROP_SYMBOLS, MarketDataSource
+from pair_universe import PROP_SYMBOLS, MarketDataSource
 from hostile_sentinel_analyzer import HostileActivitySentinel
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -68,7 +68,6 @@ def run_master_orchestration():
     global latest_engine_payload, circuit_breaker_active, circuit_breaker_until
     logging.info("Master Engine (Prism Map + Bollinger 365 + Sentinel + 90m Hold) initialized 24/7.")
     feed_generator = OracleFeedV2(account_balance=10000.0)
-    universe = PairUniverse()
     sentinel = HostileActivitySentinel(hostility_threshold=0.80)
     mds = MarketDataSource()
     
@@ -85,25 +84,26 @@ def run_master_orchestration():
                 circuit_breaker_active = False
                 logging.info("Circuit breaker cooldown expired. Execution lanes re-armed.")
 
-            active_pairs = universe.get_active_pairs()
             raw_candidates = []
             
-            for p in active_pairs:
-                if not p.last_price or p.last_price <= 0:
+            for symbol in PROP_SYMBOLS:
+                candles = mds.fetch_5m_candles(symbol, min_candles=60)
+                if not candles:
+                    continue
+                current = candles[-1]
+                last_price = current["close"]
+                if last_price <= 0:
                     continue
                 
-                # Fetch recent candles for strict Prism / Bollinger / KNN evaluation on high-leverage assets like BTC/ETH
-                candles = mds.fetch_5m_candles(p.symbol, min_candles=60)
                 if len(candles) >= 40:
                     window = candles[-40:]
-                    current = candles[-1]
                     closes = [c["close"] for c in window]
                     mean_390 = sum(closes) / len(closes)
                     variance = sum((c - mean_390) ** 2 for c in closes) / len(closes)
-                    std_390 = variance ** 0.5 if variance > 0 else p.last_price * 0.01
+                    std_390 = variance ** 0.5 if variance > 0 else last_price * 0.01
                     
                     price_range = current["high"] - current["low"]
-                    anti_delta = min(100.0, (price_range / p.last_price) * 5000) if p.last_price > 0 else 0
+                    anti_delta = min(100.0, (price_range / last_price) * 5000) if last_price > 0 else 0
                     avg_vol = sum(c["volume"] for c in window[-10:]) / 10 if len(window) >= 10 else 1.0
                     vol_expansion = current["volume"] / max(1.0, avg_vol)
                     
@@ -112,24 +112,24 @@ def run_master_orchestration():
                         continue
                         
                     # Fair-Pricing Gate Check (Within ±1.0 std dev)
-                    distance_from_mean = abs(p.last_price - mean_390) / std_390 if std_390 > 0 else 999.0
+                    distance_from_mean = abs(last_price - mean_390) / std_390 if std_390 > 0 else 999.0
                     if distance_from_mean > 1.0:
                         continue
                 
-                setup_fam = setup_families[abs(hash(p.symbol)) % len(setup_families)]
+                setup_fam = setup_families[abs(hash(symbol)) % len(setup_families)]
                 
-                if p.symbol in ["BTC", "ETH"]:
+                if symbol in ["BTC", "ETH"]:
                     stop_pct = 0.010
-                elif p.last_price > 50.0:
+                elif last_price > 50.0:
                     stop_pct = 0.015
                 else:
                     stop_pct = 0.020
                 
                 raw_candidates.append({
-                    "pair": f"{p.symbol}USD",
+                    "pair": f"{symbol}USD",
                     "setup_family": setup_fam,
                     "stop_distance_pct": stop_pct,
-                    "base_price": p.last_price
+                    "base_price": last_price
                 })
             
             if raw_candidates:
@@ -356,11 +356,9 @@ def health_check():
     return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
 
 if __name__ == "__main__":
-    # Start background GitHub sync worker
     sync_thread = threading.Thread(target=github_sync_worker, daemon=True)
     sync_thread.start()
     
-    # Start background master orchestration engine loop
     engine_thread = threading.Thread(target=run_master_orchestration, daemon=True)
     engine_thread.start()
     
