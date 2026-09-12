@@ -1,6 +1,6 @@
-"""Oracle Feed v2: High-Performance Systematic Signal Generator
-Unified December/April Architecture with Elite Whitelist & Margin Scaling.
-"""
+\"\"\"Oracle Feed v2: High-Performance Systematic Signal Generator
+Unified December/April Architecture with Full Prism Terrain & Regime-Aware Multipliers.
+\"\"\"
 from __future__ import annotations
 
 import json
@@ -12,10 +12,14 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 class OracleFeedV2:
     def __init__(self, account_balance: float = 10000.0):
         self.account_balance = account_balance
+        # Regime-aware specialist whitelist matching PRISM topographical states
         self.elite_whitelist = {
-            "sell_absorption_reclaim_v1": {"multiplier": 3.5, "target_win_rate": 0.44},
-            "reacceleration_reclaim_continuation_v1": {"multiplier": 4.0, "target_win_rate": 0.39},
-            "momentum_expansion_continuation_v1": {"multiplier": 4.5, "target_win_rate": 0.29}
+            "prism_range_mean_reversion_v1": {"multiplier": 1.62, "target_win_rate": 0.58},
+            "prism_shelf_absorption_fade_v1": {"multiplier": 2.10, "target_win_rate": 0.52},
+            "prism_momentum_expansion_breakout_v1": {"multiplier": 3.50, "target_win_rate": 0.35},
+            "sell_absorption_reclaim_v1": {"multiplier": 2.20, "target_win_rate": 0.48},
+            "reacceleration_reclaim_continuation_v1": {"multiplier": 2.50, "target_win_rate": 0.44},
+            "momentum_expansion_continuation_v1": {"multiplier": 3.00, "target_win_rate": 0.38}
         }
         self.leverage_tiers = {
             "BTCUSD": 20,
@@ -30,11 +34,11 @@ class OracleFeedV2:
         
         for candidate in raw_market_candidates:
             pair = candidate.get("pair", "UNKNOWN")
-            setup = candidate.get("setup_family", "sell_absorption_reclaim_v1")
+            setup = candidate.get("setup_family", "prism_range_mean_reversion_v1")
             stop_dist = candidate.get("stop_distance_pct", 0.01)
             
             if setup not in self.elite_whitelist:
-                continue
+                setup = "prism_range_mean_reversion_v1"
                 
             config = self.elite_whitelist[setup]
             leverage = self.leverage_tiers.get(pair, self.leverage_tiers["DEFAULT"])
@@ -62,8 +66,8 @@ class OracleFeedV2:
             processed_signals.append(signal_entry)
             
         feed_payload = {
-            "version": "v2.0",
-            "architecture": "December/April Unified",
+            "version": "v2.1-PRISM",
+            "architecture": "December/April Unified + PRISM Terrain Mainframe",
             "generated_at_utc": timestamp,
             "account_equity": self.account_balance,
             "active_signals_count": len(processed_signals),
@@ -75,9 +79,8 @@ class OracleFeedV2:
 if __name__ == "__main__":
     generator = OracleFeedV2(account_balance=10000.0)
     sample_data = [
-        {"pair": "BTCUSD", "setup_family": "momentum_expansion_continuation_v1", "stop_distance_pct": 0.008},
-        {"pair": "SOLUSD", "setup_family": "sell_absorption_reclaim_v1", "stop_distance_pct": 0.015},
-        {"pair": "ADA/USD", "setup_family": "reacceleration_reclaim_continuation_v1", "stop_distance_pct": 0.012}
+        {"pair": "BTCUSD", "setup_family": "prism_momentum_expansion_breakout_v1", "stop_distance_pct": 0.008},
+        {"pair": "SOLUSD", "setup_family": "prism_range_mean_reversion_v1", "stop_distance_pct": 0.015}
     ]
     feed = generator.generate_feed(sample_data)
     logging.info(json.dumps(feed, indent=2))
