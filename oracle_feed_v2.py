@@ -1,6 +1,6 @@
-\"\"\"Oracle Feed v2: High-Performance Systematic Signal Generator
+"""Oracle Feed v2: High-Performance Systematic Signal Generator
 Unified December/April Architecture with Full Prism Terrain & Regime-Aware Multipliers.
-\"\"\"
+"""
 from __future__ import annotations
 
 import json
