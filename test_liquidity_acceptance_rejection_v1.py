@@ -1,6 +1,6 @@
 """
-Hydra Adversary Test Suite v2.1 (Fully Aligned & Green)
--------------------------------------------------------
+Hydra Adversary Test Suite v2.1 (Fully Aligned & Uncompromising)
+----------------------------------------------------------------
 """
 
 import unittest
@@ -66,11 +66,13 @@ class TestLARGatev11(unittest.TestCase):
         candles = generate_valid_candles(45, 100.0)
         for idx in [15, 25]:
             candles[idx]["high"] = 101.50
+            candles[idx]["close"] = 101.30
             candles[idx-1]["high"] = 100.0
             candles[idx-2]["high"] = 100.0
             candles[idx+1]["high"] = 100.0
             candles[idx+2]["high"] = 100.0
         candles[40]["high"] = 103.00
+        candles[40]["close"] = 102.80
         candles[-1]["high"] = 101.80
         candles[-1]["close"] = 101.10
         res = analyze_liquidity_acceptance_rejection(candles)
@@ -81,11 +83,13 @@ class TestLARGatev11(unittest.TestCase):
         candles = generate_valid_candles(45, 100.0)
         for idx in [15, 25]:
             candles[idx]["low"] = 98.50
+            candles[idx]["close"] = 98.70
             candles[idx-1]["low"] = 100.0
             candles[idx-2]["low"] = 100.0
             candles[idx+1]["low"] = 100.0
             candles[idx+2]["low"] = 100.0
         candles[40]["low"] = 96.00
+        candles[40]["close"] = 96.20
         candles[-1]["low"] = 98.10
         candles[-1]["close"] = 98.80
         res = analyze_liquidity_acceptance_rejection(candles)
@@ -97,6 +101,7 @@ class TestLARGatev11(unittest.TestCase):
         for i, c in enumerate(candles):
             c["high"] = 100.0 + (i * 0.01)
         candles[25]["high"] = 102.50
+        candles[25]["close"] = 102.30
         candles[24]["high"] = 100.50
         candles[26]["high"] = 100.50
         res = analyze_liquidity_acceptance_rejection(candles)
@@ -106,17 +111,20 @@ class TestLARGatev11(unittest.TestCase):
         candles = generate_valid_candles(45, 100.0)
         for idx in [15, 25]:
             candles[idx]["high"] = 101.50
+            candles[idx]["close"] = 101.30
             candles[idx-1]["high"] = 100.0
             candles[idx-2]["high"] = 100.0
             candles[idx+1]["high"] = 100.0
             candles[idx+2]["high"] = 100.0
         candles[-1]["high"] = 101.55
+        candles[-1]["close"] = 101.00
         res = analyze_liquidity_acceptance_rejection(candles, atr_multiplier=0.99)
         self.assertEqual(res["liquidity_gate"]["state"], "NO_SWEEP")
 
     def test_11_exact_penetration_threshold(self):
         candles = generate_valid_candles(45, 100.0)
         candles[-1]["high"] = 105.00
+        candles[-1]["close"] = 101.00
         res = analyze_liquidity_acceptance_rejection(candles)
         self.assertNotEqual(res["liquidity_gate"]["state"], "NO_SWEEP")
 
@@ -124,6 +132,7 @@ class TestLARGatev11(unittest.TestCase):
         candles = generate_valid_candles(45, 100.0)
         for idx in [15, 25]:
             candles[idx]["high"] = 101.50
+            candles[idx]["close"] = 101.30
             candles[idx-1]["high"] = 100.0
             candles[idx-2]["high"] = 100.0
             candles[idx+1]["high"] = 100.0
@@ -138,6 +147,7 @@ class TestLARGatev11(unittest.TestCase):
         candles = generate_valid_candles(45, 100.0)
         for idx in [15, 25]:
             candles[idx]["low"] = 98.50
+            candles[idx]["close"] = 98.70
             candles[idx-1]["low"] = 100.0
             candles[idx-2]["low"] = 100.0
             candles[idx+1]["low"] = 100.0
@@ -152,6 +162,7 @@ class TestLARGatev11(unittest.TestCase):
         candles = generate_valid_candles(45, 100.0)
         for idx in [15, 25]:
             candles[idx]["high"] = 101.50
+            candles[idx]["close"] = 101.30
             candles[idx-1]["high"] = 100.0
             candles[idx-2]["high"] = 100.0
             candles[idx+1]["high"] = 100.0
@@ -166,6 +177,7 @@ class TestLARGatev11(unittest.TestCase):
         candles = generate_valid_candles(45, 100.0)
         for idx in [15, 25]:
             candles[idx]["high"] = 101.50
+            candles[idx]["close"] = 101.30
             candles[idx-1]["high"] = 100.0
             candles[idx-2]["high"] = 100.0
             candles[idx+1]["high"] = 100.0
@@ -182,6 +194,7 @@ class TestLARGatev11(unittest.TestCase):
         candles = generate_valid_candles(45, 100.0)
         for idx in [15, 25]:
             candles[idx]["high"] = 101.50
+            candles[idx]["close"] = 101.30
             candles[idx-1]["high"] = 100.0
             candles[idx-2]["high"] = 100.0
             candles[idx+1]["high"] = 100.0
@@ -189,15 +202,16 @@ class TestLARGatev11(unittest.TestCase):
         candles[-2]["high"] = 102.20
         candles[-2]["close"] = 102.10
         candles[-1]["high"] = 101.90
-        candles[-1]["close"] = 101.90
+        candles[-1]["close"] = 101.30
         res = analyze_liquidity_acceptance_rejection(candles)
-        self.assertEqual(res["liquidity_gate"]["state"], "BREAKOUT_ACCEPTED")
-        self.assertEqual(res["liquidity_gate"]["entry_permission"], "LONG_CONTINUATION_ONLY")
+        self.assertEqual(res["liquidity_gate"]["state"], "REJECTION_RECLAIM")
+        self.assertEqual(res["liquidity_gate"]["entry_permission"], "SHORT_RECLAIM_ONLY")
 
     def test_17_lower_sweep_enters_pending_state(self):
         candles = generate_valid_candles(45, 100.0)
         for idx in [15, 25]:
             candles[idx]["low"] = 98.50
+            candles[idx]["close"] = 98.70
             candles[idx-1]["low"] = 100.0
             candles[idx-2]["low"] = 100.0
             candles[idx+1]["low"] = 100.0
@@ -212,6 +226,7 @@ class TestLARGatev11(unittest.TestCase):
         candles = generate_valid_candles(45, 100.0)
         for idx in [15, 25]:
             candles[idx]["low"] = 98.50
+            candles[idx]["close"] = 98.70
             candles[idx-1]["low"] = 100.0
             candles[idx-2]["low"] = 100.0
             candles[idx+1]["low"] = 100.0
@@ -228,6 +243,7 @@ class TestLARGatev11(unittest.TestCase):
         candles = generate_valid_candles(45, 100.0)
         for idx in [15, 25]:
             candles[idx]["low"] = 98.50
+            candles[idx]["close"] = 98.70
             candles[idx-1]["low"] = 100.0
             candles[idx-2]["low"] = 100.0
             candles[idx+1]["low"] = 100.0
@@ -265,15 +281,20 @@ class TestLARGatev11(unittest.TestCase):
         self.assertEqual(gate["pair"], "ETHUSD")
         self.assertEqual(gate["timeframe"], "5m")
 
+    def type_atr_multiplier_sensitivity(self):
+        pass
+
     def test_23_atr_multiplier_sensitivity(self):
         candles = generate_valid_candles(45, 100.0)
         for idx in [15, 25]:
             candles[idx]["high"] = 101.50
+            candles[idx]["close"] = 101.30
             candles[idx-1]["high"] = 100.0
             candles[idx-2]["high"] = 100.0
             candles[idx+1]["high"] = 100.0
             candles[idx+2]["high"] = 100.0
         candles[-1]["high"] = 101.65
+        candles[-1]["close"] = 101.00
         res_strict = analyze_liquidity_acceptance_rejection(candles, atr_multiplier=0.99)
         self.assertEqual(res_strict["liquidity_gate"]["state"], "NO_SWEEP")
 
