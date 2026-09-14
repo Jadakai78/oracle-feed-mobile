@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>JHL Confluence Dashboard - Sentinel Defense Edition</title>
+  <title>JHL Confluence Dashboard - Sniper Grade Elite 9 Command Center</title>
   <style>
     :root, [data-theme="light"] {
       --bg:#eef3f4; --surface:#f8fbfb; --surface-2:#ffffff; --surface-3:#eaf2f2; --text:#163238; --muted:#648089;
@@ -87,10 +87,12 @@
     .panel { padding:18px; }
     .panel h3 { margin:0 0 6px; font-size:18px; }
     .panel p.headline { margin:0 0 16px; color:var(--muted); font-size:14px; }
-    .signal-list, .account-list, .position-list { display:grid; gap:14px; }
-    .signal-card, .account-card, .position-card { padding:18px; }
+    .signal-list, .account-list, .position-list, .universe-grid { display:grid; gap:14px; }
+    .universe-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .signal-card, .account-card, .position-card, .universe-card { padding:18px; }
+    .universe-card { background: var(--surface-2); border: 1px solid var(--line); border-radius: 18px; }
     .signal-top, .account-top, .position-top { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; }
-    .signal-card h4, .account-card h4, .position-card h4 { margin:0; font-size:20px; }
+    .signal-card h4, .account-card h4, .position-card h4, .universe-card h4 { margin:0; font-size:20px; }
     .mini { color:var(--muted); font-size:13px; margin-top:4px; }
     .metrics { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:10px; margin-top:16px; }
     .metric { padding:12px; border-radius:16px; background:var(--surface-2); border:1px solid var(--line); }
@@ -108,33 +110,13 @@
     .action.primary:hover { opacity: 0.9; transform: translateY(-1px); }
     .action.ghost { color:var(--muted); cursor: pointer; }
     .muted-box { padding:14px; border-radius:18px; border:1px dashed var(--line); background:rgba(255,255,255,.02); color:var(--muted); font-size:13px; line-height:1.6; }
-    .sim-card { background: var(--surface-2); border: 1px solid var(--line); border-radius: 18px; padding: 16px; margin-bottom: 12px; }
-    .sim-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .sim-header h4 { margin: 0; font-size: 18px; }
-    .modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(7, 20, 26, 0.85); backdrop-filter: blur(5px);
-      display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px;
-    }
-    .modal-overlay.open { display: flex; }
-    .modal-content {
-      background: var(--surface); border: 1px solid var(--line); border-radius: 24px;
-      width: 100%; max-width: 540px; padding: 24px; box-shadow: var(--shadow); position: relative;
-    }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-    .modal-header h3 { margin: 0; font-size: 22px; }
-    .modal-close { background: none; border: 0; color: var(--muted); font-size: 24px; cursor: pointer; }
-    .telemetry-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
-    .tele-box { background: var(--surface-2); border: 1px solid var(--line); border-radius: 16px; padding: 14px; }
-    .tele-box span { display: block; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
-    .tele-box strong { display: block; margin-top: 6px; font-size: 20px; color: var(--primary); }
     body.drive-mode .sidebar { display: none; }
     body.drive-mode .app { grid-template-columns: 1fr; }
     body.drive-mode .stats, body.drive-mode .tabs, body.drive-mode .hero-card p, body.drive-mode .panel:not(.drive-panel) { display: none !important; }
     .drive-panel { display: none; }
     body.drive-mode .drive-panel { display: block !important; width: 100%; max-width: 600px; margin: 0 auto; }
     body.drive-mode .main { padding: 12px; }
-    @media (max-width: 1180px){ .stats,.metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.grid-2,.app{grid-template-columns:1fr;}.sidebar{position:relative;height:auto}.sidebar-foot{position:relative;margin-top:18px}.main{padding:16px} }
+    @media (max-width: 1180px){ .stats,.metrics,.universe-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.grid-2,.app{grid-template-columns:1fr;}.sidebar{position:relative;height:auto}.sidebar-foot{position:relative;margin-top:18px}.main{padding:16px} }
   </style>
 </head>
 <body id="bodyTag">
@@ -144,57 +126,57 @@
         <div class="mark" aria-hidden="true"></div>
         <div>
           <h1>JHL Confluence</h1>
-          <p>Sentinel Defense Edition</p>
+          <p>Sniper Grade Edition</p>
         </div>
       </div>
       <nav class="nav">
-        <small>Architecture</small>
+        <small>Command Center</small>
         <button class="active" onclick="switchTab('trade', this)">Live Signal Feed <span>01s</span></button>
-        <button onclick="switchTab('simulator', this)">Sentinel Simulator <span>02s</span></button>
-        <button onclick="switchTab('health', this)">Open Position Health <span>03s</span></button>
-        <button onclick="switchTab('props', this)">$10K Prop Lane <span>04</span></button>
+        <button onclick="switchTab('universe', this)">Elite Pairing Universe <span>02s</span></button>
+        <button onclick="switchTab('health', this)">Open Positions <span>03s</span></button>
+        <button onclick="switchTab('props', this)">Prop &amp; Macro Lanes <span>04s</span></button>
       </nav>
       <div class="sidebar-foot">
-        <strong>Hostile Sentinel</strong>
-        <span>Status: <b>Active (1M Audited)</b><br>Immune System: <b>Online</b></span>
+        <strong>Sniper Status</strong>
+        <span>Elite Whitelist: <b>Active (9 Pairs)</b><br>Caps: <b>Unlimited</b></span>
       </div>
     </aside>
     <main class="main">
       <section class="hero">
         <div class="hero-card">
-          <span class="pill">Hostile Activity Sentinel Active (Adversarial Immune System)</span>
-          <h2>Autonomous threat neutralization protecting account equity.</h2>
-          <p>The independent Hostile Sentinel continuously patrols incoming feeds, neutralizing decay traps and cascade vectors before execution.</p>
+          <span class="pill">Elite 9 Whitelist Active (Shadow Realm Filtered)</span>
+          <h2>Sniper-grade execution across structural high-respect assets.</h2>
+          <p>Restricted strictly to the top 9 institutional respect pairings with SuperTrend battle dividers and proportional stealth sizing.</p>
           <div class="hero-actions">
             <span class="status green" id="sync-status">LIVE KRAKEN FEED</span>
-            <span class="status blue">Max Cap: 2 Active</span>
-            <span class="status yellow" id="breaker-badge">Circuit Breaker: Ready</span>
+            <span class="status blue">Slots: Unlimited</span>
+            <span class="status green">Hostile Sentinel: Armed</span>
           </div>
         </div>
       </section>
       <section class="stats" id="stats">
         <article class="stat">
-          <div class="stat-label">Universe Sweep</div>
-          <div class="stat-value">49</div>
-          <div class="stat-sub">Pairs scanned live</div>
+          <div class="stat-label">Whitelist Universe</div>
+          <div class="stat-value" style="color:var(--primary);">9</div>
+          <div class="stat-sub">Elite pairings scanned</div>
         </article>
         <article class="stat">
-          <div class="stat-label">Sentinel Audited</div>
-          <div class="stat-value" style="color:#39d0c6;">1M+</div>
-          <div class="stat-sub">Stress-tested traces</div>
+          <div class="stat-label">Shadow Realm</div>
+          <div class="stat-value" style="color:#ef4444;">40</div>
+          <div class="stat-sub">Sloppy pairs banished</div>
         </article>
         <article class="stat">
-          <div class="stat-label">Max Slot Cap</div>
-          <div class="stat-value" style="color:#f59e0b;">2 MAX</div>
-          <div class="stat-sub">Strict risk control</div>
+          <div class="stat-label">Position Cap</div>
+          <div class="stat-value" style="color:#22c55e;">UNLIMITED</div>
+          <div class="stat-sub">Zero restrictions</div>
         </article>
         <article class="stat">
-          <div class="stat-label">Immune System</div>
-          <div class="stat-value" style="font-size:18px; color:#22c55e;">ARMED</div>
-          <div class="stat-sub">Autonomous bouncer</div>
+          <div class="stat-label">Battle Divider</div>
+          <div class="stat-value" style="font-size:18px; color:var(--primary);">SuperTrend 3.0</div>
+          <div class="stat-sub">Active momentum gate</div>
         </article>
         <article class="stat">
-          <div class="stat-label">Engine status</div>
+          <div class="stat-label">Engine Status</div>
           <div class="stat-value" style="font-size:20px; color:#22c55e;">24/7 LIVE</div>
           <div class="stat-sub">Cloud Render OK</div>
         </article>
@@ -202,9 +184,9 @@
       <section class="tabs">
         <div class="tab-group">
           <button class="tab-btn active" onclick="switchTab('trade', this)">Live Feed</button>
-          <button class="tab-btn" onclick="switchTab('simulator', this)">⚡ Sentinel Audit Simulator</button>
-          <button class="tab-btn" onclick="switchTab('health', this)">Open Position Health</button>
-          <button class="tab-btn" onclick="switchTab('props', this)">Prop Lanes</button>
+          <button class="tab-btn" onclick="switchTab('universe', this)">⚡ Elite Pairing Universe</button>
+          <button class="tab-btn" onclick="switchTab('health', this)">Open Positions</button>
+          <button class="tab-btn" onclick="switchTab('props', this)">Prop &amp; Macro</button>
         </div>
         <button class="mode-toggle" onclick="toggleDriveMode()">🚗 Drive Mode (Mobile)</button>
       </section>
@@ -216,92 +198,67 @@
       <section id="trade" class="view active">
         <div class="grid-2">
           <div class="panel">
-            <h3>Elite Setups (Hostile Sentinel Veto Active)</h3>
-            <p class="headline">Threats flagged by the immune system are automatically blocked with $0 allocation.</p>
-            <div class="signal-list" id="dynamic-signal-list"></div>
+            <h3>Active Execution Signals (Elite 9 Whitelist)</h3>
+            <p class="headline">Signals fire only when PRISM, SuperTrend battle dividers, and speed phases align perfectly.</p>
+            <div class="signal-list" id="dynamic-signal-list">
+              <div class="muted-box">No active execution signals currently firing. Live feed panel is clean and ready.</div>
+            </div>
           </div>
           <div class="panel">
-            <h3>Quick Open Position Health Snapshot</h3>
-            <p class="headline">Binary execute/close telemetry with automated stall-close override.</p>
-            <div class="position-list" id="quick-health-list"></div>
+            <h3>Active Open Positions Telemetry</h3>
+            <p class="headline">Real-time health scores and automated stop/target tracking.</p>
+            <div class="position-list" id="quick-health-list">
+              <div class="muted-box">No open positions. Sniper discretion active with zero slot caps.</div>
+            </div>
           </div>
         </div>
       </section>
-      <section id="simulator" class="view">
+      <section id="universe" class="view">
         <div class="panel">
-          <h3>Sentinel Immune System Stress Simulator</h3>
-          <p class="headline">Run a full-suite audit verifying adversarial threat scrubbing and unicorn sizing.</p>
-          <div id="sim-controls" style="margin-bottom: 20px;">
-            <button class="action primary" onclick="runSimulator()" id="runSimBtn" style="padding: 16px 24px; font-size: 16px;">🚀 Run Sentinel Stress Audit</button>
-          </div>
-          <div id="sim-results-container">
-            <div class="muted-box">Simulator is idle. Click the button above to run the automated pass/fail audit.</div>
+          <h3>Elite 9 Staging Telemetry &amp; Universe Monitor</h3>
+          <p class="headline">Real-time structural staging across the permanent 9 elite pairings. Watch setups form before execution.</p>
+          <div class="universe-grid" id="universe-staging-grid">
+            <div class="muted-box">Loading elite pairing telemetry...</div>
           </div>
         </div>
       </section>
       <section id="health" class="view">
         <div class="panel">
-          <h3>Active Position Telemetry &amp; Stall-Close Monitoring</h3>
-          <p class="headline">Inspect real-time range duration, binary execution status, and slot capacity.</p>
-          <div class="position-list" id="full-health-list"></div>
+          <h3>Open Positions Command Center</h3>
+          <p class="headline">Full telemetry inspection for all active trades.</p>
+          <div class="position-list" id="full-health-list">
+            <div class="muted-box">No open positions.</div>
+          </div>
         </div>
       </section>
       <section id="props" class="view">
         <div class="panel">
-          <h3>Prop Account Lane ($10K December Target)</h3>
-          <p class="headline">Protected by the Hostile Activity Sentinel, 1.62R Unicorn sizing, and strict 3% daily drawdown defense.</p>
+          <h3>Prop Account Lane &amp; Macro News</h3>
+          <p class="headline">Protected by proportional stealth sizing, 0.75% risk model, and 90-minute temporal exit windows.</p>
           <div class="account-list">
             <article class="account-card">
               <div class="account-top">
                 <div>
-                  <h4>New $10K Prop Account (Sentinel Defense Mode)</h4>
-                  <div class="mini">Primary Sprint Lane · MAX 2 SLOTS</div>
+                  <h4>$10K Prop Sprint Lane (Elite 9 Sniper Mode)</h4>
+                  <div class="mini">Unyielding Risk Containment · Zero Slot Restrictions</div>
                 </div>
-                <span class="status green">READY TO HUNT</span>
+                <span class="status green">SNIPER READY</span>
               </div>
               <div class="metrics">
-                <div class="metric"><span>Target Equity</span><strong>$10,000</strong></div>
-                <div class="metric"><span>Unicorn Allocation</span><strong>$1,500 (+1.62R EV)</strong></div>
-                <div class="metric"><span>Immune System</span><strong>Hostile Sentinel Active</strong></div>
-                <div class="metric"><span>Circuit Breaker</span><strong>15-Min Cool-Down</strong></div>
+                <div class="metric"><span>Account Equity</span><strong>$10,000</strong></div>
+                <div class="metric"><span>Risk Model</span><strong>0.75% Equity Risk</strong></div>
+                <div class="metric"><span>Whitelist Scope</span><strong>Elite 4 + Conditional 5</strong></div>
+                <div class="metric"><span>Circuit Breaker</span><strong>15-Min Cool-Down (On Full Flush)</strong></div>
               </div>
               <div class="action-row">
-                <button class="action primary">Sentinel deployment active</button>
-                <button class="action ghost">Zero tolerance for hostile regimes · Pure hunter mode</button>
+                <button class="action primary">Sniper deployment active</button>
+                <button class="action ghost">Shadow Realm isolation engaged · Zero noise bleed</button>
               </div>
             </article>
           </div>
         </div>
       </section>
     </main>
-  </div>
-  <div class="modal-overlay" id="telemetryModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 id="modalTitle">Position Telemetry</h3>
-        <button class="modal-close" onclick="closeTelemetryModal()">&times;</button>
-      </div>
-      <div class="telemetry-grid">
-        <div class="tele-box">
-          <span>Health Score</span>
-          <strong id="modalHealthScore">--</strong>
-        </div>
-        <div class="tele-box">
-          <span>RTS State</span>
-          <strong id="modalRtsState" style="color: var(--primary);">--</strong>
-        </div>
-        <div class="tele-box">
-          <span>Range Duration</span>
-          <strong id="modalTimeInRange">--</strong>
-        </div>
-        <div class="tele-box">
-          <span>Execution Type</span>
-          <strong id="modalGateStatus" style="font-size: 13px; margin-top: 8px;">Binary Close</strong>
-        </div>
-      </div>
-      <div class="muted-box" id="modalWarning">--</div>
-      <button class="action primary" style="width: 100%; margin-top: 16px; padding: 14px;" onclick="closeTelemetryModal()">Close Inspection</button>
-    </div>
   </div>
   <script>
     let currentPositionsData = [];
@@ -316,68 +273,9 @@
     function toggleDriveMode() {
       document.getElementById('bodyTag').classList.toggle('drive-mode');
     }
-    async function runSimulator() {
-      const container = document.getElementById('sim-results-container');
-      const btn = document.getElementById('runSimBtn');
-      btn.innerText = "⏳ Running Sentinel Audit...";
-      btn.disabled = true;
-      container.innerHTML = `<div class="muted-box">Simulating adversarial sentinel threat detection and unicorn sizing...</div>`;
-      try {
-        const res = await fetch('/api/simulator/run', { method: 'POST' });
-        const data = await res.json();
-        if (data.status === 'COMPLETED') {
-          btn.innerText = "🚀 Run Sentinel Stress Audit";
-          btn.disabled = false;
-          let html = '';
-          const report = data.report;
-          for (const key in report) {
-            const item = report[key];
-            html += `
-              <div class="sim-card">
-                <div class="sim-header">
-                  <h4>${item.tier}</h4>
-                  <span class="status green">${item.status}</span>
-                </div>
-                <div class="metrics" style="margin-top: 10px;">
-                  <div class="metric"><span>Fill Stability</span><strong>${item.fill_stability}</strong></div>
-                  <div class="metric"><span>Avg Slippage</span><strong>${item.avg_slippage}</strong></div>
-                  <div class="metric" style="grid-column: span 2;"><span>Risk Containment</span><strong style="font-size: 14px; margin-top:4px;">${item.risk_containment}</strong></div>
-                </div>
-                <div class="muted-box" style="margin-top: 12px; border-style: solid; border-color: var(--primary);">
-                  <b>Verdict:</b> ${item.verdict}
-                </div>
-              </div>
-            `;
-          }
-          container.innerHTML = html;
-        }
-      } catch (err) {
-        console.error("Simulator error:", err);
-        btn.innerText = "🚀 Run Sentinel Stress Audit";
-        btn.disabled = false;
-        container.innerHTML = `<div class="muted-box" style="color: var(--danger);">Simulation failed to complete. Please retry.</div>`;
-      }
-    }
-    function inspectTelemetry(posId) {
-      const pos = currentPositionsData.find(p => p.id === posId);
-      if (!pos) return;
-      document.getElementById('modalTitle').innerText = `${pos.pair} Telemetry Inspection`;
-      document.getElementById('modalHealthScore').innerText = `${pos.health_score} PTS`;
-      document.getElementById('modalRtsState').innerText = pos.rts_state || "ALIGNED";
-      document.getElementById('modalTimeInRange').innerText = `${pos.time_in_range_mins || 0} mins`;
-      document.getElementById('modalWarning').innerText = `Allocation: $${pos.allocation_size} | Status: ${pos.warning} | Opened at ${pos.opened_at}`;
-      document.getElementById('telemetryModal').classList.add('open');
-    }
-    function closeTelemetryModal() {
-      document.getElementById('telemetryModal').classList.remove('open');
-    }
     async function triggerExecute(pair, setup_family, entry, stop, target, is_long, risk_usd, allocation_size) {
-      if (allocation_size === 0) {
-        alert("Execution blocked: This setup is flagged as hostile by the Sentinel immune system!");
-        return;
-      }
       const dirText = is_long ? "LONG" : "SHORT";
-      if (confirm(`Execute Binary Hunter Trade for ${pair} (${dirText} | ${setup_family}) at Size $${allocation_size}?`)) {
+      if (confirm(`Execute Sniper Trade for ${pair} (${dirText} | ${setup_family}) at Size $${allocation_size}?`)) {
         try {
           const res = await fetch('/api/execute', {
             method: 'POST',
@@ -386,7 +284,7 @@
           });
           const data = await res.json();
           if (data.status === 'SUCCESS') {
-            alert(`Binary hunter order dispatched for ${pair} (${dirText})!`);
+            alert(`Sniper order dispatched for ${pair} (${dirText})!`);
             switchTab('health');
             fetchData();
           } else {
@@ -399,7 +297,7 @@
       }
     }
     async function closePosition(posId) {
-      if (confirm("Close this position cleanly (Binary Exit)?")) {
+      if (confirm("Close this position cleanly?")) {
         await fetch('/api/close', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -417,82 +315,84 @@
         const feedData = await feedRes.json();
         const posData = await posRes.json();
         currentPositionsData = posData.positions || [];
-        const breakerBadge = document.getElementById('breaker-badge');
-        if (posData.circuit_breaker_active) {
-          breakerBadge.className = "status red";
-          breakerBadge.innerText = `CIRCUIT BREAKER: ${Math.floor(posData.circuit_breaker_remaining_secs / 60)}m ${posData.circuit_breaker_remaining_secs % 60}s`;
-        } else {
-          breakerBadge.className = "status green";
-          breakerBadge.innerText = "Circuit Breaker: Ready";
-        }
-        document.getElementById('sync-status').innerText = `LIVE KRAKEN (${feedData.timestamp || ''}) - Slots: ${currentPositionsData.length}/2`;
+        
+        document.getElementById('sync-status').innerText = `LIVE KRAKEN (${feedData.timestamp || ''}) - Active: ${currentPositionsData.length}`;
+        
+        // Render Live Signals
         const container = document.getElementById('dynamic-signal-list');
         container.innerHTML = '';
         let driveContainer = document.getElementById('drive-mode-card');
         driveContainer.innerHTML = '';
+        
         if (feedData.signals && feedData.signals.length > 0) {
           feedData.signals.forEach((sig) => {
-            const isVetoed = sig.allocation_size === 0;
-            const isUnicorn = sig.setup_family === 'reacceleration_divergent_absorption_v1';
-            const statusClass = isVetoed ? 'red' : (isUnicorn ? 'green' : 'yellow');
-            const tierLabel = isVetoed ? '⛔ HOSTILE VETO' : (isUnicorn ? '🦄 UNICORN TOP-TIER ($1,500)' : 'SECONDARY ($750)');
             const dirLabel = sig.direction || (sig.is_long ? 'LONG' : 'SHORT');
             const cardHtml = `
-              <article class="signal-card" style="${isVetoed ? 'border: 2px solid var(--danger); opacity: 0.7;' : (isUnicorn ? 'border: 2px solid var(--primary); background: rgba(57,208,198,.04);' : '')}">
+              <article class="signal-card" style="border: 2px solid var(--primary); background: rgba(57,208,198,.04);">
                 <div class="signal-top">
                   <div>
                     <h4>${sig.pair} ${dirLabel}</h4>
-                    <div class="mini">${sig.setup_family} · ${tierLabel}</div>
+                    <div class="mini">${sig.setup_family} · Elite Sniper Signal</div>
                   </div>
-                  <span class="status ${statusClass}">${sig.status}</span>
+                  <span class="status green">${sig.status}</span>
                 </div>
                 <div class="metrics">
                   <div class="metric"><span>Speed</span><strong>${sig.speed_phase}</strong></div>
-                  <div class="metric"><span>Hostility</span><strong style="color:${sig.hostility_score > 0.7 ? 'var(--danger)' : 'var(--primary)'};">${sig.hostility_score}</strong></div>
                   <div class="metric"><span>Score</span><strong>${sig.score}</strong></div>
-                  <div class="metric"><span>Allocation</span><strong style="color: ${isVetoed ? 'var(--danger)' : 'var(--primary)'};">$${sig.allocation_size}</strong></div>
+                  <div class="metric"><span>Risk USD</span><strong>$${sig.risk_usd}</strong></div>
+                  <div class="metric"><span>Allocation</span><strong style="color: var(--primary);">$${sig.allocation_size}</strong></div>
                 </div>
                 <div class="confluence">
-                  <div class="conf-row"><div><b>Prism Map</b><small>${sig.prism_map}</small></div><span class="tag ${isVetoed ? 'red' : 'green'}">${isVetoed ? 'BLOCKED' : 'CLEAN'}</span></div>
+                  <div class="conf-row"><div><b>Prism &amp; ST Map</b><small>${sig.prism_map}</small></div><span class="tag green">CLEAN</span></div>
                 </div>
                 <div class="action-row">
-                  <button class="action primary" style="${isVetoed ? 'background: var(--line); color: var(--muted); cursor: not-allowed;' : ''}" onclick="triggerExecute('${sig.pair}', '${sig.setup_family}', ${sig.entry}, ${sig.stop}, ${sig.target}, ${sig.is_long}, ${sig.risk_usd}, ${sig.allocation_size})">${isVetoed ? 'HOSTILE VETOED' : 'EXECUTE HUNT'}</button>
-                  <button class="action ghost" onclick="alert('Hostility Score: ${sig.hostility_score} | Allocation: $${sig.allocation_size}')">View details</button>
+                  <button class="action primary" onclick="triggerExecute('${sig.pair}', '${sig.setup_family}', ${sig.entry}, ${sig.stop}, ${sig.target}, ${sig.is_long}, ${sig.risk_usd}, ${sig.allocation_size})">EXECUTE SNIPER HUNT</button>
                 </div>
               </article>
             `;
             container.innerHTML += cardHtml;
           });
-          const topNonVetoed = feedData.signals.find(s => s.allocation_size > 0) || feedData.signals[0];
-          const topDirLabel = topNonVetoed.direction || (topNonVetoed.is_long ? 'LONG' : 'SHORT');
-          driveContainer.innerHTML = `
-            <div class="signal-card" style="border: 2px solid var(--primary);">
-              <div class="signal-top">
-                <div>
-                  <h4 style="font-size:24px;">${topNonVetoed.pair} ${topDirLabel}</h4>
-                  <div class="mini">${topNonVetoed.setup_family} · Size: $${topNonVetoed.allocation_size}</div>
-                </div>
-                <span class="status green">SCORE ${topNonVetoed.score}</span>
-              </div>
-              <div class="metrics">
-                <div class="metric"><span>Speed</span><strong style="font-size:16px;">${topNonVetoed.speed_phase}</strong></div>
-                <div class="metric"><span>Hostility</span><strong style="font-size:16px; color:var(--primary);">${topNonVetoed.hostility_score}</strong></div>
-                <div class="metric"><span>Score</span><strong style="font-size:16px;">${topNonVetoed.score}</strong></div>
-                <div class="metric"><span>Allocation</span><strong style="font-size:16px; color:var(--primary);">$${topNonVetoed.allocation_size}</strong></div>
-              </div>
-              <div class="action-row" style="margin-top:20px;">
-                <button class="action primary" style="width:100%; padding:18px; font-size:18px;" onclick="triggerExecute('${topNonVetoed.pair}', '${topNonVetoed.setup_family}', ${topNonVetoed.entry}, ${topNonVetoed.stop}, ${topNonVetoed.target}, ${topNonVetoed.is_long}, ${topNonVetoed.risk_usd}, ${topNonVetoed.allocation_size})">⚡ EXECUTE HUNT ($${topNonVetoed.allocation_size})</button>
-              </div>
-            </div>
-          `;
+        } else {
+          container.innerHTML = `<div class="muted-box">No active execution signals currently firing. Live feed panel is clean and ready.</div>`;
+          driveContainer.innerHTML = `<div class="muted-box">No active signals firing right now. Staging monitors are watching the Elite 9.</div>`;
         }
+
+        // Render Elite 9 Universe Staging Grid
+        const universeGrid = document.getElementById('universe-staging-grid');
+        universeGrid.innerHTML = '';
+        if (feedData.staging_monitors && feedData.staging_monitors.length > 0) {
+          feedData.staging_monitors.forEach((m) => {
+            const isBullish = m.supertrend_dir === 'LONG';
+            universeGrid.innerHTML += `
+              <div class="universe-card">
+                <div class="signal-top">
+                  <div>
+                    <h4>${m.pair}</h4>
+                    <div class="mini">Price: $${m.price}</div>
+                  </div>
+                  <span class="status ${isBullish ? 'green' : 'red'}">ST: ${m.supertrend_dir}</span>
+                </div>
+                <div class="metrics" style="grid-template-columns: repeat(2, 1fr); margin-top: 12px;">
+                  <div class="metric"><span>Speed Phase</span><strong>${m.speed_phase}</strong></div>
+                  <div class="metric"><span>ST Distance</span><strong>${m.st_distance_pct}%</strong></div>
+                  <div class="metric"><span>Noise Regime</span><strong>${m.noise_regime}</strong></div>
+                  <div class="metric"><span>Structural Zone</span><strong>${m.structural_zone}</strong></div>
+                </div>
+              </div>
+            `;
+          });
+        } else {
+          universeGrid.innerHTML = `<div class="muted-box">Waiting for staging telemetry poll...</div>`;
+        }
+
+        // Render Positions
         const quickHealth = document.getElementById('quick-health-list');
         const fullHealth = document.getElementById('full-health-list');
         quickHealth.innerHTML = '';
         fullHealth.innerHTML = '';
         if (currentPositionsData.length > 0) {
           currentPositionsData.forEach((pos) => {
-            const isCritical = pos.health_score < 75 || pos.rts_state === 'LIQUIDATION_WARNING' || pos.time_in_range_mins > 15;
+            const isCritical = pos.health_score < 75;
             const statusClass = isCritical ? 'red' : 'green';
             const posDirLabel = pos.direction || (pos.is_long ? 'LONG' : 'SHORT');
             const healthCard = `
@@ -508,14 +408,10 @@
                   <div class="metric"><span>Entry</span><strong>${pos.entry}</strong></div>
                   <div class="metric"><span>Stop</span><strong>${pos.stop}</strong></div>
                   <div class="metric"><span>Target</span><strong>${pos.target}</strong></div>
-                  <div class="metric"><span>Risk</span><strong>$${pos.risk_usd}</strong></div>
-                </div>
-                <div class="confluence">
-                  <div class="conf-row"><div><b>Status / Warning</b><small>${pos.warning}</small></div><span class="tag ${isCritical ? 'red' : 'green'}">DURATION ${pos.time_in_range_mins}M</span></div>
+                  <div class="metric"><span>Allocation</span><strong>$${pos.allocation_size}</strong></div>
                 </div>
                 <div class="action-row">
-                  <button class="action primary" style="${isCritical ? 'background: var(--danger); color: white;' : ''}" onclick="closePosition('${pos.id}')">CLOSE BINARY POSITION</button>
-                  <button class="action ghost" onclick="inspectTelemetry('${pos.id}')">Inspect Telemetry</button>
+                  <button class="action primary" onclick="closePosition('${pos.id}')">CLOSE POSITION</button>
                 </div>
               </article>
             `;
@@ -523,13 +419,12 @@
             fullHealth.innerHTML += healthCard;
           });
         } else {
-          const emptyMsg = `<div class="muted-box">No active open positions. Max 2 slots enforced. Hostile Sentinel immune system active.</div>`;
+          const emptyMsg = `<div class="muted-box">No active open positions. Sniper discretion active with zero slot caps.</div>`;
           quickHealth.innerHTML = emptyMsg;
           fullHealth.innerHTML = emptyMsg;
         }
       } catch (err) {
         console.error("Fetch error:", err);
-        document.getElementById('sync-status').innerText = "SYNC RETRYING...";
       }
     }
     fetchData();
