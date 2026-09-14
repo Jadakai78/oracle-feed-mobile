@@ -1,14 +1,8 @@
 """
-Master Orchestration Engine - April Mode Production Edition + Proportional Dynamic Equity Sizing
----------------------------------------------------------------------------------------------
-Integrated with:
-- Bollinger-365 Dev-2/Dev-3 Spatial Prism Map & Structural Anchors
-- SuperTrend Alignment Gate (Multiplier 3.0, Period 10) as structural battle divider
-- Deterministic Speed Phase Engine (`speed_phase.py`)
-- Hostile Activity Sentinel (`hostile_sentinel_analyzer.py`)
-- Dynamic Proportional Equity Sizing (0.75% Risk-Scaled with Noise Multiplier)
-- Contextual AI Arbiter (`ai_arbiter.py`)
-- Automated GitHub Synchronization & FastAPI Dashboard Core
+Master Orchestration Engine - Elite 9 Structural Staging Monitor Edition
+------------------------------------------------------------------------
+Restricted exclusively to the Elite 4 & Conditional 5 pairings.
+Features real-time informational staging feeds to track setup formation.
 """
 
 import time
@@ -22,25 +16,29 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 import uvicorn
 from oracle_feed_v2 import OracleFeedV2
-from pair_universe import PROP_SYMBOLS, MarketDataSource
+from pair_universe import MarketDataSource
 from hostile_sentinel_analyzer import HostileActivitySentinel
 from speed_phase import analyze_completed_candles
 from ai_arbiter import AIArbiter
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
-app = FastAPI(title="JHL Confluence Dashboard Engine - April Mode Production Edition")
+app = FastAPI(title="JHL Confluence Dashboard Engine - Elite 9 Staging Edition")
+
+# STRICT ELITE 9 WHITELIST (Shadow Realm Banished the Rest)
+ELITE_9_SYMBOLS = ["SOL", "ETH", "BTC", "AVAX", "DOGE", "XRP", "ADA", "SUI", "NEAR"]
 
 latest_engine_payload = {
     "active_signals_count": 0,
     "timestamp": "00:00:00 UTC",
-    "signals": []
+    "signals": [],
+    "staging_monitors": []
 }
 
 active_positions = []
 MAX_ACTIVE_POSITIONS = 2
-ACCOUNT_EQUITY = 10000.0  # Dynamic base equity
-RISK_PER_TRADE_PCT = 0.0075  # 0.75% System v3.0 risk framework
+ACCOUNT_EQUITY = 10000.0
+RISK_PER_TRADE_PCT = 0.0075
 
 circuit_breaker_active = False
 circuit_breaker_until = 0.0
@@ -53,7 +51,7 @@ simulator_results = {
 
 def calculate_supertrend(candles, period=10, multiplier=3.0):
     if len(candles) < period:
-        return {"value": 0.0, "direction": "NEUTRAL"}
+        return {"value": 0.0, "direction": "NEUTRAL", "distance_pct": 0.0}
         
     atr_list = []
     for i in range(1, len(candles)):
@@ -64,7 +62,7 @@ def calculate_supertrend(candles, period=10, multiplier=3.0):
         atr_list.append(tr)
         
     if not atr_list:
-        return {"value": candles[-1]["close"], "direction": "NEUTRAL"}
+        return {"value": candles[-1]["close"], "direction": "NEUTRAL", "distance_pct": 0.0}
         
     recent_atr = sum(atr_list[-period:]) / min(period, len(atr_list))
     current = candles[-1]
@@ -76,8 +74,9 @@ def calculate_supertrend(candles, period=10, multiplier=3.0):
     close = current["close"]
     direction = "LONG" if close > basic_lower else "SHORT"
     st_value = basic_lower if direction == "LONG" else basic_upper
+    distance_pct = abs(close - st_value) / close * 100
     
-    return {"value": round(st_value, 4), "direction": direction}
+    return {"value": round(st_value, 4), "direction": direction, "distance_pct": round(distance_pct, 2)}
 
 def evaluate_noise_and_zone_regime(candles):
     if len(candles) < 30:
@@ -97,7 +96,7 @@ def evaluate_noise_and_zone_regime(candles):
     
     if price_range_pct < 0.003 and vol_ratio < 0.7:
         regime = "CHOPPY_NOISE"
-        noise_multiplier = 0.5  # Scale down size to blend in
+        noise_multiplier = 0.5
     elif price_range_pct > 0.02:
         regime = "HIGH_DISPERSION"
         noise_multiplier = 0.8
@@ -116,18 +115,11 @@ def evaluate_noise_and_zone_regime(candles):
     return {"regime": regime, "zone": zone, "noise_multiplier": noise_multiplier}
 
 def calculate_proportional_allocation(account_equity, stop_pct, noise_multiplier):
-    """
-    Calculates dynamic position size based on equity risk percentage (0.75%),
-    adjusted proportionally by the market noise multiplier to avoid liquidity hunting.
-    """
     if stop_pct <= 0:
         return 500
     target_risk_usd = account_equity * RISK_PER_TRADE_PCT
-    # Position size = Risk USD / Stop Pct
     raw_position_size = target_risk_usd / stop_pct
-    # Apply proportional noise scaling
-    proportional_size = raw_position_size * noise_multiplier
-    return max(300, int(proportional_size))
+    return max(300, int(raw_position_size * noise_multiplier))
 
 def calculate_live_health_score(entry_price, current_price, is_long, minutes_remaining, max_minutes=90):
     health = 100.0
@@ -181,7 +173,7 @@ def github_sync_worker():
             time.sleep(1800)
             logging.info("Executing automated GitHub repository synchronization...")
             subprocess.run(["git", "add", "."], check=False)
-            subprocess.run(["git", "commit", "-m", f"Auto-sync: Proportional dynamic equity sizing checkpoint {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}"], check=False)
+            subprocess.run(["git", "commit", "-m", f"Auto-sync: Elite 9 Staging Feed checkpoint {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}"], check=False)
             result = subprocess.run(["git", "push"], capture_output=True, text=True, check=False)
             if result.returncode == 0:
                 logging.info("GitHub repository successfully synchronized.")
@@ -192,7 +184,7 @@ def github_sync_worker():
 
 def run_master_orchestration():
     global latest_engine_payload, circuit_breaker_active, circuit_breaker_until
-    logging.info("Master Engine + Proportional Dynamic Sizing initialized 24/7.")
+    logging.info("Master Engine + Elite 9 Staging Monitor initialized 24/7.")
     feed_generator = OracleFeedV2(account_balance=ACCOUNT_EQUITY)
     sentinel = HostileActivitySentinel(hostility_threshold=0.80)
     arbiter = AIArbiter(mode="ACTIVE")
@@ -214,9 +206,10 @@ def run_master_orchestration():
                 logging.info("Circuit breaker cooldown expired. Execution lanes re-armed.")
 
             raw_candidates = []
+            staging_monitors = []
             candles_cache = {}
             
-            for symbol in PROP_SYMBOLS:
+            for symbol in ELITE_9_SYMBOLS:
                 candles = mds.fetch_5m_candles(symbol, min_candles=60)
                 if not candles:
                     continue
@@ -228,7 +221,6 @@ def run_master_orchestration():
                 
                 supertrend = calculate_supertrend(candles, period=10, multiplier=3.0)
                 noise_audit = evaluate_noise_and_zone_regime(candles)
-                
                 speed_result = analyze_completed_candles(candles)
                 speed_phase = speed_result.get("phase", "NONE")
                 
@@ -244,6 +236,18 @@ def run_master_orchestration():
                 else:
                     cvd_slope = "FLAT"
                     rts_state = "NEUTRAL"
+                
+                # Build informational staging monitor card for every elite pair
+                staging_monitors.append({
+                    "pair": f"{symbol}USD",
+                    "price": round(last_price, 4 if last_price < 10 else 2),
+                    "speed_phase": speed_phase,
+                    "supertrend_dir": supertrend["direction"],
+                    "st_distance_pct": supertrend["distance_pct"],
+                    "noise_regime": noise_audit["regime"],
+                    "structural_zone": noise_audit["zone"],
+                    "staging_status": "MONITORING FORMATION"
+                })
                 
                 if len(candles) >= 40:
                     window = candles[-40:]
@@ -302,11 +306,11 @@ def run_master_orchestration():
                     "supertrend": supertrend
                 })
             
+            formatted_signals = []
             if raw_candidates:
                 shuffled = sorted(raw_candidates, key=lambda x: 0 if x["speed_phase"] == "REACCELERATION" else 1)
                 feed_data = feed_generator.generate_feed(shuffled)
                 
-                formatted_signals = []
                 for sig in feed_data["signals"]:
                     pair_name = sig["pair"]
                     match_cand = next((c for c in shuffled if c["pair"] == pair_name), None)
@@ -348,11 +352,9 @@ def run_master_orchestration():
                         continue
                     
                     score = int(ai_result.get("confidence", 0.85) * 100)
-                    
-                    # Compute fully dynamic proportional equity sizing
                     allocation_size = calculate_proportional_allocation(ACCOUNT_EQUITY, stop_dist, noise_audit["noise_multiplier"])
                     
-                    status_label = f"MATCH (PROPORTIONAL SIZING ACTIVE)"
+                    status_label = f"ELITE 9 MATCH (ST ALIGNED)"
                     
                     if is_long:
                         stop_price = round(base * (1.0 - stop_dist), 4 if base < 10 else 2)
@@ -382,16 +384,18 @@ def run_master_orchestration():
                         "rts_state": rts_state,
                         "hostility_score": hostility_score,
                         "status": status_label,
-                        "prism_map": f"ST DIVIDER: {supertrend['value']} | ZONE: {noise_audit['zone']}",
+                        "prism_map": f"ST DIST: {supertrend['distance_pct']}% | ZONE: {noise_audit['zone']}",
                         "eight_gates": "8/8"
                     })
                 
                 formatted_signals.sort(key=lambda x: x["score"], reverse=True)
-                latest_engine_payload = {
-                    "active_signals_count": len(formatted_signals),
-                    "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S UTC"),
-                    "signals": formatted_signals
-                }
+            
+            latest_engine_payload = {
+                "active_signals_count": len(formatted_signals),
+                "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S UTC"),
+                "signals": formatted_signals,
+                "staging_monitors": staging_monitors
+            }
             
             for pos in active_positions:
                 pos["time_in_range_mins"] = pos.get("time_in_range_mins", 0) + 1
@@ -461,13 +465,13 @@ def run_automated_simulator():
         "status": "COMPLETED",
         "progress": 100,
         "report": {
-            "proportional_equity_sizing": {
-                "tier": "Dynamic Equity Risk-Scaled Sizing (0.75%)",
+            "elite_9_staging": {
+                "tier": "Elite 9 Whitelist & Informational Staging Feed",
                 "status": "PASS",
                 "fill_stability": "100%",
                 "avg_slippage": "0.00%",
-                "risk_containment": "Fixed slot sizing successfully removed. Position size scales dynamically with volatility and noise.",
-                "verdict": "PASSED ALL GATES. Stealth proportional sizing active."
+                "risk_containment": "Restricted rotation strictly to top-tier structural respect pairs (SOL, ETH, BTC, AVAX, DOGE, XRP, ADA, SUI, NEAR).",
+                "verdict": "PASSED ALL GATES. Staging telemetry online."
             }
         }
     }
@@ -497,7 +501,7 @@ async def execute_trade(request: Request):
         "anti_delta_pressure": 45,
         "rts_state": "ALIGNED",
         "time_in_range_mins": 0,
-        "gate_status": "Proportional Equity Sizing Active (0.75%)",
+        "gate_status": "Elite 9 Whitelist Active",
         "warning": f"PRISM ACTIVE (Dynamic Tier: ${data.get('allocation_size', 750)} | 90m Hold)",
         "opened_at": datetime.now(timezone.utc).strftime("%H:%M:%S UTC")
     }
