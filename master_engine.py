@@ -1,8 +1,10 @@
 """
-Master Orchestration Engine - Elite 9 Structural Staging Monitor Edition
+Master Orchestration Engine - Sniper Grade Elite 9 Command Center Edition
 ------------------------------------------------------------------------
-Restricted exclusively to the Elite 4 & Conditional 5 pairings.
-Features real-time informational staging feeds to track setup formation.
+- Zero position caps, zero cooldowns. Unlimited sniper discretion.
+- Permanent 9-pairing staging telemetry feed (PRISM, SuperTrend, Noise).
+- Clean-state live execution panel.
+- Reconfigured Universe & News tabs.
 """
 
 import time
@@ -23,9 +25,8 @@ from ai_arbiter import AIArbiter
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
-app = FastAPI(title="JHL Confluence Dashboard Engine - Elite 9 Staging Edition")
+app = FastAPI(title="JHL Confluence Dashboard Engine - Sniper Grade Elite 9")
 
-# STRICT ELITE 9 WHITELIST (Shadow Realm Banished the Rest)
 ELITE_9_SYMBOLS = ["SOL", "ETH", "BTC", "AVAX", "DOGE", "XRP", "ADA", "SUI", "NEAR"]
 
 latest_engine_payload = {
@@ -36,18 +37,9 @@ latest_engine_payload = {
 }
 
 active_positions = []
-MAX_ACTIVE_POSITIONS = 2
+# UNLIMITED SNIPER DISCRETION: Cap and cooldown removed.
 ACCOUNT_EQUITY = 10000.0
 RISK_PER_TRADE_PCT = 0.0075
-
-circuit_breaker_active = False
-circuit_breaker_until = 0.0
-
-simulator_results = {
-    "status": "IDLE",
-    "progress": 0,
-    "report": {}
-}
 
 def calculate_supertrend(candles, period=10, multiplier=3.0):
     if len(candles) < period:
@@ -173,7 +165,7 @@ def github_sync_worker():
             time.sleep(1800)
             logging.info("Executing automated GitHub repository synchronization...")
             subprocess.run(["git", "add", "."], check=False)
-            subprocess.run(["git", "commit", "-m", f"Auto-sync: Elite 9 Staging Feed checkpoint {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}"], check=False)
+            subprocess.run(["git", "commit", "-m", f"Auto-sync: Sniper Grade Elite 9 Command Center {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}"], check=False)
             result = subprocess.run(["git", "push"], capture_output=True, text=True, check=False)
             if result.returncode == 0:
                 logging.info("GitHub repository successfully synchronized.")
@@ -183,8 +175,8 @@ def github_sync_worker():
             logging.error(f"Error during GitHub synchronization worker: {e}")
 
 def run_master_orchestration():
-    global latest_engine_payload, circuit_breaker_active, circuit_breaker_until
-    logging.info("Master Engine + Elite 9 Staging Monitor initialized 24/7.")
+    global latest_engine_payload
+    logging.info("Master Engine + Elite 9 Command Center initialized 24/7.")
     feed_generator = OracleFeedV2(account_balance=ACCOUNT_EQUITY)
     sentinel = HostileActivitySentinel(hostility_threshold=0.80)
     arbiter = AIArbiter(mode="ACTIVE")
@@ -201,10 +193,6 @@ def run_master_orchestration():
     
     while True:
         try:
-            if circuit_breaker_active and time.time() > circuit_breaker_until:
-                circuit_breaker_active = False
-                logging.info("Circuit breaker cooldown expired. Execution lanes re-armed.")
-
             raw_candidates = []
             staging_monitors = []
             candles_cache = {}
@@ -237,7 +225,7 @@ def run_master_orchestration():
                     cvd_slope = "FLAT"
                     rts_state = "NEUTRAL"
                 
-                # Build informational staging monitor card for every elite pair
+                # Permanent Staging Card for all 9 pairs
                 staging_monitors.append({
                     "pair": f"{symbol}USD",
                     "price": round(last_price, 4 if last_price < 10 else 2),
@@ -246,7 +234,7 @@ def run_master_orchestration():
                     "st_distance_pct": supertrend["distance_pct"],
                     "noise_regime": noise_audit["regime"],
                     "structural_zone": noise_audit["zone"],
-                    "staging_status": "MONITORING FORMATION"
+                    "staging_status": "MONITORING SETUP FORMATION"
                 })
                 
                 if len(candles) >= 40:
@@ -354,7 +342,7 @@ def run_master_orchestration():
                     score = int(ai_result.get("confidence", 0.85) * 100)
                     allocation_size = calculate_proportional_allocation(ACCOUNT_EQUITY, stop_dist, noise_audit["noise_multiplier"])
                     
-                    status_label = f"ELITE 9 MATCH (ST ALIGNED)"
+                    status_label = f"SNIPER SIGNAL READY"
                     
                     if is_long:
                         stop_price = round(base * (1.0 - stop_dist), 4 if base < 10 else 2)
@@ -444,47 +432,21 @@ def get_feed_api():
 def get_positions_api():
     return {
         "positions": active_positions,
-        "max_cap": MAX_ACTIVE_POSITIONS,
-        "circuit_breaker_active": circuit_breaker_active,
-        "circuit_breaker_remaining_secs": max(0, int(circuit_breaker_until - time.time())) if circuit_breaker_active else 0
+        "max_cap": "UNLIMITED",
+        "cooldown_active": False
     }
 
-@app.get("/api/simulator/status", response_class=JSONResponse)
-def get_simulator_status():
-    return simulator_results
-
-@app.post("/api/simulator/run", response_class=JSONResponse)
-def run_automated_simulator():
-    global simulator_results
-    simulator_results = {"status": "RUNNING", "progress": 10, "report": {}}
-    time.sleep(1.5)
-    simulator_results["progress"] = 50
-    time.sleep(1.5)
-    simulator_results["progress"] = 100
-    simulator_results = {
-        "status": "COMPLETED",
-        "progress": 100,
-        "report": {
-            "elite_9_staging": {
-                "tier": "Elite 9 Whitelist & Informational Staging Feed",
-                "status": "PASS",
-                "fill_stability": "100%",
-                "avg_slippage": "0.00%",
-                "risk_containment": "Restricted rotation strictly to top-tier structural respect pairs (SOL, ETH, BTC, AVAX, DOGE, XRP, ADA, SUI, NEAR).",
-                "verdict": "PASSED ALL GATES. Staging telemetry online."
-            }
-        }
+@app.get("/api/universe/status", response_class=JSONResponse)
+def get_universe_telemetry():
+    return {
+        "status": "ONLINE",
+        "active_whitelist": ELITE_9_SYMBOLS,
+        "staging_monitors": latest_engine_payload.get("staging_monitors", [])
     }
-    return simulator_results
 
 @app.post("/api/execute", response_class=JSONResponse)
 async def execute_trade(request: Request):
-    global active_positions, circuit_breaker_active
-    if circuit_breaker_active:
-        return JSONResponse(status_code=400, content={"status": "ERROR", "reason": "Circuit breaker active!"})
-    if len(active_positions) >= MAX_ACTIVE_POSITIONS:
-        return JSONResponse(status_code=400, content={"status": "ERROR", "reason": "Max position cap reached."})
-    
+    global active_positions
     data = await request.json()
     new_position = {
         "id": f"pos_{int(time.time())}",
@@ -501,24 +463,20 @@ async def execute_trade(request: Request):
         "anti_delta_pressure": 45,
         "rts_state": "ALIGNED",
         "time_in_range_mins": 0,
-        "gate_status": "Elite 9 Whitelist Active",
+        "gate_status": "Sniper Discretion Active",
         "warning": f"PRISM ACTIVE (Dynamic Tier: ${data.get('allocation_size', 750)} | 90m Hold)",
         "opened_at": datetime.now(timezone.utc).strftime("%H:%M:%S UTC")
     }
-    active_positions = [p for p in active_positions if p["pair"] != data.get("pair")]
     active_positions.insert(0, new_position)
     return {"status": "SUCCESS", "position": new_position}
 
 @app.post("/api/close", response_class=JSONResponse)
 async def close_trade(request: Request):
-    global active_positions, circuit_breaker_active, circuit_breaker_until
+    global active_positions
     try:
         body = await request.json()
         pos_id = body.get("id")
         active_positions = [p for p in active_positions if p["id"] != pos_id]
-        if len(active_positions) == 0:
-            circuit_breaker_active = True
-            circuit_breaker_until = time.time() + 900
         return {"status": "CLOSED"}
     except Exception as e:
         return {"status": "ERROR", "reason": str(e)}
