@@ -3,8 +3,9 @@ Master Orchestration Engine - Sniper Grade Elite 9 Command Center Edition
 ------------------------------------------------------------------------
 - Zero position caps, zero cooldowns. Unlimited sniper discretion.
 - Permanent 9-pairing staging telemetry feed (PRISM, SuperTrend, Noise).
+- Volume-Driven Stealth & Expansion Sizing (Hides footprint in low volume, 
+  flexes up aggressively to heavy size during volume expansion for big wins).
 - Clean-state live execution panel.
-- Reconfigured Universe & News tabs.
 """
 
 import time
@@ -37,9 +38,7 @@ latest_engine_payload = {
 }
 
 active_positions = []
-# UNLIMITED SNIPER DISCRETION: Cap and cooldown removed.
 ACCOUNT_EQUITY = 10000.0
-RISK_PER_TRADE_PCT = 0.0075
 
 def calculate_supertrend(candles, period=10, multiplier=3.0):
     if len(candles) < period:
@@ -106,12 +105,41 @@ def evaluate_noise_and_zone_regime(candles):
         
     return {"regime": regime, "zone": zone, "noise_multiplier": noise_multiplier}
 
-def calculate_proportional_allocation(account_equity, stop_pct, noise_multiplier):
+def calculate_dynamic_stealth_allocation(account_equity, stop_pct, candles, noise_multiplier):
+    """
+    Volume-Driven Stealth & Expansion Sizing Engine:
+    - Shrinks footprint during low volume / quiet tape (Ghost Tier).
+    - Flexes up aggressively during volume expansion (Big Money Tier).
+    """
     if stop_pct <= 0:
-        return 500
-    target_risk_usd = account_equity * RISK_PER_TRADE_PCT
-    raw_position_size = target_risk_usd / stop_pct
-    return max(300, int(raw_position_size * noise_multiplier))
+        return 400, "DEFAULT"
+        
+    base_risk_usd = account_equity * 0.0075
+    raw_position_size = base_risk_usd / stop_pct
+    
+    if len(candles) >= 20:
+        recent_vols = [c["volume"] for c in candles[-20:]]
+        avg_vol = sum(recent_vols) / len(recent_vols)
+        latest_vol = candles[-1]["volume"]
+        vol_expansion_ratio = latest_vol / max(1.0, avg_vol)
+    else:
+        vol_expansion_ratio = 1.0
+        
+    if vol_expansion_ratio > 1.8:
+        volume_scale_factor = 2.0
+        stealth_tag = "AGGRESSIVE EXPANSION ($BIG MONEY TIER$)"
+    elif vol_expansion_ratio < 0.7:
+        volume_scale_factor = 0.4
+        stealth_tag = "STEALTH MASK ACTIVE (GHOST TIER)"
+    else:
+        volume_scale_factor = 1.0
+        stealth_tag = "NORMAL PROPORTIONAL TIER"
+        
+    final_multiplier = volume_scale_factor * noise_multiplier
+    final_allocation = int(raw_position_size * final_multiplier)
+    final_allocation = max(300, min(4000, final_allocation))
+    
+    return final_allocation, stealth_tag
 
 def calculate_live_health_score(entry_price, current_price, is_long, minutes_remaining, max_minutes=90):
     health = 100.0
@@ -165,7 +193,7 @@ def github_sync_worker():
             time.sleep(1800)
             logging.info("Executing automated GitHub repository synchronization...")
             subprocess.run(["git", "add", "."], check=False)
-            subprocess.run(["git", "commit", "-m", f"Auto-sync: Sniper Grade Elite 9 Command Center {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}"], check=False)
+            subprocess.run(["git", "commit", "-m", f"Auto-sync: Volume-driven stealth & expansion sizing checkpoint {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}"], check=False)
             result = subprocess.run(["git", "push"], capture_output=True, text=True, check=False)
             if result.returncode == 0:
                 logging.info("GitHub repository successfully synchronized.")
@@ -176,7 +204,7 @@ def github_sync_worker():
 
 def run_master_orchestration():
     global latest_engine_payload
-    logging.info("Master Engine + Elite 9 Command Center initialized 24/7.")
+    logging.info("Master Engine + Volume-Driven Sizing initialized 24/7.")
     feed_generator = OracleFeedV2(account_balance=ACCOUNT_EQUITY)
     sentinel = HostileActivitySentinel(hostility_threshold=0.80)
     arbiter = AIArbiter(mode="ACTIVE")
@@ -225,7 +253,6 @@ def run_master_orchestration():
                     cvd_slope = "FLAT"
                     rts_state = "NEUTRAL"
                 
-                # Permanent Staging Card for all 9 pairs
                 staging_monitors.append({
                     "pair": f"{symbol}USD",
                     "price": round(last_price, 4 if last_price < 10 else 2),
@@ -291,7 +318,8 @@ def run_master_orchestration():
                     "rts_state": rts_state,
                     "anti_delta_score": anti_delta_score,
                     "noise_audit": noise_audit,
-                    "supertrend": supertrend
+                    "supertrend": supertrend,
+                    "candles": candles
                 })
             
             formatted_signals = []
@@ -316,6 +344,7 @@ def run_master_orchestration():
                     anti_delta_score = match_cand["anti_delta_score"]
                     noise_audit = match_cand["noise_audit"]
                     supertrend = match_cand["supertrend"]
+                    candles = match_cand["candles"]
                     
                     is_hostile, hostility_score, hostility_reason = sentinel.evaluate_hostility({
                         "offensive_review": {
@@ -340,9 +369,13 @@ def run_master_orchestration():
                         continue
                     
                     score = int(ai_result.get("confidence", 0.85) * 100)
-                    allocation_size = calculate_proportional_allocation(ACCOUNT_EQUITY, stop_dist, noise_audit["noise_multiplier"])
                     
-                    status_label = f"SNIPER SIGNAL READY"
+                    # Volume-Driven Stealth & Expansion Sizing
+                    allocation_size, stealth_tag = calculate_dynamic_stealth_allocation(
+                        ACCOUNT_EQUITY, stop_dist, candles, noise_audit["noise_multiplier"]
+                    )
+                    
+                    status_label = f"SNIPER SIGNAL ({stealth_tag})"
                     
                     if is_long:
                         stop_price = round(base * (1.0 - stop_dist), 4 if base < 10 else 2)
@@ -372,7 +405,7 @@ def run_master_orchestration():
                         "rts_state": rts_state,
                         "hostility_score": hostility_score,
                         "status": status_label,
-                        "prism_map": f"ST DIST: {supertrend['distance_pct']}% | ZONE: {noise_audit['zone']}",
+                        "prism_map": f"ST DIST: {supertrend['distance_pct']}% | {stealth_tag}",
                         "eight_gates": "8/8"
                     })
                 
@@ -463,7 +496,7 @@ async def execute_trade(request: Request):
         "anti_delta_pressure": 45,
         "rts_state": "ALIGNED",
         "time_in_range_mins": 0,
-        "gate_status": "Sniper Discretion Active",
+        "gate_status": "Volume-Driven Stealth Sizing Active",
         "warning": f"PRISM ACTIVE (Dynamic Tier: ${data.get('allocation_size', 750)} | 90m Hold)",
         "opened_at": datetime.now(timezone.utc).strftime("%H:%M:%S UTC")
     }
