@@ -95,7 +95,9 @@ def _body_fraction(candle: Dict[str, float]) -> float:
 def _find_latest_long_impulse(
     candles: List[Dict[str, float]],
 ) -> Optional[Dict[str, Any]]:
-    for index in range(len(candles) - 1, ATR_PERIOD - 1, -1):
+    # Restrict search to the active recent window to avoid expired historical ghosts
+    start_search = max(ATR_PERIOD, len(candles) - 25)
+    for index in range(len(candles) - 1, start_search - 1, -1):
         candle = candles[index]
         atr = _atr_before_index(candles, index)
 
@@ -106,12 +108,10 @@ def _find_latest_long_impulse(
         is_bullish = candle["close"] > candle["open"]
         has_strong_body = _body_fraction(candle) >= IMPULSE_MIN_BODY_FRACTION
         
-        # Calculate rolling volume baseline for dynamic relaxation
         recent_vols = [c["volume"] for c in candles[max(0, index-10):index]]
         avg_vol = sum(recent_vols) / len(recent_vols) if recent_vols else candle["volume"]
         vol_ratio = candle["volume"] / max(1.0, avg_vol)
         
-        # Dynamically lower ATR requirement if volume is expanding aggressively
         effective_min_atr = IMPULSE_MIN_ATR * 0.8 if vol_ratio > 1.5 else IMPULSE_MIN_ATR
         has_large_range = candle_range >= atr * effective_min_atr
 
@@ -123,14 +123,11 @@ def _find_latest_long_impulse(
 
     return None
 
+
 def _long_controlled_pullback(
     candles: List[Dict[str, float]],
     impulse_index: int,
 ) -> Optional[Dict[str, Any]]:
-    """
-    Return pullback measurements only when all completed post-impulse bars
-    form a bounded, lower-participation, non-bullish pullback.
-    """
     impulse = candles[impulse_index]
     pullback = candles[impulse_index + 1:]
 
@@ -176,7 +173,8 @@ def _long_controlled_pullback(
 def _find_latest_short_impulse(
     candles: List[Dict[str, float]],
 ) -> Optional[Dict[str, Any]]:
-    for index in range(len(candles) - 1, ATR_PERIOD - 1, -1):
+    start_search = max(ATR_PERIOD, len(candles) - 25)
+    for index in range(len(candles) - 1, start_search - 1, -1):
         candle = candles[index]
         atr = _atr_before_index(candles, index)
 
@@ -188,7 +186,13 @@ def _find_latest_short_impulse(
         has_strong_body = (
             _body_fraction(candle) >= IMPULSE_MIN_BODY_FRACTION
         )
-        has_large_range = candle_range >= atr * IMPULSE_MIN_ATR
+        
+        recent_vols = [c["volume"] for c in candles[max(0, index-10):index]]
+        avg_vol = sum(recent_vols) / len(recent_vols) if recent_vols else candle["volume"]
+        vol_ratio = candle["volume"] / max(1.0, avg_vol)
+        
+        effective_min_atr = IMPULSE_MIN_ATR * 0.8 if vol_ratio > 1.5 else IMPULSE_MIN_ATR
+        has_large_range = candle_range >= atr * effective_min_atr
 
         if is_bearish and has_strong_body and has_large_range:
             return {
@@ -248,17 +252,11 @@ def _short_controlled_pullback(
             6,
         ),
     }
+
+
 def analyze_completed_candles(
     candles: List[Dict[str, float]],
 ) -> Dict[str, Any]:
-    """
-    Analyze completed OHLCV candles.
-
-    V1 behavior:
-    - Identify the newest qualifying long impulse.
-    - Return CONTROLLED_PULLBACK for a valid bounded pullback.
-    - Otherwise return WATCH while the impulse remains in its watch window.
-    """
     result = _empty_result()
 
     if len(candles) < ATR_PERIOD + 1:
@@ -300,223 +298,7 @@ def analyze_completed_candles(
             result["reclaim_confirmed"] = False
             result["decay_reason"] = "structure_invalidated"
             return result
-    if latest_short_impulse is not None:
-        short_index = latest_short_impulse["index"]
-        short_age = len(candles) - 1 - short_index
-        short_candle = candles[short_index]
-        short_post_impulse = candles[short_index + 1:]
-        short_distance = short_candle["open"] - short_candle["low"]
 
-        if short_post_impulse and short_distance > 0:
-            short_highest_close = max(
-                candle["close"] for candle in short_post_impulse
-            )
-            short_depth = (
-                (short_highest_close - short_candle["low"])
-                / short_distance
-            )
-
-            if (
-                candles[-1]["close"] < short_candle["high"]
-                and short_depth > MAX_PULLBACK_FRACTION
-            ):
-                result["direction"] = "SHORT"
-                result["phase"] = PHASE_DECAY
-                result["impulse_age_bars"] = short_age
-                result["impulse_size_atr"] = round(
-                    latest_short_impulse["size_atr"],
-                    6,
-                )
-                result["pullback_depth_fraction"] = round(
-                    short_depth,
-                    6,
-                )
-                result["pullback_bars"] = len(short_post_impulse)
-                result["reclaim_confirmed"] = False
-                result["decay_reason"] = "pullback_depth_breached"
-                return result
-
-    if latest_long_impulse is not None:
-        long_index = latest_long_impulse["index"]
-        long_age = len(candles) - 1 - long_index
-        long_candle = candles[long_index]
-        long_post_impulse = candles[long_index + 1:]
-        long_distance = long_candle["high"] - long_candle["open"]
-
-        if long_post_impulse and long_distance > 0:
-            long_lowest_close = min(
-                candle["close"] for candle in long_post_impulse
-            )
-            long_depth = (
-                (long_candle["high"] - long_lowest_close)
-                / long_distance
-            )
-
-            if (
-                candles[-1]["close"] > long_candle["low"]
-                and long_depth > MAX_PULLBACK_FRACTION
-            ):
-                result["direction"] = "LONG"
-                result["phase"] = PHASE_DECAY
-                result["impulse_age_bars"] = long_age
-                result["impulse_size_atr"] = round(
-                    latest_long_impulse["size_atr"],
-                    6,
-                )
-                result["pullback_depth_fraction"] = round(
-                    long_depth,
-                    6,
-                )
-                result["pullback_bars"] = len(long_post_impulse)
-                result["reclaim_confirmed"] = False
-                result["decay_reason"] = "pullback_depth_breached"
-                return result
-
-
-    for impulse_index in range(ATR_PERIOD, len(candles) - 4):
-        short_impulse_candle = candles[impulse_index]
-        pullback_one = candles[impulse_index + 1]
-        pullback_two = candles[impulse_index + 2]
-        reclaim_one = candles[impulse_index + 3]
-        reclaim_two = candles[impulse_index + 4]
-
-        atr = _atr_before_index(candles, impulse_index)
-        impulse_range = (
-            short_impulse_candle["high"] - short_impulse_candle["low"]
-        )
-
-        if (
-            atr is None
-            or atr <= 0
-            or short_impulse_candle["close"] >= short_impulse_candle["open"]
-            or _body_fraction(short_impulse_candle) < IMPULSE_MIN_BODY_FRACTION
-            or impulse_range < atr * IMPULSE_MIN_ATR
-            or short_impulse_candle["volume"] <= 0
-        ):
-            continue
-
-        impulse_low = short_impulse_candle["low"]
-        impulse_origin = short_impulse_candle["open"]
-        impulse_distance = impulse_origin - impulse_low
-
-        if impulse_distance <= 0:
-            continue
-
-        if not (
-            reclaim_one["close"] < reclaim_one["open"]
-            and reclaim_two["close"] < reclaim_two["open"]
-            and _body_fraction(reclaim_one) >= RECLAIM_MIN_BODY_FRACTION
-            and _body_fraction(reclaim_two) >= RECLAIM_MIN_BODY_FRACTION
-            and reclaim_one["close"] < impulse_low
-            and reclaim_two["close"] < impulse_low
-            and reclaim_two["close"] <= reclaim_one["close"]
-        ):
-            continue
-
-        highest_pullback_close = max(
-            pullback_one["close"],
-            pullback_two["close"],
-        )
-        if highest_pullback_close >= impulse_origin:
-            continue
-
-        pullback_depth_fraction = (
-            highest_pullback_close - impulse_low
-        ) / impulse_distance
-
-        average_pullback_volume = (
-            pullback_one["volume"] + pullback_two["volume"]
-        ) / 2
-        pullback_volume_vs_impulse = (
-            average_pullback_volume / short_impulse_candle["volume"]
-        )
-
-        if (
-            pullback_depth_fraction > PULLBACK_MAX_FRACTION
-            or pullback_volume_vs_impulse > PULLBACK_VOLUME_MAX_FRACTION
-        ):
-            continue
-
-        result["direction"] = "SHORT"
-        result["phase"] = PHASE_REACCELERATION
-        result["impulse_age_bars"] = len(candles) - 1 - impulse_index
-        result["impulse_size_atr"] = round(impulse_range / atr, 6)
-        result["reclaim_confirmed"] = True
-        result["decay_reason"] = None
-        result["pullback_depth_fraction"] = round(
-            pullback_depth_fraction,
-            6,
-        )
-        result["pullback_bars"] = 2
-        result["pullback_volume_vs_impulse"] = round(
-            pullback_volume_vs_impulse,
-            6,
-        )
-        return result
-    for impulse_index in range(ATR_PERIOD, len(candles) - 4):
-        impulse_candle = candles[impulse_index]
-        pullback_one = candles[impulse_index + 1]
-        pullback_two = candles[impulse_index + 2]
-        reclaim_one = candles[impulse_index + 3]
-        reclaim_two = candles[impulse_index + 4]
-
-        impulse_high = impulse_candle["high"]
-        impulse_origin = impulse_candle["open"]
-        impulse_distance = impulse_high - impulse_origin
-
-        if impulse_distance <= 0 or impulse_candle["volume"] <= 0:
-            continue
-
-        if not (
-            reclaim_one["close"] > reclaim_one["open"]
-            and reclaim_two["close"] > reclaim_two["open"]
-            and _body_fraction(reclaim_one) >= IMPULSE_MIN_BODY_FRACTION
-            and _body_fraction(reclaim_two) >= IMPULSE_MIN_BODY_FRACTION
-            and reclaim_one["close"] > impulse_high
-            and reclaim_two["close"] > impulse_high
-            and reclaim_two["close"] >= reclaim_one["close"]
-        ):
-            continue
-
-        lowest_pullback_close = min(
-            pullback_one["close"],
-            pullback_two["close"],
-        )
-        if lowest_pullback_close <= impulse_origin:
-            continue
-
-        pullback_depth_fraction = (
-            impulse_high - lowest_pullback_close
-        ) / impulse_distance
-
-        average_pullback_volume = (
-            pullback_one["volume"] + pullback_two["volume"]
-        ) / 2
-        pullback_volume_vs_impulse = (
-            average_pullback_volume / impulse_candle["volume"]
-        )
-
-        if (
-            pullback_depth_fraction > PULLBACK_MAX_FRACTION
-            or pullback_volume_vs_impulse > PULLBACK_VOLUME_MAX_FRACTION
-        ):
-            continue
-
-        result["direction"] = "LONG"
-        result["phase"] = PHASE_REACCELERATION
-        result["impulse_age_bars"] = len(candles) - 1 - impulse_index
-        result["reclaim_confirmed"] = True
-        result["decay_reason"] = None
-        result["pullback_depth_fraction"] = round(
-            pullback_depth_fraction,
-            6,
-        )
-        result["pullback_bars"] = 2
-        result["pullback_volume_vs_impulse"] = round(
-            pullback_volume_vs_impulse,
-            6,
-        )
-        return result
     short_impulse = _find_latest_short_impulse(candles)
     if short_impulse is not None:
         short_impulse_age_bars = (
@@ -553,43 +335,7 @@ def analyze_completed_candles(
 
         result["phase"] = PHASE_WATCH
         return result
-    expired_long_impulse = None
 
-    for impulse_index in range(ATR_PERIOD, len(candles)):
-        candidate = candles[impulse_index]
-        atr = _atr_before_index(candles, impulse_index)
-
-        if atr is None or atr <= 0:
-            continue
-
-        candidate_range = candidate["high"] - candidate["low"]
-
-        if (
-            candidate["close"] > candidate["open"]
-            and _body_fraction(candidate) >= IMPULSE_MIN_BODY_FRACTION
-            and candidate_range >= atr * IMPULSE_MIN_ATR
-        ):
-            candidate_age = len(candles) - 1 - impulse_index
-
-            if candidate_age > MAX_WATCH_BARS:
-                expired_long_impulse = {
-                    "index": impulse_index,
-                    "size_atr": candidate_range / atr,
-                    "age": candidate_age,
-                }
-                break
-
-    if expired_long_impulse is not None:
-        result["direction"] = "LONG"
-        result["phase"] = PHASE_DECAY
-        result["impulse_age_bars"] = expired_long_impulse["age"]
-        result["impulse_size_atr"] = round(
-            expired_long_impulse["size_atr"],
-            6,
-        )
-        result["reclaim_confirmed"] = False
-        result["decay_reason"] = "watch_window_expired"
-        return result
     impulse = _find_latest_long_impulse(candles)
     if impulse is None:
         return result
@@ -610,9 +356,3 @@ def analyze_completed_candles(
 
     result["phase"] = PHASE_WATCH
     return result
-
-
-
-
-
-
