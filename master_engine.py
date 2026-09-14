@@ -3,9 +3,8 @@ Master Orchestration Engine - Sniper Grade Elite 9 Command Center Edition
 ------------------------------------------------------------------------
 - Zero position caps, zero cooldowns. Unlimited sniper discretion.
 - Permanent 9-pairing staging telemetry feed (PRISM, SuperTrend, Noise).
-- Volume-Driven Stealth & Expansion Sizing (Hides footprint in low volume, 
-  flexes up aggressively to heavy size during volume expansion for big wins).
-- Clean-state live execution panel.
+- Volume-Driven Stealth & Expansion Sizing.
+- Elite 9 Pair-Specific Weapon Mapping Matrix (Enforces tailored setup weapons per asset).
 """
 
 import time
@@ -26,9 +25,23 @@ from ai_arbiter import AIArbiter
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
-app = FastAPI(title="JHL Confluence Dashboard Engine - Sniper Grade Elite 9")
+app = FastAPI(title="JHL Confluence Dashboard Engine - Sniper Grade Elite 9 Matrix")
 
 ELITE_9_SYMBOLS = ["SOL", "ETH", "BTC", "AVAX", "DOGE", "XRP", "ADA", "SUI", "NEAR"]
+
+# ELITE 9 PAIR-SPECIFIC WEAPON MAPPING MATRIX
+# Tailored combat profiles to completely eliminate universal dispersion drag.
+ASSET_WEAPON_MAPPING = {
+    "BTC": ["prism_momentum_expansion_breakout_v1", "prism_shelf_absorption_fade_v1"],
+    "ETH": ["prism_momentum_expansion_breakout_v1", "prism_range_mean_reversion_v1"],
+    "SOL": ["reacceleration_reclaim_continuation_v1", "momentum_expansion_continuation_v1"],
+    "AVAX": ["reacceleration_reclaim_continuation_v1", "prism_momentum_expansion_breakout_v1"],
+    "DOGE": ["prism_range_mean_reversion_v1", "sell_absorption_reclaim_v1"],
+    "XRP": ["prism_range_mean_reversion_v1", "sell_absorption_reclaim_v1"],
+    "ADA": ["prism_range_mean_reversion_v1", "prism_shelf_absorption_fade_v1"],
+    "SUI": ["momentum_expansion_continuation_v1", "reacceleration_reclaim_continuation_v1"],
+    "NEAR": ["prism_shelf_absorption_fade_v1", "momentum_expansion_continuation_v1"]
+}
 
 latest_engine_payload = {
     "active_signals_count": 0,
@@ -106,11 +119,6 @@ def evaluate_noise_and_zone_regime(candles):
     return {"regime": regime, "zone": zone, "noise_multiplier": noise_multiplier}
 
 def calculate_dynamic_stealth_allocation(account_equity, stop_pct, candles, noise_multiplier):
-    """
-    Volume-Driven Stealth & Expansion Sizing Engine:
-    - Shrinks footprint during low volume / quiet tape (Ghost Tier).
-    - Flexes up aggressively during volume expansion (Big Money Tier).
-    """
     if stop_pct <= 0:
         return 400, "DEFAULT"
         
@@ -193,7 +201,7 @@ def github_sync_worker():
             time.sleep(1800)
             logging.info("Executing automated GitHub repository synchronization...")
             subprocess.run(["git", "add", "."], check=False)
-            subprocess.run(["git", "commit", "-m", f"Auto-sync: Volume-driven stealth & expansion sizing checkpoint {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}"], check=False)
+            subprocess.run(["git", "commit", "-m", f"Auto-sync: Elite 9 Weapon Mapping Matrix checkpoint {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}"], check=False)
             result = subprocess.run(["git", "push"], capture_output=True, text=True, check=False)
             if result.returncode == 0:
                 logging.info("GitHub repository successfully synchronized.")
@@ -204,20 +212,11 @@ def github_sync_worker():
 
 def run_master_orchestration():
     global latest_engine_payload
-    logging.info("Master Engine + Volume-Driven Sizing initialized 24/7.")
+    logging.info("Master Engine + Elite 9 Weapon Matrix initialized 24/7.")
     feed_generator = OracleFeedV2(account_balance=ACCOUNT_EQUITY)
     sentinel = HostileActivitySentinel(hostility_threshold=0.80)
     arbiter = AIArbiter(mode="ACTIVE")
     mds = MarketDataSource()
-    
-    prism_setup_families = [
-        "prism_range_mean_reversion_v1",
-        "prism_shelf_absorption_fade_v1",
-        "prism_momentum_expansion_breakout_v1",
-        "sell_absorption_reclaim_v1",
-        "reacceleration_reclaim_continuation_v1",
-        "momentum_expansion_continuation_v1"
-    ]
     
     while True:
         try:
@@ -292,13 +291,15 @@ def run_master_orchestration():
                 if supertrend["direction"] != "NEUTRAL" and supertrend["direction"] != derived_direction:
                     continue
                 
+                # ENFORCE PAIR-SPECIFIC WEAPON MAPPING MATRIX
+                allowed_setups = ASSET_WEAPON_MAPPING.get(symbol, ["prism_momentum_expansion_breakout_v1"])
                 abs_dist = abs(distance_from_mean)
-                if abs_dist < 0.5:
-                    setup_fam = "prism_range_mean_reversion_v1" if speed_phase != "REACCELERATION" else "prism_shelf_absorption_fade_v1"
-                elif abs_dist >= 0.8:
-                    setup_fam = "prism_momentum_expansion_breakout_v1"
+                if abs_dist < 0.5 and len(allowed_setups) > 0:
+                    setup_fam = allowed_setups[0]
+                elif len(allowed_setups) > 1:
+                    setup_fam = allowed_setups[1]
                 else:
-                    setup_fam = prism_setup_families[abs(hash(symbol)) % len(prism_setup_families)]
+                    setup_fam = allowed_setups[0]
                 
                 if symbol in ["BTC", "ETH"]:
                     stop_pct = 0.010
@@ -370,12 +371,11 @@ def run_master_orchestration():
                     
                     score = int(ai_result.get("confidence", 0.85) * 100)
                     
-                    # Volume-Driven Stealth & Expansion Sizing
                     allocation_size, stealth_tag = calculate_dynamic_stealth_allocation(
                         ACCOUNT_EQUITY, stop_dist, candles, noise_audit["noise_multiplier"]
                     )
                     
-                    status_label = f"SNIPER SIGNAL ({stealth_tag})"
+                    status_label = f"SNIPER WEAPON MATCH ({stealth_tag})"
                     
                     if is_long:
                         stop_price = round(base * (1.0 - stop_dist), 4 if base < 10 else 2)
@@ -474,6 +474,7 @@ def get_universe_telemetry():
     return {
         "status": "ONLINE",
         "active_whitelist": ELITE_9_SYMBOLS,
+        "weapon_matrix": ASSET_WEAPON_MAPPING,
         "staging_monitors": latest_engine_payload.get("staging_monitors", [])
     }
 
@@ -496,7 +497,7 @@ async def execute_trade(request: Request):
         "anti_delta_pressure": 45,
         "rts_state": "ALIGNED",
         "time_in_range_mins": 0,
-        "gate_status": "Volume-Driven Stealth Sizing Active",
+        "gate_status": "Pair-Specific Weapon Matrix Active",
         "warning": f"PRISM ACTIVE (Dynamic Tier: ${data.get('allocation_size', 750)} | 90m Hold)",
         "opened_at": datetime.now(timezone.utc).strftime("%H:%M:%S UTC")
     }
