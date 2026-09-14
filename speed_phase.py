@@ -105,7 +105,15 @@ def _find_latest_long_impulse(
         candle_range = candle["high"] - candle["low"]
         is_bullish = candle["close"] > candle["open"]
         has_strong_body = _body_fraction(candle) >= IMPULSE_MIN_BODY_FRACTION
-        has_large_range = candle_range >= atr * IMPULSE_MIN_ATR
+        
+        # Calculate rolling volume baseline for dynamic relaxation
+        recent_vols = [c["volume"] for c in candles[max(0, index-10):index]]
+        avg_vol = sum(recent_vols) / len(recent_vols) if recent_vols else candle["volume"]
+        vol_ratio = candle["volume"] / max(1.0, avg_vol)
+        
+        # Dynamically lower ATR requirement if volume is expanding aggressively
+        effective_min_atr = IMPULSE_MIN_ATR * 0.8 if vol_ratio > 1.5 else IMPULSE_MIN_ATR
+        has_large_range = candle_range >= atr * effective_min_atr
 
         if is_bullish and has_strong_body and has_large_range:
             return {
@@ -114,7 +122,6 @@ def _find_latest_long_impulse(
             }
 
     return None
-
 
 def _long_controlled_pullback(
     candles: List[Dict[str, float]],
@@ -265,10 +272,7 @@ def analyze_completed_candles(
         short_age = len(candles) - 1 - short_index
         short_candle = candles[short_index]
 
-        if any(
-            candle["close"] > short_candle["high"]
-            for candle in candles[short_index + 1:]
-        ):
+        if candles[-1]["close"] > short_candle["high"]:
             result["direction"] = "SHORT"
             result["phase"] = PHASE_DECAY
             result["impulse_age_bars"] = short_age
@@ -285,10 +289,7 @@ def analyze_completed_candles(
         long_age = len(candles) - 1 - long_index
         long_candle = candles[long_index]
 
-        if any(
-            candle["close"] < long_candle["low"]
-            for candle in candles[long_index + 1:]
-        ):
+        if candles[-1]["close"] < long_candle["low"]:
             result["direction"] = "LONG"
             result["phase"] = PHASE_DECAY
             result["impulse_age_bars"] = long_age
@@ -370,113 +371,7 @@ def analyze_completed_candles(
                 result["reclaim_confirmed"] = False
                 result["decay_reason"] = "pullback_depth_breached"
                 return result
-    if latest_short_impulse is not None:
-        short_index = latest_short_impulse["index"]
-        short_age = len(candles) - 1 - short_index
-        short_candle = candles[short_index]
-        short_post_impulse = candles[short_index + 1:]
-        short_pullback = []
 
-        for candle in short_post_impulse:
-            if candle["close"] < candle["open"]:
-                break
-            short_pullback.append(candle)
-
-        if short_pullback:
-            short_distance = short_candle["open"] - short_candle["low"]
-            short_highest_close = max(
-                candle["close"] for candle in short_pullback
-            )
-            short_depth = (
-                (short_highest_close - short_candle["low"])
-                / short_distance
-            )
-            short_average_volume = sum(
-                candle["volume"] for candle in short_pullback
-            ) / len(short_pullback)
-            short_volume_ratio = (
-                short_average_volume / short_candle["volume"]
-            )
-
-            if (
-                short_distance > 0
-                and candles[-1]["close"] < short_candle["high"]
-                and short_depth <= MAX_PULLBACK_FRACTION
-                and short_volume_ratio > PULLBACK_VOLUME_MAX_FRACTION
-            ):
-                result["direction"] = "SHORT"
-                result["phase"] = PHASE_DECAY
-                result["impulse_age_bars"] = short_age
-                result["impulse_size_atr"] = round(
-                    latest_short_impulse["size_atr"],
-                    6,
-                )
-                result["pullback_depth_fraction"] = round(
-                    short_depth,
-                    6,
-                )
-                result["pullback_bars"] = len(short_pullback)
-                result["pullback_volume_vs_impulse"] = round(
-                    short_volume_ratio,
-                    6,
-                )
-                result["reclaim_confirmed"] = False
-                result["decay_reason"] = "pullback_volume_excessive"
-                return result
-
-    if latest_long_impulse is not None:
-        long_index = latest_long_impulse["index"]
-        long_age = len(candles) - 1 - long_index
-        long_candle = candles[long_index]
-        long_post_impulse = candles[long_index + 1:]
-        long_pullback = []
-
-        for candle in long_post_impulse:
-            if candle["close"] > candle["open"]:
-                break
-            long_pullback.append(candle)
-
-        if long_pullback:
-            long_distance = long_candle["high"] - long_candle["open"]
-            long_lowest_close = min(
-                candle["close"] for candle in long_pullback
-            )
-            long_depth = (
-                (long_candle["high"] - long_lowest_close)
-                / long_distance
-            )
-            long_average_volume = sum(
-                candle["volume"] for candle in long_pullback
-            ) / len(long_pullback)
-            long_volume_ratio = (
-                long_average_volume / long_candle["volume"]
-            )
-
-            if (
-                long_distance > 0
-                and candles[-1]["close"] > long_candle["low"]
-                and long_depth <= MAX_PULLBACK_FRACTION
-                and long_volume_ratio > PULLBACK_VOLUME_MAX_FRACTION
-            ):
-                result["direction"] = "LONG"
-                result["phase"] = PHASE_DECAY
-                result["impulse_age_bars"] = long_age
-                result["impulse_size_atr"] = round(
-                    latest_long_impulse["size_atr"],
-                    6,
-                )
-                result["pullback_depth_fraction"] = round(
-                    long_depth,
-                    6,
-                )
-                result["pullback_bars"] = len(long_pullback)
-                result["pullback_volume_vs_impulse"] = round(
-                    long_volume_ratio,
-                    6,
-                )
-                result["reclaim_confirmed"] = False
-                result["decay_reason"] = "pullback_volume_excessive"
-                return result
 
     for impulse_index in range(ATR_PERIOD, len(candles) - 4):
         short_impulse_candle = candles[impulse_index]
