@@ -1,25 +1,21 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Oracle Observation Terminal</title>
-
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>April 12 Battlefield Board</title>
   <style>
     :root {
-      --bg: #07141a;
-      --surface: #0c1e26;
-      --surface-2: #102731;
-      --surface-3: #15313c;
-      --text: #e7f7fa;
-      --muted: #8fb0b8;
-      --line: rgba(159, 214, 224, 0.14);
-      --primary: #39d0c6;
-      --blue: #4ea8ff;
-      --success: #22c55e;
-      --warn: #f59e0b;
-      --danger: #ef4444;
-      --shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
+      --bg: #070b12;
+      --panel: #0f1724;
+      --panel2: #131e2d;
+      --border: #28364a;
+      --text: #e7edf6;
+      --muted: #8ca0bb;
+      --cyan: #22d3ee;
+      --green: #4ade80;
+      --amber: #fbbf24;
+      --red: #fb7185;
     }
 
     * {
@@ -28,638 +24,519 @@
 
     body {
       margin: 0;
-      min-height: 100vh;
+      background: radial-gradient(circle at top, #142136 0%, var(--bg) 46%);
       color: var(--text);
-      background:
-        radial-gradient(circle at top right, rgba(57, 208, 198, 0.10), transparent 30%),
-        radial-gradient(circle at bottom left, rgba(78, 168, 255, 0.07), transparent 28%),
-        var(--bg);
-      font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        Roboto,
-        Helvetica,
-        Arial,
-        sans-serif;
-    }
-
-    .app {
-      width: min(1120px, 100%);
-      margin: 0 auto;
-      padding: 20px;
-    }
-
-    .shell,
-    .card,
-    .stat,
-    .notice {
-      border: 1px solid var(--line);
-      background:
-        linear-gradient(
-          180deg,
-          rgba(255, 255, 255, 0.025),
-          rgba(255, 255, 255, 0)
-        ),
-        var(--surface);
-      box-shadow: var(--shadow);
-      border-radius: 22px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
     .shell {
-      padding: 22px;
+      width: min(1500px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 24px 0 48px;
     }
 
-    .topline {
+    .command-bar {
       display: flex;
-      align-items: flex-start;
       justify-content: space-between;
-      gap: 18px;
-    }
-
-    .eyebrow {
-      margin: 0 0 8px;
-      color: var(--primary);
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 18px;
     }
 
     h1 {
       margin: 0;
-      font-size: clamp(25px, 6vw, 40px);
-      letter-spacing: -0.03em;
+      font-size: clamp(1.5rem, 4vw, 2.35rem);
+      letter-spacing: 0.04em;
     }
 
-    .subtitle {
-      max-width: 720px;
-      margin: 10px 0 0;
+    .subhead {
+      margin-top: 7px;
       color: var(--muted);
-      font-size: 14px;
-      line-height: 1.6;
-    }
-
-    .safety {
-      flex: 0 0 auto;
-      padding: 10px 12px;
-      border: 1px solid rgba(78, 168, 255, 0.45);
-      border-radius: 14px;
-      color: #a9d7ff;
-      background: rgba(78, 168, 255, 0.10);
-      font-size: 11px;
-      font-weight: 800;
+      font-size: 0.92rem;
       letter-spacing: 0.08em;
-      line-height: 1.45;
-      text-align: center;
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .stat {
-      padding: 15px;
-    }
-
-    .stat-label {
-      color: var(--muted);
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 0.11em;
       text-transform: uppercase;
     }
 
-    .stat-value {
-      margin-top: 8px;
-      color: var(--text);
-      font-size: 17px;
-      font-weight: 800;
-      overflow-wrap: anywhere;
-    }
-
-    .stat-sub {
-      margin-top: 5px;
-      color: var(--muted);
-      font-size: 11px;
-      line-height: 1.45;
-    }
-
-    .section {
-      margin-top: 18px;
-    }
-
-    .section-heading {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-
-    .section-heading h2 {
-      margin: 0;
-      font-size: 19px;
-    }
-
-    .section-heading span {
-      color: var(--muted);
-      font-size: 12px;
+    .health {
+      min-width: 160px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(15, 23, 36, 0.9);
       text-align: right;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .health strong {
+      display: block;
+      margin-top: 4px;
+      color: var(--green);
+      font-size: 0.92rem;
+      letter-spacing: 0.05em;
+    }
+
+    .telemetry {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .telemetry-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(15, 23, 36, 0.85);
+      padding: 12px;
+    }
+
+    .telemetry-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+    }
+
+    .telemetry-card strong {
+      display: block;
+      margin-top: 7px;
+      font-size: 1.3rem;
+      color: var(--cyan);
+    }
+
+    .board-tabs {
+      display: flex;
+      gap: 10px;
+      margin: 18px 0;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+
+    .board-tab {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #111b2a;
+      color: var(--muted);
+      cursor: pointer;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      padding: 11px 18px;
+    }
+
+    .board-tab.active {
+      background: #0e7490;
+      border-color: var(--cyan);
+      color: #ecfeff;
+    }
+
+    .board-panel {
+      display: none;
+    }
+
+    .board-panel.active {
+      display: block;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+      margin: 8px 0 14px;
+    }
+
+    .panel-header h2 {
+      margin: 0;
+      font-size: 1rem;
+      letter-spacing: 0.1em;
+    }
+
+    .panel-header span {
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
     }
 
     .card {
-      padding: 18px;
-      border-left: 5px solid #64748b;
-    }
-
-    .card.status-block {
-      border-left-color: var(--danger);
-    }
-
-    .card.status-watch {
-      border-left-color: var(--warn);
-    }
-
-    .card.status-candidate {
-      border-left-color: var(--success);
+      min-height: 228px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: linear-gradient(145deg, rgba(19, 30, 45, 0.98), rgba(10, 16, 27, 0.98));
+      padding: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
     }
 
     .card-top {
       display: flex;
-      align-items: flex-start;
       justify-content: space-between;
-      gap: 14px;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 14px;
     }
 
     .pair {
-      font-size: 23px;
-      font-weight: 850;
-      letter-spacing: -0.02em;
-    }
-
-    .time {
-      margin-top: 5px;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.45;
+      font-size: 1.15rem;
+      font-weight: 900;
+      letter-spacing: 0.06em;
     }
 
     .badge {
-      padding: 7px 9px;
-      border-radius: 999px;
-      font-size: 11px;
-      font-weight: 850;
+      max-width: 155px;
+      padding: 5px 7px;
+      border-radius: 6px;
+      font-size: 0.66rem;
+      font-weight: 900;
       letter-spacing: 0.06em;
-      white-space: nowrap;
+      line-height: 1.25;
+      text-align: right;
     }
 
-    .badge.block {
-      color: #ffaaa6;
-      background: rgba(239, 68, 68, 0.14);
+    .locked {
+      background: rgba(74, 222, 128, 0.15);
+      color: var(--green);
+      border: 1px solid rgba(74, 222, 128, 0.4);
     }
 
-    .badge.watch {
-      color: #ffd27d;
-      background: rgba(245, 158, 11, 0.14);
+    .tracking {
+      background: rgba(34, 211, 238, 0.12);
+      color: var(--cyan);
+      border: 1px solid rgba(34, 211, 238, 0.35);
     }
 
-    .badge.candidate {
-      color: #8ff0b1;
-      background: rgba(34, 197, 94, 0.14);
+    .no-shot {
+      background: rgba(251, 113, 133, 0.12);
+      color: var(--red);
+      border: 1px solid rgba(251, 113, 133, 0.35);
     }
 
-    .label {
-      margin-top: 17px;
-      color: var(--muted);
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 0.11em;
-      text-transform: uppercase;
+    .fault {
+      background: rgba(251, 191, 36, 0.12);
+      color: var(--amber);
+      border: 1px solid rgba(251, 191, 36, 0.35);
     }
 
-    .value {
-      margin-top: 5px;
-      color: var(--text);
-      font-size: 14px;
-      line-height: 1.55;
-    }
-
-    .lar-panel {
-      margin-top: 17px;
-      padding: 14px;
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      background: var(--surface-2);
-    }
-
-    .lar-grid {
+    .metrics {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
-      margin-top: 12px;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
     }
 
-    .lar-cell {
-      padding: 10px;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.018);
+    .metric {
+      border: 1px solid rgba(40, 54, 74, 0.8);
+      border-radius: 7px;
+      background: rgba(7, 11, 18, 0.5);
+      padding: 8px;
     }
 
-    .lar-cell span {
+    .metric span {
       display: block;
       color: var(--muted);
-      font-size: 10px;
-      font-weight: 800;
+      font-size: 0.62rem;
       letter-spacing: 0.08em;
-      text-transform: uppercase;
     }
 
-    .lar-cell strong {
+    .metric strong {
       display: block;
-      margin-top: 5px;
+      margin-top: 4px;
       color: var(--text);
-      font-size: 12px;
+      font-size: 0.77rem;
       overflow-wrap: anywhere;
     }
 
-    .meta {
-      margin-top: 16px;
+    .reason {
+      margin-top: 12px;
+      min-height: 32px;
       color: var(--muted);
-      font-size: 11px;
-      line-height: 1.55;
+      font-size: 0.76rem;
+      line-height: 1.4;
       overflow-wrap: anywhere;
     }
 
-    .notice {
-      padding: 16px;
+    .empty {
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+      padding: 24px;
       color: var(--muted);
-      font-size: 14px;
-      line-height: 1.6;
+      text-align: center;
+      letter-spacing: 0.08em;
     }
 
-    .notice.error {
-      border-color: rgba(239, 68, 68, 0.35);
-      color: #ffb3ae;
-    }
-
-    .notice.warning {
-      border-color: rgba(245, 158, 11, 0.35);
-      color: #ffd27d;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    @media (max-width: 760px) {
-      .app {
-        padding: 12px;
-      }
-
-      .shell {
-        padding: 16px;
-      }
-
-      .topline,
-      .card-top,
-      .section-heading {
+    @media (max-width: 740px) {
+      .command-bar {
         flex-direction: column;
       }
 
-      .safety {
-        align-self: flex-start;
-      }
-
-      .stats,
-      .lar-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .section-heading span {
+      .health {
+        min-width: 0;
         text-align: left;
       }
-    }
 
-    @media (max-width: 430px) {
-      .stats,
-      .lar-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .pair {
-        font-size: 20px;
+      .telemetry {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
   </style>
 </head>
-
 <body>
-  <main class="app">
-    <section class="shell">
-      <div class="topline">
-        <div>
-          <p class="eyebrow">Oracle Observation Service</p>
-          <h1>PRISM / LAR Terminal</h1>
-          <p class="subtitle">
-            Completed-bar market observations only. This interface does not
-            provide trade instructions, execution controls, position management,
-            risk allocation, or webhook routing.
-          </p>
-        </div>
-
-        <div class="safety">
-          OBSERVATION ONLY<br>
-          NO TRADE AUTHORITY<br>
-          NO ENTRY AUTHORITY
-        </div>
+  <main class="shell">
+    <header class="command-bar">
+      <div>
+        <h1>APRIL 12 — BATTLEFIELD BOARD</h1>
+        <div class="subhead">Signals: locked targets · Development: complete field</div>
       </div>
 
-      <section class="stats">
-        <article class="stat">
-          <div class="stat-label">Service state</div>
-          <div class="stat-value" id="service-state">Loading</div>
-          <div class="stat-sub" id="service-state-sub">
-            Waiting for API response
-          </div>
-        </article>
+      <div class="health">
+        ENGINE STATUS
+        <strong id="engine-health">CONNECTING</strong>
+      </div>
+    </header>
 
-        <article class="stat">
-          <div class="stat-label">Last completed bar</div>
-          <div class="stat-value" id="last-bar">Not available</div>
-          <div class="stat-sub" id="last-bar-sub">
-            Completed-bar timestamp
-          </div>
-        </article>
+    <section class="telemetry">
+      <div class="telemetry-card">
+        <span>UNIVERSE</span>
+        <strong id="configured-count">—</strong>
+      </div>
 
-        <article class="stat">
-          <div class="stat-label">PRISM ledger</div>
-          <div class="stat-value" id="observation-status">Not available</div>
-          <div class="stat-sub">
-            New bars write once; same bars deduplicate
-          </div>
-        </article>
+      <div class="telemetry-card">
+        <span>CANDLES ONLINE</span>
+        <strong id="candles-count">—</strong>
+      </div>
 
-        <article class="stat">
-          <div class="stat-label">LAR ledger</div>
-          <div class="stat-value" id="lar-status">Not available</div>
-          <div class="stat-sub">
-            Independent descriptive annotation
-          </div>
-        </article>
-      </section>
+      <div class="telemetry-card">
+        <span>TARGETS LOCKED</span>
+        <strong id="signals-count">—</strong>
+      </div>
 
-      <section class="section">
-        <div class="section-heading">
-          <h2>Latest completed-bar observation</h2>
-          <span id="refresh-meta">Polling observation API...</span>
-        </div>
+      <div class="telemetry-card">
+        <span>LAST SCAN</span>
+        <strong id="scan-time">—</strong>
+      </div>
+    </section>
 
-        <div class="notice warning" id="storage-notice">
-          Runtime storage mode is being checked.
-        </div>
+    <nav class="board-tabs" role="tablist">
+      <button id="signals-tab" class="board-tab active" type="button" role="tab" aria-selected="true" onclick="switchBoardTab('signals')">
+        SIGNALS
+      </button>
 
-        <div class="notice" id="empty-state">
-          Waiting for the first completed-bar observation.
-        </div>
+      <button id="development-tab" class="board-tab" type="button" role="tab" aria-selected="false" onclick="switchBoardTab('development')">
+        DEVELOPMENT
+      </button>
+    </nav>
 
-        <article class="card hidden" id="observation-card">
-          <div class="card-top">
-            <div>
-              <div class="pair" id="pair">—</div>
-              <div class="time" id="event-time">—</div>
-            </div>
+    <section id="signals-panel" class="board-panel active" role="tabpanel">
+      <div class="panel-header">
+        <h2>LOCKED TARGETS</h2>
+        <span id="signal-note">Waiting for scan</span>
+      </div>
 
-            <div class="badge" id="prism-badge">PRISM —</div>
-          </div>
+      <div id="signals-grid" class="grid"></div>
+    </section>
 
-          <div class="label">PRISM assessment</div>
-          <div class="value" id="prism-reason">—</div>
+    <section id="development-panel" class="board-panel" role="tabpanel" hidden>
+      <div class="panel-header">
+        <h2>FULL BATTLEFIELD</h2>
+        <span id="development-note">Every scanned pairing appears here</span>
+      </div>
 
-          <div class="label">PRISM gate</div>
-          <div class="value" id="prism-gate">—</div>
-
-          <section class="lar-panel">
-            <div class="label" style="margin-top:0;">
-              LAR structural observation
-            </div>
-
-            <div class="lar-grid">
-              <div class="lar-cell">
-                <span>State</span>
-                <strong id="lar-state">—</strong>
-              </div>
-
-              <div class="lar-cell">
-                <span>Pool</span>
-                <strong id="lar-pool">—</strong>
-              </div>
-
-              <div class="lar-cell">
-                <span>Context</span>
-                <strong id="lar-context">—</strong>
-              </div>
-            </div>
-
-            <div class="label">LAR explanation</div>
-            <div class="value" id="lar-reason">—</div>
-          </section>
-
-          <div class="meta" id="observation-meta">—</div>
-        </article>
-      </section>
+      <div id="development-grid" class="grid"></div>
     </section>
   </main>
 
   <script>
-    const REFRESH_MS = 15000;
-
-    function text(value, fallback = "Not available") {
-      if (value === null || value === undefined) return fallback;
-      const normalized = String(value).trim();
-      return normalized || fallback;
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
     }
 
-    function formatTime(timestamp) {
-      if (!timestamp || timestamp === "Not available") {
-        return "Timestamp unavailable";
+    function switchBoardTab(tabName) {
+      const signalsActive = tabName === "signals";
+
+      document.getElementById("signals-tab").classList.toggle("active", signalsActive);
+      document.getElementById("development-tab").classList.toggle("active", !signalsActive);
+
+      document.getElementById("signals-tab").setAttribute("aria-selected", String(signalsActive));
+      document.getElementById("development-tab").setAttribute("aria-selected", String(!signalsActive));
+
+      const signalsPanel = document.getElementById("signals-panel");
+      const developmentPanel = document.getElementById("development-panel");
+
+      signalsPanel.classList.toggle("active", signalsActive);
+      developmentPanel.classList.toggle("active", !signalsActive);
+
+      signalsPanel.hidden = !signalsActive;
+      developmentPanel.hidden = signalsActive;
+    }
+
+    function developmentState(card) {
+      if (card.status === "RAW_CANDIDATE") return "PRESSURE BUILDING";
+      if (card.status === "FILTERED") return "NO SHOT";
+      if (card.status === "FETCH_ERROR") return "DATA FAULT";
+      if (card.status === "NO_CANDLES") return "NO FRESH BAR";
+      if (card.status === "INVALID_CANDLE") return "BAD CANDLE";
+      if (card.status === "INVALID_PRICE") return "BAD PRICE";
+      if (card.status === "ANALYSIS_ERROR") return "ANALYSIS FAULT";
+      if (card.status === "PENDING") return "SCANNING";
+      return card.battle_state || "TRACKING";
+    }
+
+    function badgeClass(state) {
+      if (
+        state.includes("LOCKED") ||
+        state.includes("MATCH") ||
+        state.includes("PRESSURE")
+      ) {
+        return "locked";
       }
 
-      const date = new Date(timestamp);
-
-      if (Number.isNaN(date.getTime())) {
-        return text(timestamp);
+      if (
+        state.includes("FAULT") ||
+        state.includes("BAD") ||
+        state.includes("NO FRESH")
+      ) {
+        return "fault";
       }
 
-      return date.toLocaleString([], {
-        year: "numeric",
-        month: "short",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
-        timeZoneName: "short"
-      });
+      if (state.includes("NO SHOT") || state.includes("FILTERED")) {
+        return "no-shot";
+      }
+
+      return "tracking";
     }
 
-    function statusClass(status) {
-      const normalized = text(status, "UNKNOWN").toUpperCase();
-
-      if (normalized === "BLOCK") return "block";
-      if (normalized === "WATCH") return "watch";
-      if (normalized === "CANDIDATE") return "candidate";
-
-      return "";
+    function metric(label, value) {
+      return `
+        <div class="metric">
+          <span>${escapeHtml(label)}</span>
+          <strong>${escapeHtml(value ?? "—")}</strong>
+        </div>
+      `;
     }
 
-    function setServiceState(payload) {
-      const status = payload.last_error
-        ? "DEGRADED"
-        : payload.latest_observation
-          ? "OBSERVING"
-          : "STARTING";
+    function renderSignals(signals) {
+      const grid = document.getElementById("signals-grid");
+      const note = document.getElementById("signal-note");
 
-      document.getElementById("service-state").textContent = status;
+      note.textContent = `${signals.length} locked target${signals.length === 1 ? "" : "s"}`;
 
-      document.getElementById("service-state-sub").textContent =
-        payload.last_error
-          ? text(payload.last_error)
-          : `Poll interval: ${text(payload.poll_seconds)} seconds`;
-    }
-
-    function renderStorageNotice(payload) {
-      const notice = document.getElementById("storage-notice");
-      const storageMode = text(payload.storage_mode);
-      const storageNote = text(payload.storage_note);
-
-      notice.textContent = `${storageMode}: ${storageNote}`;
-
-      notice.classList.toggle(
-        "warning",
-        storageMode.includes("EPHEMERAL")
-      );
-    }
-
-    function renderObservation(payload) {
-      const observation = payload.latest_observation;
-      const emptyState = document.getElementById("empty-state");
-      const card = document.getElementById("observation-card");
-
-      if (!observation) {
-        emptyState.classList.remove("hidden");
-        card.classList.add("hidden");
-
-        document.getElementById("last-bar").textContent = "Not available";
-        document.getElementById("observation-status").textContent =
-          "Not available";
-        document.getElementById("lar-status").textContent =
-          "Not available";
-
+      if (!signals.length) {
+        grid.innerHTML = `<div class="empty">NO TARGETS LOCKED — DEVELOPMENT HAS THE COMPLETE FIELD</div>`;
         return;
       }
 
-      emptyState.classList.add("hidden");
-      card.classList.remove("hidden");
+      grid.innerHTML = signals.map((signal) => {
+        const state = signal.status || "LOCKED IN";
 
-      const prismStatus = text(observation.prism_status, "UNKNOWN");
-      const className = statusClass(prismStatus);
+        return `
+          <article class="card">
+            <div class="card-top">
+              <div class="pair">${escapeHtml(signal.pair)}</div>
+              <div class="badge ${badgeClass(state)}">${escapeHtml(state)}</div>
+            </div>
 
-      card.className = `card status-${className || "neutral"}`;
+            <div class="metrics">
+              ${metric("DIRECTION", signal.direction)}
+              ${metric("SCORE", signal.score)}
+              ${metric("ENTRY", signal.entry)}
+              ${metric("FAILURE LINE", signal.stop)}
+              ${metric("TARGET", signal.target)}
+              ${metric("SPEED", signal.speed_phase)}
+              ${metric("SETUP", signal.setup_family)}
+              ${metric("PRESSURE", signal.anti_delta_score)}
+            </div>
 
-      const badge = document.getElementById("prism-badge");
-      badge.className = `badge ${className}`;
-      badge.textContent = `PRISM ${prismStatus}`;
-
-      document.getElementById("pair").textContent =
-        `${text(observation.pair)} · ${text(observation.timeframe)}`;
-
-      document.getElementById("event-time").textContent =
-        `Completed ${formatTime(observation.event_timestamp_utc)}`;
-
-      document.getElementById("prism-reason").textContent =
-        text(observation.prism_reason);
-
-      document.getElementById("prism-gate").textContent =
-        text(observation.prism_first_block, "NONE");
-
-      document.getElementById("lar-state").textContent =
-        text(observation.lar_state);
-
-      document.getElementById("lar-pool").textContent =
-        `${text(observation.lar_pool_type)} · ${text(observation.lar_pool_side)}`;
-
-      document.getElementById("lar-context").textContent =
-        text(observation.lar_description);
-
-      document.getElementById("lar-reason").textContent =
-        text(observation.lar_reason);
-
-      document.getElementById("last-bar").textContent =
-        formatTime(observation.event_timestamp_utc);
-
-      document.getElementById("last-bar-sub").textContent =
-        `Speed phase: ${text(observation.speed_phase)}`;
-
-      document.getElementById("observation-status").textContent =
-        text(observation.observation_ledger_status);
-
-      document.getElementById("lar-status").textContent =
-        text(observation.lar_annotation_ledger_status);
-
-      document.getElementById("observation-meta").textContent =
-        [
-          `Observation key: ${text(observation.observation_key)}`,
-          `LAR key: ${text(observation.lar_annotation_key)}`,
-          `Pending sweep: ${
-            observation.lar_pending_sweep_present ? "yes" : "no"
-          }`,
-          "Manual review only · Trade authority disabled · Entry authority disabled"
-        ].join(" · ");
+            <div class="reason">${escapeHtml(signal.prism_map || "TARGET LOCKED")}</div>
+          </article>
+        `;
+      }).join("");
     }
 
-    async function fetchObservations() {
+    function renderDevelopment(cards) {
+      const grid = document.getElementById("development-grid");
+      const note = document.getElementById("development-note");
+
+      note.textContent = `${cards.length} pairing${cards.length === 1 ? "" : "s"} on the battlefield`;
+
+      if (!cards.length) {
+        grid.innerHTML = `<div class="empty">WAITING FOR FIRST COMPLETE SCAN</div>`;
+        return;
+      }
+
+      grid.innerHTML = cards.map((card) => {
+        const state = developmentState(card);
+
+        return `
+          <article class="card">
+            <div class="card-top">
+              <div class="pair">${escapeHtml(card.pair)}</div>
+              <div class="badge ${badgeClass(state)}">${escapeHtml(state)}</div>
+            </div>
+
+            <div class="metrics">
+              ${metric("PRICE", card.price)}
+              ${metric("SPEED", card.speed_phase)}
+              ${metric("DIRECTION", card.supertrend_dir)}
+              ${metric("ZONE", card.structural_zone)}
+              ${metric("TAPE", card.noise_regime)}
+              ${metric("ST DIST", card.st_distance_pct === null || card.st_distance_pct === undefined ? "—" : `${card.st_distance_pct}%`)}
+              ${metric("BAR COUNT", card.bar_count)}
+              ${metric("SCAN STATUS", card.status)}
+            </div>
+
+            <div class="reason">${escapeHtml(card.reason || card.battle_state || "TRACKING")}</div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    async function refreshBoard() {
       try {
-        const response = await fetch(
-          `/api/observations?ts=${Date.now()}`,
-          { cache: "no-store" }
-        );
+        const response = await fetch("/api/feed", { cache: "no-store" });
 
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
+          throw new Error(`Feed returned HTTP ${response.status}`);
         }
 
         const payload = await response.json();
+        const telemetry = payload.universe_telemetry || {};
+        const health = payload.engine_health || {};
 
-        setServiceState(payload);
-        renderStorageNotice(payload);
-        renderObservation(payload);
+        document.getElementById("configured-count").textContent =
+          telemetry.configured_pair_count ?? "—";
 
-        document.getElementById("refresh-meta").textContent =
-          `Last UI refresh ${formatTime(new Date().toISOString())}`;
+        document.getElementById("candles-count").textContent =
+          telemetry.candles_fetched_count ?? "—";
+
+        document.getElementById("signals-count").textContent =
+          payload.active_signals_count ?? 0;
+
+        document.getElementById("scan-time").textContent =
+          payload.timestamp ?? "—";
+
+        document.getElementById("engine-health").textContent =
+          health.status ?? "UNKNOWN";
+
+        renderSignals(payload.signals || []);
+        renderDevelopment(payload.development_board || []);
       } catch (error) {
-        document.getElementById("service-state").textContent = "OFFLINE";
-        document.getElementById("service-state-sub").textContent =
-          text(error.message);
-
-        document.getElementById("refresh-meta").textContent =
-          "Observation API unavailable";
-
-        const emptyState = document.getElementById("empty-state");
-        emptyState.className = "notice error";
-        emptyState.textContent =
-          "The observation API is unavailable. No trade or entry authority is present.";
-
-        document.getElementById("observation-card").classList.add("hidden");
+        document.getElementById("engine-health").textContent = "FEED OFFLINE";
+        document.getElementById("signals-grid").innerHTML =
+          `<div class="empty">SIGNAL FEED ERROR: ${escapeHtml(error.message)}</div>`;
+        document.getElementById("development-grid").innerHTML =
+          `<div class="empty">DEVELOPMENT FEED ERROR: ${escapeHtml(error.message)}</div>`;
       }
     }
 
-    fetchObservations();
-    setInterval(fetchObservations, REFRESH_MS);
+    refreshBoard();
+    setInterval(refreshBoard, 15000);
   </script>
 </body>
 </html>

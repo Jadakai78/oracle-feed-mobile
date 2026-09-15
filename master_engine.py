@@ -1,4 +1,4 @@
-﻿"""
+"""
 Oracle Observation Service
 
 Observation-only FastAPI service for completed-bar PRISM/LAR research.
@@ -404,5 +404,8 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=port,
     )
+
+
+
 
 
