@@ -19,6 +19,9 @@ import logging
 import os
 import threading
 import time
+import json
+import urllib.parse
+import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -64,6 +67,31 @@ STOP_DISTANCE_PCT = float(
     os.environ.get("PRISM_STOP_DISTANCE_PCT", "0.02")
 )
 
+PUSHOVER_USER_KEY = os.environ.get("PUSHOVER_USER_KEY", "").strip()
+PUSHOVER_APP_TOKEN = os.environ.get("PUSHOVER_APP_TOKEN", "").strip()
+ALERT_EMAIL_TO = os.environ.get(
+    "ALERT_EMAIL_TO",
+    "jrwarrtradesllc@outlook.com",
+).strip()
+ALERT_EMAIL_WEBHOOK_URL = os.environ.get(
+    "ALERT_EMAIL_WEBHOOK_URL",
+    "",
+).strip()
+ALERT_EMAIL_WEBHOOK_TOKEN = os.environ.get(
+    "ALERT_EMAIL_WEBHOOK_TOKEN",
+    "",
+).strip()
+
+ALERTABLE_STATES = {
+    "LOCKED IN",
+    "PRESSURE BUILDING",
+    "RELOAD ZONE",
+}
+
+EMAIL_ALERT_STATES = {
+    "LOCKED IN",
+    "DATA FAULT",
+}
 LAR_ATR_MULTIPLIER = float(
     os.environ.get("PRISM_LAR_ATR_MULTIPLIER", "0.15")
 )
@@ -117,7 +145,9 @@ SERVICE_STATE: dict[str, Any] = {
     "observations": [],
     "signals": [],
     "development_board": [],
-    "universe_telemetry": {
+    "alert_history": [],
+    "alert_keys_sent": [],
+    "last_alert_error": None,    "universe_telemetry": {
         "configured_pair_count": len(APRIL_12_SYMBOLS),
         "candles_fetched_count": 0,
         "scanned_pair_count": 0,
@@ -399,6 +429,207 @@ def build_signal_card(
     }
 
 
+def alert_key_for_card(card: dict[str, Any]) -> str:
+    return "|".join(
+        [
+            safe_text(card.get("pair"), "UNKNOWN"),
+            safe_text(card.get("event_timestamp_utc"), "UNKNOWN"),
+            safe_text(card.get("battle_state"), "UNKNOWN"),
+        ]
+    )
+
+
+def build_alert_message(card: dict[str, Any]) -> tuple[str, str]:
+    state = safe_text(card.get("battle_state"), "TRACKING")
+    pair = safe_text(card.get("pair"), "UNKNOWN")
+    bar = safe_text(card.get("event_timestamp_utc"), "UNKNOWN")
+
+    title = f"APRIL 12 | {state} | {pair}"
+
+    lines = [
+        f"Completed bar: {bar}",
+        f"Speed: {safe_text(card.get('speed_phase'))} / {safe_text(card.get('speed_direction'))}",
+        f"PRISM: {safe_text(card.get('prism_status'))}",
+        f"First block: {safe_text(card.get('prism_first_block'))}",
+        f"LAR: {safe_text(card.get('lar_state'))}",
+        f"Pool: {safe_text(card.get('lar_pool_side'))} / {safe_text(card.get('lar_pool_type'))}",
+        f"LAR read: {safe_text(card.get('lar_description'))}",
+        f"Reason: {safe_text(card.get('reason'))}",
+    ]
+
+    return title, "\n".join(lines)
+
+
+def send_pushover_alert(
+    title: str,
+    message: str,
+    priority: int = 0,
+) -> tuple[bool, str]:
+    if not PUSHOVER_USER_KEY or not PUSHOVER_APP_TOKEN:
+        return False, "Pushover credentials are not configured."
+
+    form_data = urllib.parse.urlencode(
+        {
+            "token": PUSHOVER_APP_TOKEN,
+            "user": PUSHOVER_USER_KEY,
+            "title": title,
+            "message": message,
+            "priority": str(priority),
+            "sound": "persistent" if priority >= 1 else "pushover",
+        }
+    ).encode("utf-8")
+
+    request = urllib.request.Request(
+        "https://api.pushover.net/1/messages.json",
+        data=form_data,
+        method="POST",
+        headers={
+            "Content-Type": "application/x-www-form-urlencoded",
+            "User-Agent": "April12Battlefield/1.0",
+        },
+    )
+
+    try:
+        with urllib.request.urlopen(request, timeout=15) as response:
+            response_body = response.read().decode(
+                "utf-8",
+                errors="replace",
+            )
+
+        return True, response_body
+
+    except Exception as exc:
+        return False, f"{type(exc).__name__}: {exc}"
+
+
+def send_email_webhook_alert(
+    title: str,
+    message: str,
+    state: str,
+    pair: str,
+) -> tuple[bool, str]:
+    if not ALERT_EMAIL_WEBHOOK_URL:
+        return False, "Email webhook is not configured."
+
+    payload = json.dumps(
+        {
+            "to": ALERT_EMAIL_TO,
+            "subject": title,
+            "body": message,
+            "state": state,
+            "pair": pair,
+            "source": "april-12-prism-lar-battlefield",
+        }
+    ).encode("utf-8")
+
+    headers = {
+        "Content-Type": "application/json",
+        "User-Agent": "April12Battlefield/1.0",
+    }
+
+    if ALERT_EMAIL_WEBHOOK_TOKEN:
+        headers["Authorization"] = (
+            f"Bearer {ALERT_EMAIL_WEBHOOK_TOKEN}"
+        )
+
+    request = urllib.request.Request(
+        ALERT_EMAIL_WEBHOOK_URL,
+        data=payload,
+        method="POST",
+        headers=headers,
+    )
+
+    try:
+        with urllib.request.urlopen(request, timeout=20) as response:
+            response_body = response.read().decode(
+                "utf-8",
+                errors="replace",
+            )
+
+        return True, response_body
+
+    except Exception as exc:
+        return False, f"{type(exc).__name__}: {exc}"
+
+
+def dispatch_alert_for_card(
+    card: dict[str, Any],
+    force: bool = False,
+) -> dict[str, Any] | None:
+    state = safe_text(card.get("battle_state"), "TRACKING")
+
+    if state not in ALERTABLE_STATES and state != "DATA FAULT":
+        return None
+
+    alert_key = alert_key_for_card(card)
+
+    with STATE_LOCK:
+        sent_keys = set(SERVICE_STATE.get("alert_keys_sent", []))
+
+    if not force and alert_key in sent_keys:
+        return {
+            "key": alert_key,
+            "pair": card.get("pair"),
+            "state": state,
+            "status": "DUPLICATE_SUPPRESSED",
+            "sent_at_utc": utc_now_iso(),
+        }
+
+    title, message = build_alert_message(card)
+
+    pushover_priority = 1 if state in {
+        "LOCKED IN",
+        "DATA FAULT",
+    } else 0
+
+    pushover_ok, pushover_detail = send_pushover_alert(
+        title=title,
+        message=message,
+        priority=pushover_priority,
+    )
+
+    email_ok = None
+    email_detail = "Not required for this state."
+
+    if state in EMAIL_ALERT_STATES:
+        email_ok, email_detail = send_email_webhook_alert(
+            title=title,
+            message=message,
+            state=state,
+            pair=safe_text(card.get("pair"), "UNKNOWN"),
+        )
+
+    record = {
+        "key": alert_key,
+        "pair": card.get("pair"),
+        "state": state,
+        "completed_bar": card.get("event_timestamp_utc"),
+        "sent_at_utc": utc_now_iso(),
+        "pushover_sent": pushover_ok,
+        "pushover_detail": pushover_detail,
+        "email_sent": email_ok,
+        "email_detail": email_detail,
+    }
+
+    with STATE_LOCK:
+        existing_keys = SERVICE_STATE.get("alert_keys_sent", [])
+
+        if alert_key not in existing_keys:
+            existing_keys.append(alert_key)
+
+        SERVICE_STATE["alert_keys_sent"] = existing_keys[-500:]
+
+        history = SERVICE_STATE.get("alert_history", [])
+        history.insert(0, record)
+        SERVICE_STATE["alert_history"] = history[:100]
+
+        if not pushover_ok:
+            SERVICE_STATE["last_alert_error"] = pushover_detail
+        else:
+            SERVICE_STATE["last_alert_error"] = None
+
+    return record
+
 def run_one_symbol_observation(
     market_data_source: MarketDataSource,
     symbol: str,
@@ -488,7 +719,11 @@ def run_battlefield_scan() -> None:
             if signal is not None:
                 signals.append(signal)
 
-        except Exception as exc:
+        
+
+            dispatch_alert_for_card(
+                development_board[-1]
+            )except Exception as exc:
             error_text = f"{type(exc).__name__}: {exc}"
 
             LOGGER.exception(
@@ -512,7 +747,11 @@ def run_battlefield_scan() -> None:
                 )
             )
 
-    priority = {
+    
+
+            dispatch_alert_for_card(
+                development_board[-1]
+            )priority = {
         "LOCKED IN": 0,
         "PRESSURE BUILDING": 1,
         "RELOAD ZONE": 2,
@@ -596,6 +835,35 @@ def get_observations() -> JSONResponse:
 
     return JSONResponse(content=payload)
 
+
+@app.get("/api/alert-test", response_class=JSONResponse)
+def alert_test() -> JSONResponse:
+    test_card = {
+        "pair": "APRIL12_TEST",
+        "battle_state": "LOCKED IN",
+        "event_timestamp_utc": utc_now_iso(),
+        "speed_phase": "TEST",
+        "speed_direction": "TEST",
+        "prism_status": "TEST",
+        "prism_first_block": "NONE",
+        "lar_state": "TEST",
+        "lar_pool_side": "TEST",
+        "lar_pool_type": "TEST",
+        "lar_description": "TEST_ALERT",
+        "reason": "Manual Pushover alert test.",
+    }
+
+    result = dispatch_alert_for_card(
+        test_card,
+        force=True,
+    )
+
+    return JSONResponse(
+        content={
+            "status": "TEST_DISPATCHED",
+            "result": result,
+        }
+    )
 
 @app.get("/health", response_class=JSONResponse)
 def get_health() -> JSONResponse:
