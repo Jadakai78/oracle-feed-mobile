@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -286,8 +286,8 @@
   <main class="shell">
     <header class="command-bar">
       <div>
-        <h1>APRIL 12 — BATTLEFIELD BOARD</h1>
-        <div class="subhead">Signals: locked targets · Development: complete field</div>
+        <h1>APRIL 12 â€” BATTLEFIELD BOARD</h1>
+        <div class="subhead">Signals: locked targets Â· Development: complete field</div>
       </div>
 
       <div class="health">
@@ -299,22 +299,22 @@
     <section class="telemetry">
       <div class="telemetry-card">
         <span>UNIVERSE</span>
-        <strong id="configured-count">—</strong>
+        <strong id="configured-count">â€”</strong>
       </div>
 
       <div class="telemetry-card">
         <span>CANDLES ONLINE</span>
-        <strong id="candles-count">—</strong>
+        <strong id="candles-count">â€”</strong>
       </div>
 
       <div class="telemetry-card">
         <span>TARGETS LOCKED</span>
-        <strong id="signals-count">—</strong>
+        <strong id="signals-count">â€”</strong>
       </div>
 
       <div class="telemetry-card">
         <span>LAST SCAN</span>
-        <strong id="scan-time">—</strong>
+        <strong id="scan-time">â€”</strong>
       </div>
     </section>
 
@@ -416,7 +416,7 @@
       return `
         <div class="metric">
           <span>${escapeHtml(label)}</span>
-          <strong>${escapeHtml(value ?? "—")}</strong>
+          <strong>${escapeHtml(value ?? "â€”")}</strong>
         </div>
       `;
     }
@@ -428,7 +428,7 @@
       note.textContent = `${signals.length} locked target${signals.length === 1 ? "" : "s"}`;
 
       if (!signals.length) {
-        grid.innerHTML = `<div class="empty">NO TARGETS LOCKED — DEVELOPMENT HAS THE COMPLETE FIELD</div>`;
+        grid.innerHTML = `<div class="empty">NO TARGETS LOCKED â€” DEVELOPMENT HAS THE COMPLETE FIELD</div>`;
         return;
       }
 
@@ -486,7 +486,7 @@
               ${metric("DIRECTION", card.supertrend_dir)}
               ${metric("ZONE", card.structural_zone)}
               ${metric("TAPE", card.noise_regime)}
-              ${metric("ST DIST", card.st_distance_pct === null || card.st_distance_pct === undefined ? "—" : `${card.st_distance_pct}%`)}
+              ${metric("ST DIST", card.st_distance_pct === null || card.st_distance_pct === undefined ? "â€”" : `${card.st_distance_pct}%`)}
               ${metric("BAR COUNT", card.bar_count)}
               ${metric("SCAN STATUS", card.status)}
             </div>
@@ -499,7 +499,7 @@
 
     async function refreshBoard() {
       try {
-        const response = await fetch("/api/feed", { cache: "no-store" });
+        const response = await fetch("/api/observations", { cache: "no-store" });
 
         if (!response.ok) {
           throw new Error(`Feed returned HTTP ${response.status}`);
@@ -510,16 +510,16 @@
         const health = payload.engine_health || {};
 
         document.getElementById("configured-count").textContent =
-          telemetry.configured_pair_count ?? "—";
+          telemetry.configured_pair_count ?? "â€”";
 
         document.getElementById("candles-count").textContent =
-          telemetry.candles_fetched_count ?? "—";
+          telemetry.candles_fetched_count ?? "â€”";
 
         document.getElementById("signals-count").textContent =
           payload.active_signals_count ?? 0;
 
         document.getElementById("scan-time").textContent =
-          payload.timestamp ?? "—";
+          payload.timestamp ?? "â€”";
 
         document.getElementById("engine-health").textContent =
           health.status ?? "UNKNOWN";
