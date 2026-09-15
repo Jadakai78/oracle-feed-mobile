@@ -7,15 +7,16 @@
   <style>
     :root {
       --bg: #070b12;
-      --panel: #0f1724;
-      --panel2: #131e2d;
-      --border: #28364a;
-      --text: #e7edf6;
+      --panel: #0e1725;
+      --panel2: #111e30;
+      --border: #24354c;
+      --text: #eaf1fa;
       --muted: #8ca0bb;
       --cyan: #22d3ee;
       --green: #4ade80;
       --amber: #fbbf24;
       --red: #fb7185;
+      --purple: #c084fc;
     }
 
     * {
@@ -24,13 +25,15 @@
 
     body {
       margin: 0;
-      background: radial-gradient(circle at top, #142136 0%, var(--bg) 46%);
+      background:
+        radial-gradient(circle at top, #172945 0%, #070b12 48%);
       color: var(--text);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system,
+        BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
     .shell {
-      width: min(1540px, calc(100% - 28px));
+      width: min(1560px, calc(100% - 28px));
       margin: 0 auto;
       padding: 24px 0 48px;
     }
@@ -45,40 +48,41 @@
 
     h1 {
       margin: 0;
-      font-size: clamp(1.5rem, 4vw, 2.35rem);
-      letter-spacing: 0.04em;
+      font-size: clamp(1.45rem, 4vw, 2.3rem);
+      letter-spacing: 0.045em;
     }
 
     .subhead {
       margin-top: 7px;
       color: var(--muted);
-      font-size: 0.92rem;
+      font-size: 0.88rem;
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
 
     .health {
-      min-width: 190px;
-      padding: 10px 12px;
+      min-width: 205px;
+      padding: 11px 13px;
       border: 1px solid var(--border);
       border-radius: 10px;
-      background: rgba(15, 23, 36, 0.9);
+      background: rgba(14, 23, 37, 0.92);
       text-align: right;
       color: var(--muted);
-      font-size: 0.78rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
     }
 
     .health strong {
       display: block;
-      margin-top: 4px;
+      margin-top: 5px;
       color: var(--green);
       font-size: 0.92rem;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.07em;
     }
 
     .telemetry {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 10px;
       margin-bottom: 18px;
     }
@@ -86,29 +90,30 @@
     .telemetry-card {
       border: 1px solid var(--border);
       border-radius: 10px;
-      background: rgba(15, 23, 36, 0.85);
+      background: rgba(14, 23, 37, 0.86);
       padding: 12px;
     }
 
     .telemetry-card span {
       display: block;
       color: var(--muted);
-      font-size: 0.7rem;
-      letter-spacing: 0.08em;
+      font-size: 0.66rem;
+      letter-spacing: 0.1em;
     }
 
     .telemetry-card strong {
       display: block;
       margin-top: 7px;
-      font-size: 1.3rem;
       color: var(--cyan);
+      font-size: 1.18rem;
+      overflow-wrap: anywhere;
     }
 
     .board-tabs {
       display: flex;
       gap: 10px;
-      margin: 18px 0;
       border-bottom: 1px solid var(--border);
+      margin: 18px 0;
       padding-bottom: 12px;
     }
 
@@ -118,14 +123,14 @@
       background: #111b2a;
       color: var(--muted);
       cursor: pointer;
-      font-weight: 800;
+      font-weight: 850;
       letter-spacing: 0.1em;
       padding: 11px 18px;
     }
 
     .board-tab.active {
-      background: #0e7490;
       border-color: var(--cyan);
+      background: #0c708a;
       color: #ecfeff;
     }
 
@@ -141,7 +146,7 @@
       display: flex;
       justify-content: space-between;
       align-items: baseline;
-      gap: 10px;
+      gap: 12px;
       margin: 8px 0 14px;
     }
 
@@ -153,22 +158,28 @@
 
     .panel-header span {
       color: var(--muted);
-      font-size: 0.8rem;
+      font-size: 0.78rem;
+      text-align: right;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(292px, 1fr));
       gap: 12px;
     }
 
     .card {
-      min-height: 255px;
+      min-height: 310px;
       border: 1px solid var(--border);
       border-radius: 12px;
-      background: linear-gradient(145deg, rgba(19, 30, 45, 0.98), rgba(10, 16, 27, 0.98));
+      background:
+        linear-gradient(
+          145deg,
+          rgba(18, 30, 47, 0.98),
+          rgba(8, 14, 24, 0.98)
+        );
       padding: 15px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
     }
 
     .card-top {
@@ -180,15 +191,15 @@
     }
 
     .pair {
-      font-size: 1.15rem;
+      font-size: 1.16rem;
       font-weight: 900;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.07em;
     }
 
     .badge {
-      max-width: 155px;
-      padding: 5px 7px;
+      max-width: 170px;
       border-radius: 6px;
+      padding: 5px 7px;
       font-size: 0.66rem;
       font-weight: 900;
       letter-spacing: 0.06em;
@@ -197,27 +208,33 @@
     }
 
     .locked {
+      border: 1px solid rgba(74, 222, 128, 0.4);
       background: rgba(74, 222, 128, 0.15);
       color: var(--green);
-      border: 1px solid rgba(74, 222, 128, 0.4);
     }
 
     .tracking {
+      border: 1px solid rgba(34, 211, 238, 0.35);
       background: rgba(34, 211, 238, 0.12);
       color: var(--cyan);
-      border: 1px solid rgba(34, 211, 238, 0.35);
     }
 
     .no-shot {
+      border: 1px solid rgba(251, 113, 133, 0.35);
       background: rgba(251, 113, 133, 0.12);
       color: var(--red);
-      border: 1px solid rgba(251, 113, 133, 0.35);
+    }
+
+    .fading {
+      border: 1px solid rgba(251, 191, 36, 0.35);
+      background: rgba(251, 191, 36, 0.12);
+      color: var(--amber);
     }
 
     .fault {
-      background: rgba(251, 191, 36, 0.12);
-      color: var(--amber);
-      border: 1px solid rgba(251, 191, 36, 0.35);
+      border: 1px solid rgba(192, 132, 252, 0.4);
+      background: rgba(192, 132, 252, 0.12);
+      color: var(--purple);
     }
 
     .metrics {
@@ -227,46 +244,54 @@
     }
 
     .metric {
-      border: 1px solid rgba(40, 54, 74, 0.8);
+      min-height: 56px;
+      border: 1px solid rgba(36, 53, 76, 0.8);
       border-radius: 7px;
-      background: rgba(7, 11, 18, 0.5);
+      background: rgba(5, 10, 17, 0.52);
       padding: 8px;
     }
 
     .metric span {
       display: block;
       color: var(--muted);
-      font-size: 0.62rem;
-      letter-spacing: 0.08em;
+      font-size: 0.6rem;
+      letter-spacing: 0.09em;
     }
 
     .metric strong {
       display: block;
       margin-top: 4px;
       color: var(--text);
-      font-size: 0.77rem;
+      font-size: 0.76rem;
+      line-height: 1.3;
       overflow-wrap: anywhere;
     }
 
     .reason {
+      min-height: 40px;
       margin-top: 12px;
-      min-height: 32px;
       color: var(--muted);
       font-size: 0.76rem;
-      line-height: 1.4;
+      line-height: 1.42;
       overflow-wrap: anywhere;
     }
 
     .empty {
       border: 1px dashed var(--border);
       border-radius: 10px;
-      padding: 24px;
+      padding: 26px;
       color: var(--muted);
-      text-align: center;
       letter-spacing: 0.08em;
+      text-align: center;
     }
 
-    @media (max-width: 740px) {
+    @media (max-width: 850px) {
+      .telemetry {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
       .command-bar {
         flex-direction: column;
       }
@@ -276,8 +301,8 @@
         text-align: left;
       }
 
-      .telemetry {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+      .grid {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -286,8 +311,10 @@
   <main class="shell">
     <header class="command-bar">
       <div>
-        <h1>APRIL 12 — BATTLEFIELD BOARD</h1>
-        <div class="subhead">Signals: priority targets · Development: complete battlefield</div>
+        <h1>APRIL 12 - BATTLEFIELD BOARD</h1>
+        <div class="subhead">
+          Signals: priority targets | Development: full field
+        </div>
       </div>
 
       <div class="health">
@@ -299,48 +326,78 @@
     <section class="telemetry">
       <div class="telemetry-card">
         <span>UNIVERSE</span>
-        <strong id="configured-count">—</strong>
+        <strong id="configured-count">-</strong>
       </div>
 
       <div class="telemetry-card">
-        <span>CANDLES ONLINE</span>
-        <strong id="candles-count">—</strong>
+        <span>ONLINE</span>
+        <strong id="online-count">-</strong>
       </div>
 
       <div class="telemetry-card">
-        <span>TARGETS LOCKED</span>
-        <strong id="signals-count">—</strong>
+        <span>PRIORITY TARGETS</span>
+        <strong id="signals-count">-</strong>
       </div>
 
       <div class="telemetry-card">
-        <span>LAST SCAN</span>
-        <strong id="scan-time">—</strong>
+        <span>DATA FAULTS</span>
+        <strong id="fault-count">-</strong>
+      </div>
+
+      <div class="telemetry-card">
+        <span>COMPLETED BAR</span>
+        <strong id="bar-time">-</strong>
       </div>
     </section>
 
     <nav class="board-tabs" role="tablist">
-      <button id="signals-tab" class="board-tab active" type="button" role="tab" aria-selected="true" onclick="switchBoardTab('signals')">
+      <button
+        id="signals-tab"
+        class="board-tab active"
+        type="button"
+        role="tab"
+        aria-selected="true"
+        onclick="switchBoardTab('signals')"
+      >
         SIGNALS
       </button>
 
-      <button id="development-tab" class="board-tab" type="button" role="tab" aria-selected="false" onclick="switchBoardTab('development')">
+      <button
+        id="development-tab"
+        class="board-tab"
+        type="button"
+        role="tab"
+        aria-selected="false"
+        onclick="switchBoardTab('development')"
+      >
         DEVELOPMENT
       </button>
     </nav>
 
-    <section id="signals-panel" class="board-panel active" role="tabpanel">
+    <section
+      id="signals-panel"
+      class="board-panel active"
+      role="tabpanel"
+    >
       <div class="panel-header">
         <h2>PRIORITY TARGETS</h2>
-        <span id="signal-note">Waiting for scan</span>
+        <span id="signal-note">Waiting for the completed-bar scan</span>
       </div>
 
       <div id="signals-grid" class="grid"></div>
     </section>
 
-    <section id="development-panel" class="board-panel" role="tabpanel" hidden>
+    <section
+      id="development-panel"
+      class="board-panel"
+      role="tabpanel"
+      hidden
+    >
       <div class="panel-header">
         <h2>FULL BATTLEFIELD</h2>
-        <span id="development-note">Every pairing remains visible here</span>
+        <span id="development-note">
+          Every April pairing remains visible here
+        </span>
       </div>
 
       <div id="development-grid" class="grid"></div>
@@ -349,7 +406,7 @@
 
   <script>
     function escapeHtml(value) {
-      return String(value ?? "")
+      return String(value ?? "-")
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;")
@@ -357,17 +414,55 @@
         .replaceAll("'", "&#039;");
     }
 
+    function displayValue(value) {
+      if (value === null || value === undefined || value === "") {
+        return "-";
+      }
+
+      return value;
+    }
+
+    function formatTime(isoValue) {
+      if (!isoValue) {
+        return "-";
+      }
+
+      const date = new Date(isoValue);
+
+      if (Number.isNaN(date.getTime())) {
+        return isoValue;
+      }
+
+      return date.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        timeZoneName: "short"
+      });
+    }
+
     function switchBoardTab(tabName) {
       const signalsActive = tabName === "signals";
 
-      document.getElementById("signals-tab").classList.toggle("active", signalsActive);
-      document.getElementById("development-tab").classList.toggle("active", !signalsActive);
+      document
+        .getElementById("signals-tab")
+        .classList.toggle("active", signalsActive);
 
-      document.getElementById("signals-tab").setAttribute("aria-selected", String(signalsActive));
-      document.getElementById("development-tab").setAttribute("aria-selected", String(!signalsActive));
+      document
+        .getElementById("development-tab")
+        .classList.toggle("active", !signalsActive);
+
+      document
+        .getElementById("signals-tab")
+        .setAttribute("aria-selected", String(signalsActive));
+
+      document
+        .getElementById("development-tab")
+        .setAttribute("aria-selected", String(!signalsActive));
 
       const signalsPanel = document.getElementById("signals-panel");
-      const developmentPanel = document.getElementById("development-panel");
+      const developmentPanel =
+        document.getElementById("development-panel");
 
       signalsPanel.classList.toggle("active", signalsActive);
       developmentPanel.classList.toggle("active", !signalsActive);
@@ -385,19 +480,19 @@
         return "locked";
       }
 
-      if (
-        state === "DATA FAULT" ||
-        state === "BAD CANDLE" ||
-        state === "NO FRESH BAR"
-      ) {
-        return "fault";
+      if (state === "NO SHOT") {
+        return "no-shot";
+      }
+
+      if (state === "MOMENTUM FADING") {
+        return "fading";
       }
 
       if (
-        state === "NO SHOT" ||
-        state === "MOMENTUM FADING"
+        state === "DATA FAULT" ||
+        state === "SCANNING"
       ) {
-        return "no-shot";
+        return "fault";
       }
 
       return "tracking";
@@ -407,8 +502,83 @@
       return `
         <div class="metric">
           <span>${escapeHtml(label)}</span>
-          <strong>${escapeHtml(value ?? "—")}</strong>
+          <strong>${escapeHtml(displayValue(value))}</strong>
         </div>
+      `;
+    }
+
+    function renderPriorityCard(card) {
+      const state = card.battle_state || "TRACKING";
+      const liquidity = [
+        displayValue(card.lar_pool_side),
+        displayValue(card.lar_pool_type)
+      ].join(" / ");
+
+      return `
+        <article class="card">
+          <div class="card-top">
+            <div class="pair">${escapeHtml(card.pair)}</div>
+            <div class="badge ${badgeClass(state)}">
+              ${escapeHtml(state)}
+            </div>
+          </div>
+
+          <div class="metrics">
+            ${metric("COMPLETED BAR", formatTime(card.event_timestamp_utc))}
+            ${metric("SPEED", `${displayValue(card.speed_phase)} / ${displayValue(card.speed_direction)}`)}
+            ${metric("PRISM", card.prism_status)}
+            ${metric("FIRST BLOCK", card.prism_first_block)}
+            ${metric("LAR STATE", card.lar_state)}
+            ${metric("LIQUIDITY", liquidity)}
+            ${metric("LAR READ", card.lar_description)}
+            ${metric("POOL TYPE", card.lar_pool_type)}
+          </div>
+
+          <div class="reason">
+            ${escapeHtml(card.reason || "Priority structure developing.")}
+          </div>
+        </article>
+      `;
+    }
+
+    function renderDevelopmentCard(card) {
+      const state = card.battle_state || "TRACKING";
+      const liquidity = [
+        displayValue(card.lar_pool_side),
+        displayValue(card.lar_pool_type)
+      ].join(" / ");
+
+      const ledger = [
+        displayValue(card.observation_ledger_status),
+        displayValue(card.lar_annotation_ledger_status)
+      ].join(" / ");
+
+      return `
+        <article class="card">
+          <div class="card-top">
+            <div class="pair">${escapeHtml(card.pair)}</div>
+            <div class="badge ${badgeClass(state)}">
+              ${escapeHtml(state)}
+            </div>
+          </div>
+
+          <div class="metrics">
+            ${metric("COMPLETED BAR", formatTime(card.event_timestamp_utc))}
+            ${metric("SCAN", card.scan_status)}
+            ${metric("SPEED", `${displayValue(card.speed_phase)} / ${displayValue(card.speed_direction)}`)}
+            ${metric("PRISM", card.prism_status)}
+            ${metric("FIRST BLOCK", card.prism_first_block)}
+            ${metric("LAR STATE", card.lar_state)}
+            ${metric("LIQUIDITY", liquidity)}
+            ${metric("LAR READ", card.lar_description)}
+            ${metric("CANDLES", card.candle_count)}
+            ${metric("LEDGER", ledger)}
+          </div>
+
+          <div class="reason">
+            ${escapeHtml(card.reason || card.lar_description || "No reason supplied.")}
+          </div>
+        </article>
       `;
     }
 
@@ -420,36 +590,18 @@
         `${signals.length} priority target${signals.length === 1 ? "" : "s"}`;
 
       if (!signals.length) {
-        grid.innerHTML =
-          `<div class="empty">NO PRIORITY TARGETS — DEVELOPMENT HAS THE FULL FIELD</div>`;
+        grid.innerHTML = `
+          <div class="empty">
+            NO PRIORITY TARGETS ON THIS COMPLETED BAR.
+            DEVELOPMENT HOLDS THE FULL FIELD.
+          </div>
+        `;
         return;
       }
 
-      grid.innerHTML = signals.map((signal) => {
-        const state = signal.battle_state || "TRACKING";
-
-        return `
-          <article class="card">
-            <div class="card-top">
-              <div class="pair">${escapeHtml(signal.pair)}</div>
-              <div class="badge ${badgeClass(state)}">${escapeHtml(state)}</div>
-            </div>
-
-            <div class="metrics">
-              ${metric("SPEED", signal.speed_phase)}
-              ${metric("DIRECTION", signal.speed_direction)}
-              ${metric("PRISM", signal.prism_status)}
-              ${metric("LAR", signal.lar_state)}
-              ${metric("POOL SIDE", signal.lar_pool_side)}
-              ${metric("POOL TYPE", signal.lar_pool_type)}
-              ${metric("LAR READ", signal.lar_description)}
-              ${metric("BAR", signal.event_timestamp_utc)}
-            </div>
-
-            <div class="reason">${escapeHtml(signal.reason || "TARGET DEVELOPING")}</div>
-          </article>
-        `;
-      }).join("");
+      grid.innerHTML = signals
+        .map(renderPriorityCard)
+        .join("");
     }
 
     function renderDevelopment(cards) {
@@ -457,39 +609,20 @@
       const note = document.getElementById("development-note");
 
       note.textContent =
-        `${cards.length} pairing${cards.length === 1 ? "" : "s"} on the board`;
+        `${cards.length} pairing${cards.length === 1 ? "" : "s"} on the battlefield`;
 
       if (!cards.length) {
-        grid.innerHTML =
-          `<div class="empty">WAITING FOR FIRST COMPLETE SCAN</div>`;
+        grid.innerHTML = `
+          <div class="empty">
+            WAITING FOR THE FIRST COMPLETE APRIL 12 SCAN.
+          </div>
+        `;
         return;
       }
 
-      grid.innerHTML = cards.map((card) => {
-        const state = card.battle_state || "TRACKING";
-
-        return `
-          <article class="card">
-            <div class="card-top">
-              <div class="pair">${escapeHtml(card.pair)}</div>
-              <div class="badge ${badgeClass(state)}">${escapeHtml(state)}</div>
-            </div>
-
-            <div class="metrics">
-              ${metric("SCAN", card.scan_status)}
-              ${metric("SPEED", card.speed_phase)}
-              ${metric("DIRECTION", card.speed_direction)}
-              ${metric("PRISM", card.prism_status)}
-              ${metric("FIRST BLOCK", card.prism_first_block)}
-              ${metric("LAR", card.lar_state)}
-              ${metric("POOL", `${card.lar_pool_side ?? "—"} / ${card.lar_pool_type ?? "—"}`)}
-              ${metric("BAR", card.event_timestamp_utc)}
-            </div>
-
-            <div class="reason">${escapeHtml(card.reason || card.lar_description || "TRACKING")}</div>
-          </article>
-        `;
-      }).join("");
+      grid.innerHTML = cards
+        .map(renderDevelopmentCard)
+        .join("");
     }
 
     async function refreshBoard() {
@@ -504,33 +637,50 @@
 
         const payload = await response.json();
         const telemetry = payload.universe_telemetry || {};
+        const cards = payload.development_board || [];
+        const faults = cards.filter(
+          (card) => card.battle_state === "DATA FAULT"
+        ).length;
+
+        const firstBar = cards.length
+          ? cards[0].event_timestamp_utc
+          : null;
 
         document.getElementById("configured-count").textContent =
-          telemetry.configured_pair_count ?? "—";
+          displayValue(telemetry.configured_pair_count);
 
-        document.getElementById("candles-count").textContent =
-          telemetry.candles_fetched_count ?? "—";
+        document.getElementById("online-count").textContent =
+          `${displayValue(telemetry.candles_fetched_count)} / ${displayValue(telemetry.configured_pair_count)}`;
 
         document.getElementById("signals-count").textContent =
-          payload.active_signals_count ?? 0;
+          displayValue(payload.active_signals_count);
 
-        document.getElementById("scan-time").textContent =
-          payload.timestamp ?? "—";
+        document.getElementById("fault-count").textContent =
+          faults;
+
+        document.getElementById("bar-time").textContent =
+          formatTime(firstBar);
 
         document.getElementById("engine-health").textContent =
           payload.last_error ? "DEGRADED" : "ONLINE";
 
         renderSignals(payload.signals || []);
-        renderDevelopment(payload.development_board || []);
+        renderDevelopment(cards);
       } catch (error) {
         document.getElementById("engine-health").textContent =
           "FEED OFFLINE";
 
-        document.getElementById("signals-grid").innerHTML =
-          `<div class="empty">SIGNAL FEED ERROR: ${escapeHtml(error.message)}</div>`;
+        document.getElementById("signals-grid").innerHTML = `
+          <div class="empty">
+            SIGNAL FEED ERROR: ${escapeHtml(error.message)}
+          </div>
+        `;
 
-        document.getElementById("development-grid").innerHTML =
-          `<div class="empty">DEVELOPMENT FEED ERROR: ${escapeHtml(error.message)}</div>`;
+        document.getElementById("development-grid").innerHTML = `
+          <div class="empty">
+            DEVELOPMENT FEED ERROR: ${escapeHtml(error.message)}
+          </div>
+        `;
       }
     }
 
