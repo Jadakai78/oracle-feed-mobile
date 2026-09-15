@@ -34,6 +34,8 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from pair_universe import MarketDataSource
 from prism_passive_observer_v2 import observe_completed_bar
 from speed_phase import analyze_completed_candles
+from delta_tempo_v1 import build_delta_tempo
+from anti_delta_01_module import build_anti_delta
 
 
 logging.basicConfig(
@@ -461,6 +463,14 @@ def build_development_card(
         "lar_annotation_ledger_status": observation.get(
             "lar_annotation_ledger_status"
         ),
+        "delta_tempo": observation.get(
+            "delta_tempo",
+            {},
+        ),
+        "anti_delta": observation.get(
+            "anti_delta",
+            {},
+        ),
     }
 
 
@@ -696,6 +706,82 @@ def dispatch_alert_for_card(
     return record
 
 
+def build_delta_anti_readout(
+    observation: dict[str, Any],
+    candles: list[dict[str, Any]],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Build descriptive Delta/Tempo and Anti-Delta contexts only."""
+
+    pair = safe_text(
+        observation.get("pair"),
+        default="UNKNOWN",
+    )
+
+    timeframe = safe_text(
+        observation.get("timeframe"),
+        default=TIMEFRAME,
+    )
+
+    speed_phase = safe_text(
+        observation.get("speed_phase"),
+        default="NONE",
+    )
+
+    speed_direction = safe_text(
+        observation.get("speed_direction"),
+        default="NEUTRAL",
+    ).upper()
+
+    trend_alignment = (
+        speed_direction
+        if speed_direction in {"LONG", "SHORT"}
+        else "NEUTRAL"
+    )
+
+    prism_status = safe_text(
+        observation.get("prism_status"),
+        default="UNKNOWN",
+    ).upper()
+
+    route = "OBSERVE" if prism_status == "WATCH" else "NO_ROUTE"
+
+    lar_state = safe_text(
+        observation.get("lar_state"),
+        default="UNAVAILABLE",
+    ).upper()
+
+    terrain_state = (
+        "UNAVAILABLE"
+        if lar_state == "UNAVAILABLE"
+        else "OBSERVE"
+    )
+
+    prism_context = {
+        "terrain": {
+            "trend_alignment": trend_alignment,
+            "route": route,
+            "terrain_state": terrain_state,
+        },
+    }
+
+    delta_context = build_delta_tempo(
+        pair=pair,
+        candles=candles,
+        speed_phase=speed_phase,
+        prism_context=prism_context,
+        timeframe=timeframe,
+    )
+
+    anti_delta_context = build_anti_delta(
+        pair=pair,
+        candles=candles,
+        delta_context=delta_context,
+        timeframe=timeframe,
+    )
+
+    return delta_context, anti_delta_context
+
+
 def run_one_symbol_observation(
     market_data_source: MarketDataSource,
     symbol: str,
@@ -739,6 +825,54 @@ def run_one_symbol_observation(
         result=result,
         phase_result=phase_result,
     )
+
+    try:
+        delta_context, anti_delta_context = (
+            build_delta_anti_readout(
+                observation=observation,
+                candles=candles,
+            )
+        )
+    except Exception as exc:
+        LOGGER.exception(
+            "Delta/Anti-Delta readout unavailable pair=%s",
+            observation.get("pair"),
+        )
+        delta_context = {
+            "record_type": "DELTA_TEMPO",
+            "data_health": {
+                "state": "UNAVAILABLE",
+                "reason_codes": [
+                    f"DELTA_TEMPO.READOUT.ERROR:{type(exc).__name__}"
+                ],
+            },
+            "pressure": {"state": "UNAVAILABLE"},
+            "participation": {"state": "UNKNOWN"},
+            "tempo": {"state": "UNKNOWN"},
+            "transition": {"state": "UNAVAILABLE"},
+            "prism_alignment": {"state": "UNAVAILABLE"},
+            "manual_review_only": True,
+            "trade_authority": False,
+            "entry_authority": False,
+            "does_not_send_alerts": True,
+            "does_not_change_queue": True,
+        }
+        anti_delta_context = {
+            "record_type": "ANTI_DELTA",
+            "data_health": {
+                "state": "UNAVAILABLE",
+                "reason_codes": [
+                    f"ANTI_DELTA.READOUT.ERROR:{type(exc).__name__}"
+                ],
+            },
+            "state": "UNAVAILABLE",
+            "manual_review_only": True,
+            "trade_authority": False,
+            "entry_authority": False,
+        }
+
+    observation["delta_tempo"] = delta_context
+    observation["anti_delta"] = anti_delta_context
 
     LOGGER.info(
         (

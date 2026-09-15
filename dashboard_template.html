@@ -573,6 +573,8 @@
             ${metric("LAR READ", card.lar_description)}
             ${metric("CANDLES", card.candle_count)}
             ${metric("LEDGER", ledger)}
+            ${metric("DELTA/TEMPO", `${displayValue(card.delta_tempo?.pressure?.state)} / ${displayValue(card.delta_tempo?.transition?.state)}`)}
+            ${metric("ANTI-DELTA", card.anti_delta?.state)}
           </div>
 
           <div class="reason">
