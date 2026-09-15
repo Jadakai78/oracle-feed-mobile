@@ -723,7 +723,8 @@ def run_battlefield_scan() -> None:
 
             dispatch_alert_for_card(
                 development_board[-1]
-            )except Exception as exc:
+            )
+        except Exception as exc:
             error_text = f"{type(exc).__name__}: {exc}"
 
             LOGGER.exception(
@@ -793,7 +794,6 @@ def battlefield_worker() -> None:
     while True:
         try:
             run_battlefield_scan()
-
         except Exception as exc:
             LOGGER.exception("Battlefield scan failed: %s", exc)
 
