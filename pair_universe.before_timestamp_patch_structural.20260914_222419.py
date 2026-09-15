@@ -1,10 +1,10 @@
-﻿"""
+"""
 sentinel/pair_universe.py
 =========================
 Lifted from battlefield's pair universe. Two additions on top of the original:
 
 1. XYZ100 removed (delisted per user)
-2. fetch_5m_candles() method added â€” sentinels need 5-min OHLC for features
+2. fetch_5m_candles() method added — sentinels need 5-min OHLC for features
 
 Everything else is unchanged from the working battlefield version.
 """
@@ -100,7 +100,6 @@ class MarketDataSource:
                 for candle in candles[-101:-1]:
                     try:
                         parsed.append({
-                            "timestamp_utc": datetime.fromtimestamp(int(candle[0]), tz=timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
                             "open":   float(candle[1]),
                             "high":   float(candle[2]),
                             "low":    float(candle[3]),
