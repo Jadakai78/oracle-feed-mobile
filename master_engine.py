@@ -1,22 +1,15 @@
 """
-Oracle Observation Service
+April 12 PRISM/LAR Battlefield Service
 
-Observation-only FastAPI service for completed-bar PRISM/LAR research.
+Completed-bar scanner for:
+BTC, ETH, SOL, XRP, DOGE, AVAX, ADA, SUI, NEAR, LINK, LTC, BCH.
 
-This service:
-- Fetches completed five-minute Kraken candles through MarketDataSource.
-- Runs PRISM Passive Observer v2 and LAR annotation on completed bars.
-- Serves an observation-only dashboard and read-only JSON API.
-- Keeps an in-memory observation snapshot for the current service lifetime.
+Routes:
+- /                 Dashboard
+- /api/observations Full 12-pair board
+- /health           Service health
 
-This service does not:
-- Generate or route trade signals.
-- Manage positions.
-- Calculate entries, stops, targets, risk, sizing, or allocation.
-- Send webhooks, alerts, orders, messages, or Git commits.
-- Expose execution, close-position, or webhook endpoints.
-
-Storage is ephemeral until a Render persistent disk is attached.
+No exchange orders are sent by this service.
 """
 
 from __future__ import annotations
@@ -43,18 +36,34 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
 )
-LOGGER = logging.getLogger("oracle_observation_service")
 
+LOGGER = logging.getLogger("april_12_battlefield")
 APP_ROOT = Path(__file__).resolve().parent
 DATA_DIR = Path(os.environ.get("PRISM_DATA_DIR", "/tmp/prism-observation-data"))
 
-SYMBOL = os.environ.get("PRISM_SYMBOL", "SOL").strip().upper()
+APRIL_12_SYMBOLS = [
+    "BTC",
+    "ETH",
+    "SOL",
+    "XRP",
+    "DOGE",
+    "AVAX",
+    "ADA",
+    "SUI",
+    "NEAR",
+    "LINK",
+    "LTC",
+    "BCH",
+]
+
 TIMEFRAME = os.environ.get("PRISM_TIMEFRAME", "5m").strip()
 MIN_CANDLES = int(os.environ.get("PRISM_MIN_CANDLES", "100"))
-POLL_SECONDS = max(15, int(os.environ.get("PRISM_POLL_SECONDS", "30")))
+POLL_SECONDS = max(30, int(os.environ.get("PRISM_POLL_SECONDS", "60")))
+
 STOP_DISTANCE_PCT = float(
     os.environ.get("PRISM_STOP_DISTANCE_PCT", "0.02")
 )
+
 LAR_ATR_MULTIPLIER = float(
     os.environ.get("PRISM_LAR_ATR_MULTIPLIER", "0.15")
 )
@@ -72,6 +81,7 @@ SIZING_CONFIG = {
 OBSERVATION_LEDGER_PATH = (
     DATA_DIR / "prism_observations_research_v2.jsonl"
 )
+
 LAR_ANNOTATION_LEDGER_PATH = (
     DATA_DIR / "prism_lar_annotations_research_v1.jsonl"
 )
@@ -86,33 +96,40 @@ ENGINE_STARTED_AT_UTC = (
 STATE_LOCK = threading.Lock()
 
 SERVICE_STATE: dict[str, Any] = {
-    "service": "oracle-observation-service",
-    "mode": "OBSERVATION_ONLY",
+    "service": "april-12-prism-lar-battlefield",
+    "mode": "SNIPER_INTEL",
     "started_at_utc": ENGINE_STARTED_AT_UTC,
-    "storage_mode": "EPHEMERAL_LOCAL_RUNTIME",
-    "storage_note": (
-        "No persistent disk is configured. "
-        "Observation history can reset after a Render restart or redeploy."
+    "storage_mode": (
+        "PERSISTENT_DISK"
+        if "PRISM_DATA_DIR" in os.environ
+        else "EPHEMERAL_LOCAL_RUNTIME"
     ),
-    "manual_review_only": True,
-    "trade_authority": False,
-    "entry_authority": False,
+    "storage_note": (
+        f"Data directory: {DATA_DIR}"
+    ),
     "poll_seconds": POLL_SECONDS,
-    "symbol": SYMBOL,
+    "symbols": APRIL_12_SYMBOLS,
     "timeframe": TIMEFRAME,
     "last_poll_started_at_utc": None,
-    "last_successful_observation_at_utc": None,
-    "last_completed_bar_timestamp_utc": None,
-    "last_observation_ledger_status": None,
-    "last_lar_annotation_ledger_status": None,
+    "last_successful_scan_at_utc": None,
     "last_error": None,
-    "latest_observation": None,
     "worker_running": False,
+    "observations": [],
+    "signals": [],
+    "development_board": [],
+    "universe_telemetry": {
+        "configured_pair_count": len(APRIL_12_SYMBOLS),
+        "candles_fetched_count": 0,
+        "scanned_pair_count": 0,
+        "signal_count": 0,
+        "scan_failures": [],
+    },
 }
 
+
 app = FastAPI(
-    title="Oracle Observation Service",
-    version="1.0.0",
+    title="April 12 PRISM/LAR Battlefield Board",
+    version="2.0.0",
 )
 
 
@@ -125,6 +142,14 @@ def utc_now_iso() -> str:
     )
 
 
+def safe_text(value: Any, default: str = "Not available") -> str:
+    if value is None:
+        return default
+
+    text = str(value).strip()
+    return text if text else default
+
+
 def get_dashboard_html() -> str:
     dashboard_path = APP_ROOT / "dashboard_template.html"
 
@@ -132,19 +157,9 @@ def get_dashboard_html() -> str:
         return dashboard_path.read_text(encoding="utf-8")
     except OSError as exc:
         return (
-            "<!doctype html><html><body>"
-            "<h1>Observation dashboard unavailable</h1>"
-            f"<p>{exc}</p>"
-            "</body></html>"
+            "<html><body><h2>Dashboard template error</h2>"
+            f"<pre>{exc}</pre></body></html>"
         )
-
-
-def safe_text(value: Any, default: str = "Not available") -> str:
-    if value is None:
-        return default
-
-    text = str(value).strip()
-    return text if text else default
 
 
 def build_public_observation(
@@ -165,7 +180,9 @@ def build_public_observation(
 
     liquidity_gate = lar_result.get("liquidity_gate", {})
     liquidity_gate = (
-        liquidity_gate if isinstance(liquidity_gate, dict) else {}
+        liquidity_gate
+        if isinstance(liquidity_gate, dict)
+        else {}
     )
 
     source = result.get("source", {})
@@ -186,7 +203,7 @@ def build_public_observation(
     )
 
     return {
-        "event_type": "PRISM_PASSIVE_OBSERVATION",
+        "event_type": "PRISM_LAR_OBSERVATION",
         "event_timestamp_utc": safe_text(
             source.get("completed_bar_timestamp_utc")
         ),
@@ -195,7 +212,9 @@ def build_public_observation(
         "timeframe": safe_text(result.get("timeframe")),
         "candle_count": source.get("candle_count"),
         "speed_phase": safe_text(phase_result.get("phase")),
-        "speed_direction": safe_text(phase_result.get("direction")),
+        "speed_direction": safe_text(
+            phase_result.get("direction")
+        ),
         "prism_status": safe_text(
             decision.get("status"),
             default="UNKNOWN",
@@ -208,13 +227,21 @@ def build_public_observation(
             decision.get("first_block"),
             default="NONE",
         ),
-        "lar_state": safe_text(liquidity_gate.get("state")),
-        "lar_pool_side": safe_text(liquidity_gate.get("pool_side")),
-        "lar_pool_type": safe_text(liquidity_gate.get("pool_type")),
+        "lar_state": safe_text(
+            liquidity_gate.get("state")
+        ),
+        "lar_pool_side": safe_text(
+            liquidity_gate.get("pool_side")
+        ),
+        "lar_pool_type": safe_text(
+            liquidity_gate.get("pool_type")
+        ),
         "lar_description": safe_text(
             liquidity_gate.get("entry_permission")
         ),
-        "lar_reason": safe_text(liquidity_gate.get("reason")),
+        "lar_reason": safe_text(
+            liquidity_gate.get("reason")
+        ),
         "lar_pending_sweep_present": (
             lar.get("pending_sweep_for_next_bar") is not None
         ),
@@ -236,28 +263,154 @@ def build_public_observation(
         "lar_annotation_id": safe_text(
             annotation_ledger.get("annotation_id")
         ),
-        "manual_review_only": True,
-        "trade_authority": False,
-        "entry_authority": False,
-        "source": "render_completed_5m_prism_passive_observer_v2",
+        "source": "render_completed_5m_prism_lar_april_12",
     }
-def run_one_observation() -> None:
-    with STATE_LOCK:
-        SERVICE_STATE["last_poll_started_at_utc"] = utc_now_iso()
-        SERVICE_STATE["last_error"] = None
 
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-    market_data_source = MarketDataSource()
+def battlefield_state(observation: dict[str, Any]) -> str:
+    prism = observation.get("prism_status", "UNKNOWN")
+    lar = observation.get("lar_state", "UNKNOWN")
+    speed = observation.get("speed_phase", "UNKNOWN")
 
+    if prism == "BLOCK":
+        return "NO SHOT"
+
+    if (
+        lar in {"BREAKOUT_ACCEPTED", "REJECTION_RECLAIM"}
+        and speed == "REACCELERATION"
+    ):
+        return "LOCKED IN"
+
+    if speed == "REACCELERATION":
+        return "PRESSURE BUILDING"
+
+    if speed == "CONTROLLED_PULLBACK":
+        return "RELOAD ZONE"
+
+    if speed == "DECAY":
+        return "MOMENTUM FADING"
+
+    if prism == "WATCH":
+        return "TRACKING"
+
+    return "TRACKING"
+
+
+def build_development_card(
+    symbol: str,
+    observation: dict[str, Any] | None,
+    error: str | None,
+) -> dict[str, Any]:
+    if error:
+        return {
+            "pair": f"{symbol}USD",
+            "symbol": symbol,
+            "battle_state": "DATA FAULT",
+            "scan_status": "FETCH_OR_ANALYSIS_ERROR",
+            "reason": error,
+            "price": None,
+            "speed_phase": "UNAVAILABLE",
+            "speed_direction": "UNAVAILABLE",
+            "prism_status": "UNAVAILABLE",
+            "prism_first_block": "UNAVAILABLE",
+            "lar_state": "UNAVAILABLE",
+            "lar_pool_side": "UNAVAILABLE",
+            "lar_pool_type": "UNAVAILABLE",
+            "lar_description": "UNAVAILABLE",
+            "event_timestamp_utc": None,
+            "candle_count": 0,
+        }
+
+    if observation is None:
+        return {
+            "pair": f"{symbol}USD",
+            "symbol": symbol,
+            "battle_state": "SCANNING",
+            "scan_status": "NO_RESULT",
+            "reason": "No completed observation returned.",
+            "price": None,
+            "speed_phase": "UNAVAILABLE",
+            "speed_direction": "UNAVAILABLE",
+            "prism_status": "UNAVAILABLE",
+            "prism_first_block": "UNAVAILABLE",
+            "lar_state": "UNAVAILABLE",
+            "lar_pool_side": "UNAVAILABLE",
+            "lar_pool_type": "UNAVAILABLE",
+            "lar_description": "UNAVAILABLE",
+            "event_timestamp_utc": None,
+            "candle_count": 0,
+        }
+
+    return {
+        "pair": observation.get("pair", f"{symbol}USD"),
+        "symbol": symbol,
+        "battle_state": battlefield_state(observation),
+        "scan_status": "ONLINE",
+        "reason": observation.get("prism_reason"),
+        "price": None,
+        "speed_phase": observation.get("speed_phase"),
+        "speed_direction": observation.get("speed_direction"),
+        "prism_status": observation.get("prism_status"),
+        "prism_first_block": observation.get("prism_first_block"),
+        "lar_state": observation.get("lar_state"),
+        "lar_pool_side": observation.get("lar_pool_side"),
+        "lar_pool_type": observation.get("lar_pool_type"),
+        "lar_description": observation.get("lar_description"),
+        "event_timestamp_utc": observation.get(
+            "event_timestamp_utc"
+        ),
+        "candle_count": observation.get("candle_count"),
+        "observation_ledger_status": observation.get(
+            "observation_ledger_status"
+        ),
+        "lar_annotation_ledger_status": observation.get(
+            "lar_annotation_ledger_status"
+        ),
+    }
+
+
+def build_signal_card(
+    observation: dict[str, Any],
+) -> dict[str, Any] | None:
+    state = battlefield_state(observation)
+
+    if state not in {
+        "LOCKED IN",
+        "PRESSURE BUILDING",
+        "RELOAD ZONE",
+    }:
+        return None
+
+    return {
+        "pair": observation.get("pair"),
+        "battle_state": state,
+        "speed_phase": observation.get("speed_phase"),
+        "speed_direction": observation.get("speed_direction"),
+        "prism_status": observation.get("prism_status"),
+        "prism_first_block": observation.get("prism_first_block"),
+        "lar_state": observation.get("lar_state"),
+        "lar_pool_side": observation.get("lar_pool_side"),
+        "lar_pool_type": observation.get("lar_pool_type"),
+        "lar_description": observation.get("lar_description"),
+        "reason": observation.get("prism_reason"),
+        "event_timestamp_utc": observation.get(
+            "event_timestamp_utc"
+        ),
+    }
+
+
+def run_one_symbol_observation(
+    market_data_source: MarketDataSource,
+    symbol: str,
+) -> dict[str, Any]:
     candles = market_data_source.fetch_5m_candles(
-        SYMBOL,
+        symbol,
         min_candles=MIN_CANDLES,
     )
 
     if not candles:
         raise RuntimeError(
-            f"No completed {TIMEFRAME} candles returned for {SYMBOL}"
+            f"No completed {TIMEFRAME} candles returned for {symbol}"
         )
 
     phase_result = analyze_completed_candles(candles)
@@ -269,14 +422,14 @@ def run_one_observation() -> None:
     result = observe_completed_bar(
         observation_ledger_path=OBSERVATION_LEDGER_PATH,
         lar_annotation_ledger_path=LAR_ANNOTATION_LEDGER_PATH,
-        symbol=SYMBOL,
+        symbol=symbol,
         candles=candles,
         speed_phase=speed_phase,
         sizing_config=SIZING_CONFIG,
         stop_distance_pct=STOP_DISTANCE_PCT,
         timeframe=TIMEFRAME,
         quote="USD",
-        source_label="render_prism_observation_service_v1",
+        source_label="render_prism_lar_april_12",
         lar_atr_multiplier=LAR_ATR_MULTIPLIER,
         lar_pending_sweep=None,
     )
@@ -285,20 +438,6 @@ def run_one_observation() -> None:
         result=result,
         phase_result=phase_result,
     )
-
-    with STATE_LOCK:
-        SERVICE_STATE["last_successful_observation_at_utc"] = utc_now_iso()
-        SERVICE_STATE["last_completed_bar_timestamp_utc"] = (
-            public_observation["event_timestamp_utc"]
-        )
-        SERVICE_STATE["last_observation_ledger_status"] = (
-            public_observation["observation_ledger_status"]
-        )
-        SERVICE_STATE["last_lar_annotation_ledger_status"] = (
-            public_observation["lar_annotation_ledger_status"]
-        )
-        SERVICE_STATE["latest_observation"] = public_observation
-        SERVICE_STATE["last_error"] = None
 
     LOGGER.info(
         "Observation complete pair=%s bar=%s prism=%s ledger=%s lar=%s",
@@ -309,23 +448,115 @@ def run_one_observation() -> None:
         public_observation["lar_annotation_ledger_status"],
     )
 
+    return public_observation
 
-def observation_worker() -> None:
+
+def run_battlefield_scan() -> None:
+    with STATE_LOCK:
+        SERVICE_STATE["last_poll_started_at_utc"] = utc_now_iso()
+        SERVICE_STATE["last_error"] = None
+
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+    market_data_source = MarketDataSource()
+    observations: list[dict[str, Any]] = []
+    development_board: list[dict[str, Any]] = []
+    signals: list[dict[str, Any]] = []
+    scan_failures: list[dict[str, str]] = []
+    candles_fetched_count = 0
+
+    for symbol in APRIL_12_SYMBOLS:
+        try:
+            observation = run_one_symbol_observation(
+                market_data_source,
+                symbol,
+            )
+
+            candles_fetched_count += 1
+            observations.append(observation)
+
+            development_board.append(
+                build_development_card(
+                    symbol=symbol,
+                    observation=observation,
+                    error=None,
+                )
+            )
+
+            signal = build_signal_card(observation)
+
+            if signal is not None:
+                signals.append(signal)
+
+        except Exception as exc:
+            error_text = f"{type(exc).__name__}: {exc}"
+
+            LOGGER.exception(
+                "Observation failed pair=%s error=%s",
+                symbol,
+                error_text,
+            )
+
+            scan_failures.append(
+                {
+                    "symbol": symbol,
+                    "reason": error_text,
+                }
+            )
+
+            development_board.append(
+                build_development_card(
+                    symbol=symbol,
+                    observation=None,
+                    error=error_text,
+                )
+            )
+
+    priority = {
+        "LOCKED IN": 0,
+        "PRESSURE BUILDING": 1,
+        "RELOAD ZONE": 2,
+    }
+
+    signals.sort(
+        key=lambda card: priority.get(
+            card.get("battle_state"),
+            99,
+        )
+    )
+
+    with STATE_LOCK:
+        SERVICE_STATE["observations"] = observations
+        SERVICE_STATE["development_board"] = development_board
+        SERVICE_STATE["signals"] = signals
+        SERVICE_STATE["last_successful_scan_at_utc"] = utc_now_iso()
+        SERVICE_STATE["last_error"] = None
+        SERVICE_STATE["universe_telemetry"] = {
+            "configured_pair_count": len(APRIL_12_SYMBOLS),
+            "candles_fetched_count": candles_fetched_count,
+            "scanned_pair_count": len(observations),
+            "signal_count": len(signals),
+            "scan_failures": scan_failures,
+        }
+
+
+def battlefield_worker() -> None:
     with STATE_LOCK:
         SERVICE_STATE["worker_running"] = True
 
     LOGGER.info(
-        "Observation worker started symbol=%s timeframe=%s poll=%ss",
-        SYMBOL,
+        "April 12 worker started symbols=%s timeframe=%s poll=%ss",
+        ",".join(APRIL_12_SYMBOLS),
         TIMEFRAME,
         POLL_SECONDS,
     )
 
     while True:
         try:
-            run_one_observation()
+            run_battlefield_scan()
+
         except Exception as exc:
-            LOGGER.exception("Observation cycle failed: %s", exc)
+            LOGGER.exception("Battlefield scan failed: %s", exc)
 
             with STATE_LOCK:
                 SERVICE_STATE["last_error"] = (
@@ -336,12 +567,13 @@ def observation_worker() -> None:
 
 
 @app.on_event("startup")
-def start_observation_worker() -> None:
+def start_battlefield_worker() -> None:
     thread = threading.Thread(
-        target=observation_worker,
-        name="prism-observation-worker",
+        target=battlefield_worker,
+        name="april-12-battlefield-worker",
         daemon=True,
     )
+
     thread.start()
 
 
@@ -355,10 +587,11 @@ def get_observations() -> JSONResponse:
     with STATE_LOCK:
         payload = copy.deepcopy(SERVICE_STATE)
 
-    payload["observations"] = (
-        [payload["latest_observation"]]
-        if payload["latest_observation"] is not None
-        else []
+    payload["active_signals_count"] = len(
+        payload.get("signals", [])
+    )
+    payload["timestamp"] = payload.get(
+        "last_successful_scan_at_utc"
     )
 
     return JSONResponse(content=payload)
@@ -367,33 +600,35 @@ def get_observations() -> JSONResponse:
 @app.get("/health", response_class=JSONResponse)
 def get_health() -> JSONResponse:
     with STATE_LOCK:
-        latest = SERVICE_STATE["latest_observation"]
+        has_scan = SERVICE_STATE[
+            "last_successful_scan_at_utc"
+        ] is not None
+
         error = SERVICE_STATE["last_error"]
 
-    status = "healthy"
+        status = (
+            "degraded"
+            if error
+            else "healthy"
+            if has_scan
+            else "starting"
+        )
 
-    if error:
-        status = "degraded"
-    elif latest is None:
-        status = "starting"
-
-    return JSONResponse(
-        content={
-            "status": status,
-            "service": "oracle-observation-service",
-            "mode": "OBSERVATION_ONLY",
-            "manual_review_only": True,
-            "trade_authority": False,
-            "entry_authority": False,
-            "storage_mode": "EPHEMERAL_LOCAL_RUNTIME",
-            "last_completed_bar_timestamp_utc": (
-                latest.get("event_timestamp_utc")
-                if isinstance(latest, dict)
-                else None
-            ),
-            "last_error": error,
-        }
-    )
+        return JSONResponse(
+            content={
+                "status": status,
+                "service": SERVICE_STATE["service"],
+                "mode": SERVICE_STATE["mode"],
+                "symbols": APRIL_12_SYMBOLS,
+                "storage_mode": SERVICE_STATE["storage_mode"],
+                "last_successful_scan_at_utc": (
+                    SERVICE_STATE[
+                        "last_successful_scan_at_utc"
+                    ]
+                ),
+                "last_error": error,
+            }
+        )
 
 
 if __name__ == "__main__":
@@ -404,8 +639,3 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=port,
     )
-
-
-
-
-

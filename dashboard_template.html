@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -30,7 +30,7 @@
     }
 
     .shell {
-      width: min(1500px, calc(100% - 28px));
+      width: min(1540px, calc(100% - 28px));
       margin: 0 auto;
       padding: 24px 0 48px;
     }
@@ -58,7 +58,7 @@
     }
 
     .health {
-      min-width: 160px;
+      min-width: 190px;
       padding: 10px 12px;
       border: 1px solid var(--border);
       border-radius: 10px;
@@ -158,12 +158,12 @@
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
       gap: 12px;
     }
 
     .card {
-      min-height: 228px;
+      min-height: 255px;
       border: 1px solid var(--border);
       border-radius: 12px;
       background: linear-gradient(145deg, rgba(19, 30, 45, 0.98), rgba(10, 16, 27, 0.98));
@@ -286,8 +286,8 @@
   <main class="shell">
     <header class="command-bar">
       <div>
-        <h1>APRIL 12 â€” BATTLEFIELD BOARD</h1>
-        <div class="subhead">Signals: locked targets Â· Development: complete field</div>
+        <h1>APRIL 12 — BATTLEFIELD BOARD</h1>
+        <div class="subhead">Signals: priority targets · Development: complete battlefield</div>
       </div>
 
       <div class="health">
@@ -299,22 +299,22 @@
     <section class="telemetry">
       <div class="telemetry-card">
         <span>UNIVERSE</span>
-        <strong id="configured-count">â€”</strong>
+        <strong id="configured-count">—</strong>
       </div>
 
       <div class="telemetry-card">
         <span>CANDLES ONLINE</span>
-        <strong id="candles-count">â€”</strong>
+        <strong id="candles-count">—</strong>
       </div>
 
       <div class="telemetry-card">
         <span>TARGETS LOCKED</span>
-        <strong id="signals-count">â€”</strong>
+        <strong id="signals-count">—</strong>
       </div>
 
       <div class="telemetry-card">
         <span>LAST SCAN</span>
-        <strong id="scan-time">â€”</strong>
+        <strong id="scan-time">—</strong>
       </div>
     </section>
 
@@ -330,7 +330,7 @@
 
     <section id="signals-panel" class="board-panel active" role="tabpanel">
       <div class="panel-header">
-        <h2>LOCKED TARGETS</h2>
+        <h2>PRIORITY TARGETS</h2>
         <span id="signal-note">Waiting for scan</span>
       </div>
 
@@ -340,7 +340,7 @@
     <section id="development-panel" class="board-panel" role="tabpanel" hidden>
       <div class="panel-header">
         <h2>FULL BATTLEFIELD</h2>
-        <span id="development-note">Every scanned pairing appears here</span>
+        <span id="development-note">Every pairing remains visible here</span>
       </div>
 
       <div id="development-grid" class="grid"></div>
@@ -376,36 +376,27 @@
       developmentPanel.hidden = signalsActive;
     }
 
-    function developmentState(card) {
-      if (card.status === "RAW_CANDIDATE") return "PRESSURE BUILDING";
-      if (card.status === "FILTERED") return "NO SHOT";
-      if (card.status === "FETCH_ERROR") return "DATA FAULT";
-      if (card.status === "NO_CANDLES") return "NO FRESH BAR";
-      if (card.status === "INVALID_CANDLE") return "BAD CANDLE";
-      if (card.status === "INVALID_PRICE") return "BAD PRICE";
-      if (card.status === "ANALYSIS_ERROR") return "ANALYSIS FAULT";
-      if (card.status === "PENDING") return "SCANNING";
-      return card.battle_state || "TRACKING";
-    }
-
     function badgeClass(state) {
       if (
-        state.includes("LOCKED") ||
-        state.includes("MATCH") ||
-        state.includes("PRESSURE")
+        state === "LOCKED IN" ||
+        state === "PRESSURE BUILDING" ||
+        state === "RELOAD ZONE"
       ) {
         return "locked";
       }
 
       if (
-        state.includes("FAULT") ||
-        state.includes("BAD") ||
-        state.includes("NO FRESH")
+        state === "DATA FAULT" ||
+        state === "BAD CANDLE" ||
+        state === "NO FRESH BAR"
       ) {
         return "fault";
       }
 
-      if (state.includes("NO SHOT") || state.includes("FILTERED")) {
+      if (
+        state === "NO SHOT" ||
+        state === "MOMENTUM FADING"
+      ) {
         return "no-shot";
       }
 
@@ -416,7 +407,7 @@
       return `
         <div class="metric">
           <span>${escapeHtml(label)}</span>
-          <strong>${escapeHtml(value ?? "â€”")}</strong>
+          <strong>${escapeHtml(value ?? "—")}</strong>
         </div>
       `;
     }
@@ -425,15 +416,17 @@
       const grid = document.getElementById("signals-grid");
       const note = document.getElementById("signal-note");
 
-      note.textContent = `${signals.length} locked target${signals.length === 1 ? "" : "s"}`;
+      note.textContent =
+        `${signals.length} priority target${signals.length === 1 ? "" : "s"}`;
 
       if (!signals.length) {
-        grid.innerHTML = `<div class="empty">NO TARGETS LOCKED â€” DEVELOPMENT HAS THE COMPLETE FIELD</div>`;
+        grid.innerHTML =
+          `<div class="empty">NO PRIORITY TARGETS — DEVELOPMENT HAS THE FULL FIELD</div>`;
         return;
       }
 
       grid.innerHTML = signals.map((signal) => {
-        const state = signal.status || "LOCKED IN";
+        const state = signal.battle_state || "TRACKING";
 
         return `
           <article class="card">
@@ -443,17 +436,17 @@
             </div>
 
             <div class="metrics">
-              ${metric("DIRECTION", signal.direction)}
-              ${metric("SCORE", signal.score)}
-              ${metric("ENTRY", signal.entry)}
-              ${metric("FAILURE LINE", signal.stop)}
-              ${metric("TARGET", signal.target)}
               ${metric("SPEED", signal.speed_phase)}
-              ${metric("SETUP", signal.setup_family)}
-              ${metric("PRESSURE", signal.anti_delta_score)}
+              ${metric("DIRECTION", signal.speed_direction)}
+              ${metric("PRISM", signal.prism_status)}
+              ${metric("LAR", signal.lar_state)}
+              ${metric("POOL SIDE", signal.lar_pool_side)}
+              ${metric("POOL TYPE", signal.lar_pool_type)}
+              ${metric("LAR READ", signal.lar_description)}
+              ${metric("BAR", signal.event_timestamp_utc)}
             </div>
 
-            <div class="reason">${escapeHtml(signal.prism_map || "TARGET LOCKED")}</div>
+            <div class="reason">${escapeHtml(signal.reason || "TARGET DEVELOPING")}</div>
           </article>
         `;
       }).join("");
@@ -463,15 +456,17 @@
       const grid = document.getElementById("development-grid");
       const note = document.getElementById("development-note");
 
-      note.textContent = `${cards.length} pairing${cards.length === 1 ? "" : "s"} on the battlefield`;
+      note.textContent =
+        `${cards.length} pairing${cards.length === 1 ? "" : "s"} on the board`;
 
       if (!cards.length) {
-        grid.innerHTML = `<div class="empty">WAITING FOR FIRST COMPLETE SCAN</div>`;
+        grid.innerHTML =
+          `<div class="empty">WAITING FOR FIRST COMPLETE SCAN</div>`;
         return;
       }
 
       grid.innerHTML = cards.map((card) => {
-        const state = developmentState(card);
+        const state = card.battle_state || "TRACKING";
 
         return `
           <article class="card">
@@ -481,17 +476,17 @@
             </div>
 
             <div class="metrics">
-              ${metric("PRICE", card.price)}
+              ${metric("SCAN", card.scan_status)}
               ${metric("SPEED", card.speed_phase)}
-              ${metric("DIRECTION", card.supertrend_dir)}
-              ${metric("ZONE", card.structural_zone)}
-              ${metric("TAPE", card.noise_regime)}
-              ${metric("ST DIST", card.st_distance_pct === null || card.st_distance_pct === undefined ? "â€”" : `${card.st_distance_pct}%`)}
-              ${metric("BAR COUNT", card.bar_count)}
-              ${metric("SCAN STATUS", card.status)}
+              ${metric("DIRECTION", card.speed_direction)}
+              ${metric("PRISM", card.prism_status)}
+              ${metric("FIRST BLOCK", card.prism_first_block)}
+              ${metric("LAR", card.lar_state)}
+              ${metric("POOL", `${card.lar_pool_side ?? "—"} / ${card.lar_pool_type ?? "—"}`)}
+              ${metric("BAR", card.event_timestamp_utc)}
             </div>
 
-            <div class="reason">${escapeHtml(card.reason || card.battle_state || "TRACKING")}</div>
+            <div class="reason">${escapeHtml(card.reason || card.lar_description || "TRACKING")}</div>
           </article>
         `;
       }).join("");
@@ -499,7 +494,9 @@
 
     async function refreshBoard() {
       try {
-        const response = await fetch("/api/observations", { cache: "no-store" });
+        const response = await fetch("/api/observations", {
+          cache: "no-store"
+        });
 
         if (!response.ok) {
           throw new Error(`Feed returned HTTP ${response.status}`);
@@ -507,29 +504,31 @@
 
         const payload = await response.json();
         const telemetry = payload.universe_telemetry || {};
-        const health = payload.engine_health || {};
 
         document.getElementById("configured-count").textContent =
-          telemetry.configured_pair_count ?? "â€”";
+          telemetry.configured_pair_count ?? "—";
 
         document.getElementById("candles-count").textContent =
-          telemetry.candles_fetched_count ?? "â€”";
+          telemetry.candles_fetched_count ?? "—";
 
         document.getElementById("signals-count").textContent =
           payload.active_signals_count ?? 0;
 
         document.getElementById("scan-time").textContent =
-          payload.timestamp ?? "â€”";
+          payload.timestamp ?? "—";
 
         document.getElementById("engine-health").textContent =
-          health.status ?? "UNKNOWN";
+          payload.last_error ? "DEGRADED" : "ONLINE";
 
         renderSignals(payload.signals || []);
         renderDevelopment(payload.development_board || []);
       } catch (error) {
-        document.getElementById("engine-health").textContent = "FEED OFFLINE";
+        document.getElementById("engine-health").textContent =
+          "FEED OFFLINE";
+
         document.getElementById("signals-grid").innerHTML =
           `<div class="empty">SIGNAL FEED ERROR: ${escapeHtml(error.message)}</div>`;
+
         document.getElementById("development-grid").innerHTML =
           `<div class="empty">DEVELOPMENT FEED ERROR: ${escapeHtml(error.message)}</div>`;
       }
