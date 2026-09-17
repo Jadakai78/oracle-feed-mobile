@@ -10,7 +10,6 @@ let lastFocusedTrigger = null;
 document.addEventListener("DOMContentLoaded", () => {
     fetchFeedData();
     setupKeyboardTabs();
-    setupModalListeners();
 });
 
 async function fetchFeedData() {
@@ -405,47 +404,5 @@ function renderMarketMapTable() {
     }).join("");
 }
 
-// Modal management
-function openAccessModal() {
-    lastFocusedTrigger = document.activeElement;
-    const modal = document.getElementById("access-modal");
-    if (modal) {
-        modal.classList.add("open");
-        modal.setAttribute("aria-hidden", "false");
-        const closeBtn = modal.querySelector(".modal-close");
-        if (closeBtn) closeBtn.focus();
-    }
-}
 
-function closeAccessModal() {
-    const modal = document.getElementById("access-modal");
-    if (modal) {
-        modal.classList.remove("open");
-        modal.setAttribute("aria-hidden", "true");
-        if (lastFocusedTrigger) {
-            lastFocusedTrigger.focus();
-        }
-    }
-}
 
-function handleRequestAccess() {
-    alert("Access request received. Connecting to publisher stream...");
-    closeAccessModal();
-}
-
-function setupModalListeners() {
-    const modal = document.getElementById("access-modal");
-    if (!modal) return;
-
-    window.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && modal.classList.contains("open")) {
-            closeAccessModal();
-        }
-    });
-
-    modal.addEventListener("click", (e) => {
-        if (e.target === modal) {
-            closeAccessModal();
-        }
-    });
-}
