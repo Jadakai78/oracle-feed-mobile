@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -141,9 +140,7 @@ def concise_gate_blockers(
                     status,
                 )
 
-                blockers.append(
-                    f"{gate_name}:{reason}"
-                )
+                blockers.append(f"{gate_name}:{reason}")
 
     return blockers[:6]
 
@@ -170,8 +167,7 @@ def sale_signal_to_april_record(
     weighted_score = score / 100.0
 
     side = normalize_direction(
-        signal.get("side")
-        or geometry.get("side")
+        signal.get("side") or geometry.get("side")
     )
 
     entry = safe_number(geometry.get("entry"))
@@ -186,9 +182,8 @@ def sale_signal_to_april_record(
         take_profit=take_profit,
     )
 
-    gates = signal.get("gates", {})
     blockers = concise_gate_blockers(
-        gates=gates,
+        gates=signal.get("gates", {}),
         eligibility=eligibility,
     )
 
@@ -226,10 +221,7 @@ def sale_signal_to_april_record(
         "take_profit_2": take_profit_2,
         "risk_reward": risk_reward,
         "entry_display": format_price(entry, "Entry"),
-        "stop_loss_display": format_price(
-            stop_loss,
-            "Stop",
-        ),
+        "stop_loss_display": format_price(stop_loss, "Stop"),
         "take_profit_display": format_price(
             take_profit,
             "Target",
@@ -264,11 +256,9 @@ def load_sale_feed() -> tuple[
     str | None,
 ]:
     try:
-        raw = SALE_FEED_PATH.read_text(
-            encoding="utf-8"
+        payload = json.loads(
+            SALE_FEED_PATH.read_text(encoding="utf-8")
         )
-
-        payload = json.loads(raw)
 
         if not isinstance(payload, dict):
             raise ValueError(
@@ -282,8 +272,7 @@ def load_sale_feed() -> tuple[
 
         if not isinstance(raw_records, list):
             raise ValueError(
-                f"signals.json {SALE_FEED_RECORDS_KEY} "
-                "must be a list."
+                f"signals.json {SALE_FEED_RECORDS_KEY} must be a list."
             )
 
         records = [
@@ -298,9 +287,7 @@ def load_sale_feed() -> tuple[
         return {}, [], f"{type(exc).__name__}: {exc}"
 
 
-def source_unavailable_record(
-    error: str,
-) -> dict[str, Any]:
+def source_unavailable_record(error: str) -> dict[str, Any]:
     return {
         "symbol": "SALE_FEED_UNAVAILABLE",
         "pair": "SALE_FEED_UNAVAILABLE",
@@ -369,40 +356,41 @@ def api_feed():
     if not isinstance(summary, dict):
         summary = {}
 
-    return jsonify(
-        {
-            "service": "oracle-feed-mobile",
-            "mode": "SALE_FEED_ALL_49_PAIRS",
-            "manual_review_only": True,
-            "trade_authority": False,
-            "entry_authority": False,
-            "generated_at_utc": utc_now_iso(),
-            "source": {
-                "status": (
-                    "LIVE_SNAPSHOT"
-                    if error is None
-                    else "UNAVAILABLE"
-                ),
-                "file": "signals.json",
-                "records_key": SALE_FEED_RECORDS_KEY,
-                "file_generated_at": payload.get(
-                    "generated_at"
-                ),
-                "schema_version": payload.get(
-                    "schema_version"
-                ),
-                "error": error,
-            },
-            "universe": payload.get("universe", {}),
-            "summary": summary,
-            "tabs": {
-                "qualified": qualified,
-                "watch": watch,
-                "hidden": hidden,
-            },
-            "records": records,
-        }
-    )
+    response = {
+        "service": "oracle-feed-mobile",
+        "mode": "SALE_FEED_ALL_49_PAIRS",
+        "manual_review_only": True,
+        "trade_authority": False,
+        "entry_authority": False,
+        "generated_at_utc": utc_now_iso(),
+        "source": {
+            "status": (
+                "LIVE_SNAPSHOT"
+                if error is None
+                else "UNAVAILABLE"
+            ),
+            "file": "signals.json",
+            "records_key": SALE_FEED_RECORDS_KEY,
+            "file_generated_at": payload.get("generated_at"),
+            "schema_version": payload.get("schema_version"),
+            "error": error,
+        },
+        "universe": payload.get("universe", {}),
+        "summary": summary,
+        "tabs": {
+            "qualified": qualified,
+            "watch": watch,
+            "hidden": hidden,
+        },
+        "records": records,
+
+        # Legacy API compatibility for the existing feed.js:
+        "qualified": qualified,
+        "watch": watch,
+        "hidden": hidden,
+    }
+
+    return jsonify(response)
 
 
 @app.get("/health")
@@ -411,18 +399,12 @@ def health():
 
     return jsonify(
         {
-            "status": (
-                "healthy"
-                if error is None
-                else "degraded"
-            ),
+            "status": "healthy" if error is None else "degraded",
             "service": "oracle-feed-mobile",
             "mode": "SALE_FEED_ALL_49_PAIRS",
             "source_file": "signals.json",
             "records_key": SALE_FEED_RECORDS_KEY,
-            "file_generated_at": payload.get(
-                "generated_at"
-            ),
+            "file_generated_at": payload.get("generated_at"),
             "record_count": len(records),
             "universe": payload.get("universe", {}),
             "error": error,
@@ -432,9 +414,7 @@ def health():
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", "10000"))
-
     app.run(
         host="0.0.0.0",
-        port=port,
+        port=int(os.environ.get("PORT", "10000")),
     )
