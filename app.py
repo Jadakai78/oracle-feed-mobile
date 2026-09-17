@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -383,7 +384,10 @@ def api_feed():
             "hidden": hidden,
         },
         "records": records,
-
+        "prop": qualified,
+        "execute": qualified,
+        "shadow": watch,
+        "market_map": records,
         # Legacy API compatibility for the existing feed.js:
         "qualified": qualified,
         "watch": watch,
