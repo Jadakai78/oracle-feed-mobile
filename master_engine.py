@@ -1031,6 +1031,93 @@ def get_dashboard() -> HTMLResponse:
     return HTMLResponse(content=get_dashboard_html())
 
 
+@app.get("/api/feed", response_class=JSONResponse)
+def get_feed() -> JSONResponse:
+    with STATE_LOCK:
+        observations = copy.deepcopy(
+            SERVICE_STATE.get("observations", [])
+        )
+        signals = copy.deepcopy(
+            SERVICE_STATE.get("signals", [])
+        )
+        development_board = copy.deepcopy(
+            SERVICE_STATE.get("development_board", [])
+        )
+
+    def feed_card(record: dict[str, Any], display_state: str) -> dict[str, Any]:
+        direction = safe_text(
+            record.get("speed_direction")
+            or record.get("direction"),
+            default="NEUTRAL",
+        ).upper()
+
+        return {
+            **record,
+            "display_state": display_state,
+            "direction": direction,
+            "data_availability": (
+                "live"
+                if safe_text(
+                    record.get("scan_status"),
+                    default="ONLINE",
+                ).upper() == "ONLINE"
+                else "unavailable"
+            ),
+        }
+
+    signal_keys = {
+        safe_text(
+            record.get("observation_key")
+            or record.get("pair")
+        )
+        for record in signals
+    }
+
+    execute = [
+        feed_card(record, "QUALIFIED")
+        for record in signals
+    ]
+
+    shadow = [
+        feed_card(record, "WATCH")
+        for record in development_board
+        if safe_text(
+            record.get("observation_key")
+            or record.get("pair")
+        ) not in signal_keys
+    ]
+
+    prop = list(execute)
+
+    market_map = [
+        feed_card(
+            record,
+            (
+                "QUALIFIED"
+                if safe_text(
+                    record.get("observation_key")
+                    or record.get("pair")
+                ) in signal_keys
+                else "WATCH"
+                if safe_text(
+                    record.get("prism_status"),
+                    default="",
+                ).upper() == "WATCH"
+                else "HIDDEN"
+            ),
+        )
+        for record in observations
+    ]
+
+    return JSONResponse(
+        content={
+            "prop": prop,
+            "execute": execute,
+            "shadow": shadow,
+            "market_map": market_map,
+        }
+    )
+
 @app.get(
     "/api/observations",
     response_class=JSONResponse,
