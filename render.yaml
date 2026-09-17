@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: oracle-feed-mobile
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT app:app
+    healthCheckPath: /health
+    envVars:
+      - key: RELEASE_TAG
+        value: weighted-core-45-35-25-v1
