@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>April Market Intelligence | Active Trader Feed</title>
+    <link rel="stylesheet" href="/static/feed.css">
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-brand">
+            <span class="brand-badge">APRIL</span>
+            <div class="brand-titles">
+                <span class="brand-name">April Market Intelligence</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="cta-button primary-cta" onclick="openAccessModal()">Unlock full market context</button>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <h1>Market Intelligence for Active Traders</h1>
+            <p>See where market pressure, tempo, and opportunity alignâ€”before the crowd turns a chart into a headline.</p>
+            <div class="hero-buttons">
+                <button class="cta-button primary-cta" onclick="openAccessModal()">Unlock full market context</button>
+                <a href="#feed-section" class="cta-button secondary-cta">Explore live signal feed</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Live Market Pulse (Hero Pulse Panel) -->
+    <section class="pulse-section">
+        <div class="section-header">
+            <span class="section-tag">LIVE PULSE</span>
+            <h2>Top Qualified Opportunity</h2>
+            <p>Real-time leading candidate from our proprietary weighted eligibility engine.</p>
+        </div>
+        <div id="live-market-pulse" class="pulse-card-container">
+            <div class="pulse-placeholder">Scanning live market stream...</div>
+        </div>
+        <div class="pulse-action-wrap">
+            <button class="cta-button primary-cta" onclick="openAccessModal()">Unlock full market context</button>
+        </div>
+    </section>
+
+    <!-- Main Feed Section -->
+    <section id="feed-section" class="feed-section-wrap">
+        <div class="feed-container">
+            <!-- Loading & Error States -->
+            <div id="loading-state" class="state-banner">Loading market intelligence feed...</div>
+            <div id="error-state" class="state-banner error-banner" style="display: none;">Failed to load feed data from API. Please verify the server connection.</div>
+
+            <!-- Tab Navigation (Four Sales-Center Tabs) -->
+            <nav class="tab-bar" role="tablist" aria-label="Feed Surfaces">
+                <button role="tab" aria-selected="true" aria-controls="prop-panel" id="tab-prop" class="tab-btn active" tabindex="0" onclick="switchTab('prop')">
+                    Opportunities <span class="tab-count" id="count-prop">0</span>
+                </button>
+                <button role="tab" aria-selected="false" aria-controls="execute-panel" id="tab-execute" class="tab-btn" tabindex="-1" onclick="switchTab('execute')">
+                    Trade Plan <span class="tab-count" id="count-execute">0</span>
+                </button>
+                <button role="tab" aria-selected="false" aria-controls="shadow-panel" id="tab-shadow" class="tab-btn" tabindex="-1" onclick="switchTab('shadow')">
+                    Developing <span class="tab-count" id="count-shadow">0</span>
+                </button>
+                <button role="tab" aria-selected="false" aria-controls="market_map-panel" id="tab-market_map" class="tab-btn" tabindex="-1" onclick="switchTab('market_map')">
+                    Market Map <span class="tab-count" id="count-market_map">49</span>
+                </button>
+            </nav>
+
+            <!-- Opportunities Panel (prop) -->
+            <section class="april-ai-identity" aria-label="April AI market intelligence"><div class="ai-identity-kicker"><span class="ai-pulse" aria-hidden="true"></span>APRIL AI MARKET INTELLIGENCE</div><div class="ai-identity-brand">A GDA AI NETWORK RESEARCH SYSTEM</div><h1>AI Structurally Validated Positions</h1><div class="ai-framework"><span>Structure</span><i>&bull;</i><span>Pressure</span><i>&bull;</i><span>Tempo</span><i>&bull;</i><span class="shield-guard">Shield Guard</span></div><p class="ai-identity-message">Know quickly when the structure no longer holds. <strong>No guarantees.</strong> Defined conditions. Disciplined defense.</p><p class="better-trading">The spirit of better trading.</p></section>
+<section role="tabpanel" id="prop-panel" aria-labelledby="tab-prop" class="tab-panel active">
+                <div class="panel-intro">
+                    <h2>Proprietary Qualified Opportunities</h2>
+                    <p>High-conviction market opportunities meeting absolute scoring and structural thresholds.</p>
+                </div>
+                <div id="grid-prop" class="card-grid"></div>
+            </section>
+
+            <!-- Trade Plan Panel (execute) -->
+            <section role="tabpanel" id="execute-panel" aria-labelledby="tab-execute" class="tab-panel">
+                <div class="panel-intro">
+                    <h2>Actionable Trade Execution Plans</h2>
+                    <p>Qualified signals containing complete entry frameworks, profit targets, and invalidation parameters.</p>
+                </div>
+                <div id="grid-execute" class="card-grid"></div>
+            </section>
+
+            <!-- Developing Panel (shadow) -->
+            <section role="tabpanel" id="shadow-panel" aria-labelledby="tab-shadow" class="tab-panel">
+                <div class="panel-intro">
+                    <h2>Developing Candidates &amp; Watch Radar</h2>
+                    <p>Candidates nearing activation thresholds, ranked by proximity to active scoring boundaries.</p>
+                </div>
+                <div id="grid-shadow" class="card-grid"></div>
+            </section>
+
+            <!-- Market Map Panel (market_map) -->
+            <section role="tabpanel" id="market_map-panel" aria-labelledby="tab-market_map" class="tab-panel">
+                <div class="panel-intro">
+                    <h2>Comprehensive Market Map</h2>
+                    <p>Complete universe overview across all tracked instruments, states, and data availability statuses.</p>
+                    <div class="market-meta-count" id="market-meta-count">49 markets scanned</div>
+                </div>
+                <div class="table-wrapper">
+                    <table id="table-market_map" class="market-table">
+                        <thead>
+                            <tr>
+                                <th>Pair</th>
+                                <th>Direction</th>
+                                <th>Display State</th>
+                                <th>Weighted Score</th>
+                                <th>Data Availability</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-market_map"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </section>
+
+    <!-- Trust & Conversion Section -->
+    <section class="trust-section">
+        <div class="trust-container">
+            <h2>Built for selectivity, not signal volume.</h2>
+            <div class="trust-grid">
+                <div class="trust-card">
+                    <h3>Selective by design</h3>
+                    <p>Filtered against noise so you only review high-quality structural setups when conditions align.</p>
+                </div>
+                <div class="trust-card">
+                    <h3>Context over prediction</h3>
+                    <p>We measure order flow pressure, tempo, and delta state rather than relying on guesswork or hindsight.</p>
+                </div>
+                <div class="trust-card">
+                    <h3>Transparent reasoning</h3>
+                    <p>Inspect threshold metrics, scoring components, and risk invalidation parameters directly.</p>
+                </div>
+            </div>
+            <div class="trust-footer">
+                <p class="disclaimer-text">No automatic execution. Final decisions remain yours.</p>
+                <button class="cta-button primary-cta" onclick="openAccessModal()">Unlock full market context</button>
+            </div>
+        </div>
+    </section>
+
+    <footer class="app-footer">
+        <p>April Market Intelligence Engine &bull; Analytical Data Feed &bull; No automated execution or guaranteed performance implied.</p>
+    </footer>
+
+    <!-- Access Modal -->
+    <div id="access-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="modal-title">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeAccessModal()" aria-label="Close modal">&times;</button>
+            <h2 id="modal-title">Unlock full market context</h2>
+            <p>Full access includes the complete 49-pair scan, qualified opportunities, developing conditions, and detailed market context.</p>
+            <div class="modal-form-actions">
+                <button class="cta-button primary-cta" onclick="handleRequestAccess()">Request access</button>
+                <button class="cta-button secondary-cta" onclick="closeAccessModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/feed.js"></script>
+</body>
+</html>
+
