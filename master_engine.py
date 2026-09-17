@@ -31,7 +31,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, JSONResponse
 
-from pair_universe import MarketDataSource
+from pair_universe import MarketDataSource, PROP_SYMBOLS
 from prism_passive_observer_v2 import observe_completed_bar
 from speed_phase import analyze_completed_candles
 from delta_tempo_v1 import build_delta_tempo
@@ -53,21 +53,8 @@ DATA_DIR = Path(
     )
 )
 
-APRIL_12_SYMBOLS = [
-    "BTC",
-    "ETH",
-    "SOL",
-    "XRP",
-    "DOGE",
-    "AVAX",
-    "ADA",
-    "SUI",
-    "NEAR",
-    "LINK",
-    "LTC",
-    "BCH",
-]
-
+APRIL_49_SYMBOLS = list(PROP_SYMBOLS)
+ACTIVE_SYMBOLS = APRIL_49_SYMBOLS
 TIMEFRAME = os.environ.get(
     "PRISM_TIMEFRAME",
     "5m",
@@ -161,7 +148,7 @@ SERVICE_STATE: dict[str, Any] = {
     ),
     "storage_note": f"Data directory: {DATA_DIR}",
     "poll_seconds": POLL_SECONDS,
-    "symbols": APRIL_12_SYMBOLS,
+    "symbols": ACTIVE_SYMBOLS,
     "timeframe": TIMEFRAME,
     "last_poll_started_at_utc": None,
     "last_successful_scan_at_utc": None,
@@ -174,7 +161,7 @@ SERVICE_STATE: dict[str, Any] = {
     "alert_history": [],
     "alert_keys_sent": [],
     "universe_telemetry": {
-        "configured_pair_count": len(APRIL_12_SYMBOLS),
+        "configured_pair_count": len(ACTIVE_SYMBOLS),
         "candles_fetched_count": 0,
         "scanned_pair_count": 0,
         "signal_count": 0,
@@ -905,7 +892,7 @@ def run_battlefield_scan() -> None:
     scan_failures: list[dict[str, str]] = []
     candles_fetched_count = 0
 
-    for symbol in APRIL_12_SYMBOLS:
+    for symbol in ACTIVE_SYMBOLS:
         try:
             observation = run_one_symbol_observation(
                 market_data_source,
@@ -981,7 +968,7 @@ def run_battlefield_scan() -> None:
         SERVICE_STATE["last_error"] = None
         SERVICE_STATE["universe_telemetry"] = {
             "configured_pair_count": len(
-                APRIL_12_SYMBOLS
+                ACTIVE_SYMBOLS
             ),
             "candles_fetched_count": (
                 candles_fetched_count
@@ -1001,7 +988,7 @@ def battlefield_worker() -> None:
             "April 12 worker started symbols=%s "
             "timeframe=%s poll=%ss"
         ),
-        ",".join(APRIL_12_SYMBOLS),
+        ",".join(ACTIVE_SYMBOLS),
         TIMEFRAME,
         POLL_SECONDS,
     )
@@ -1115,7 +1102,7 @@ def get_health() -> JSONResponse:
                 "status": status,
                 "service": SERVICE_STATE["service"],
                 "mode": SERVICE_STATE["mode"],
-                "symbols": APRIL_12_SYMBOLS,
+                "symbols": ACTIVE_SYMBOLS,
                 "storage_mode": SERVICE_STATE[
                     "storage_mode"
                 ],
