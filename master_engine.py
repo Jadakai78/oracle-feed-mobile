@@ -30,6 +30,7 @@ from typing import Any
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from pair_universe import MarketDataSource, PROP_SYMBOLS
 from prism_passive_observer_v2 import observe_completed_bar
@@ -174,6 +175,9 @@ app = FastAPI(
     title="April 12 PRISM/LAR Battlefield Board",
     version="3.0.0",
 )
+
+STATIC_DIR = APP_ROOT / "static"
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 
 def utc_now_iso() -> str:
