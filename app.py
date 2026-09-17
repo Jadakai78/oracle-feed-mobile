@@ -1,19 +1,18 @@
 from __future__ import annotations
 
+import json
 import os
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
-import requests
 from flask import Flask, jsonify, render_template
 
-app = Flask(__name__)
+APP_ROOT = Path(__file__).resolve().parent
+SALE_FEED_PATH = APP_ROOT / "signals.json"
+SALE_FEED_RECORDS_KEY = "all_pairs"
 
-MAIN_FEED_URL = os.environ.get("MAIN_FEED_URL", "").strip().rstrip("/")
-MAIN_FEED_TIMEOUT_SECONDS = max(
-    3,
-    int(os.environ.get("MAIN_FEED_TIMEOUT_SECONDS", "15")),
-)
+app = Flask(__name__)
 
 
 def utc_now_iso() -> str:
@@ -33,6 +32,19 @@ def safe_text(value: Any, default: str = "Not available") -> str:
     return text if text else default
 
 
+def safe_number(value: Any, default: float | None = None) -> float | None:
+    if isinstance(value, bool):
+        return default
+
+    if isinstance(value, (int, float)):
+        return float(value)
+
+    try:
+        return float(str(value).strip())
+    except (TypeError, ValueError):
+        return default
+
+
 def normalize_direction(value: Any) -> str:
     direction = safe_text(value, "NEUTRAL").upper()
 
@@ -45,249 +57,277 @@ def normalize_direction(value: Any) -> str:
     return "NEUTRAL"
 
 
-def battle_state_to_eligibility(battle_state: Any) -> str:
-    state = safe_text(battle_state, "TRACKING").upper()
+def eligibility_to_display_state(value: Any) -> str:
+    eligibility = safe_text(value, "REJECTED").upper()
 
-    if state == "LOCKED IN":
-        return "ELIGIBLE"
-
-    if state in {"PRESSURE BUILDING", "RELOAD ZONE"}:
-        return "ELIGIBLE_WATCH"
-
-    return "HIDDEN"
-
-
-def battle_state_to_weighted_score(battle_state: Any) -> float:
-    state = safe_text(battle_state, "TRACKING").upper()
-
-    if state == "LOCKED IN":
-        return 1.00
-
-    if state == "PRESSURE BUILDING":
-        return 0.75
-
-    if state == "RELOAD ZONE":
-        return 0.60
-
-    return 0.00
-
-
-def main_signal_to_owner_record(signal: dict[str, Any]) -> dict[str, Any]:
-    battle_state = safe_text(signal.get("battle_state"), "TRACKING")
-    reason = safe_text(signal.get("reason"), "No source reason supplied.")
-    speed_phase = safe_text(signal.get("speed_phase"), "UNAVAILABLE")
-    direction = normalize_direction(signal.get("speed_direction"))
-
-    eligibility_state = battle_state_to_eligibility(battle_state)
-    score = battle_state_to_weighted_score(battle_state)
-
-    blockers: list[str] = []
-
-    if eligibility_state == "ELIGIBLE_WATCH":
-        blockers.append(f"watch_state:{battle_state}")
-
-    if eligibility_state == "HIDDEN":
-        blockers.append(f"not_publishable:{battle_state}")
-
-    return {
-        "pair": safe_text(signal.get("pair"), "UNKNOWN"),
-        "direction": direction,
-        "weighted_core_score": score,
-        "weighted_core_gate": battle_state,
-        "speed_state": speed_phase,
-        "speed_policy": "MAIN_FEED_READ_ONLY",
-        "speed_caution_reason": reason,
-        "eligibility_state": eligibility_state,
-        "eligibility_blockers": blockers,
-        "entry": None,
-        "stop_loss": None,
-        "take_profit": None,
-        "risk_reward": None,
-        "event_timestamp_utc": signal.get("event_timestamp_utc"),
-        "source": "april-12-prism-lar-battlefield",
-        "prism_status": signal.get("prism_status"),
-        "prism_first_block": signal.get("prism_first_block"),
-        "lar_state": signal.get("lar_state"),
-        "lar_pool_side": signal.get("lar_pool_side"),
-        "lar_pool_type": signal.get("lar_pool_type"),
-        "lar_description": signal.get("lar_description"),
-        "battle_state": battle_state,
-        "manual_review_only": True,
-        "trade_authority": False,
-        "entry_authority": False,
-    }
-
-
-def source_unavailable_record(reason: str) -> dict[str, Any]:
-    return {
-        "pair": "MAIN_FEED_UNAVAILABLE",
-        "direction": "NEUTRAL",
-        "weighted_core_score": 0.00,
-        "weighted_core_gate": "UNAVAILABLE",
-        "speed_state": "UNAVAILABLE",
-        "speed_policy": "MAIN_FEED_READ_ONLY",
-        "speed_caution_reason": reason,
-        "eligibility_state": "HIDDEN",
-        "eligibility_blockers": [reason],
-        "entry": None,
-        "stop_loss": None,
-        "take_profit": None,
-        "risk_reward": None,
-        "event_timestamp_utc": utc_now_iso(),
-        "source": "april-mobile-feed",
-        "battle_state": "UNAVAILABLE",
-        "manual_review_only": True,
-        "trade_authority": False,
-        "entry_authority": False,
-    }
-
-
-def fetch_main_feed_payload() -> dict[str, Any]:
-    if not MAIN_FEED_URL:
-        raise RuntimeError(
-            "MAIN_FEED_URL is not configured. "
-            "Set it in Render to the public base URL of the April 12 "
-            "PRISM/LAR Battlefield service."
-        )
-
-    response = requests.get(
-        f"{MAIN_FEED_URL}/api/observations",
-        timeout=MAIN_FEED_TIMEOUT_SECONDS,
-        headers={"Accept": "application/json"},
-    )
-
-    response.raise_for_status()
-
-    payload = response.json()
-
-    if not isinstance(payload, dict):
-        raise RuntimeError(
-            "Main feed returned an invalid payload: expected a JSON object."
-        )
-
-    return payload
-
-
-def get_owner_feed_records() -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    try:
-        payload = fetch_main_feed_payload()
-
-        raw_signals = payload.get("signals", [])
-
-        if not isinstance(raw_signals, list):
-            raise RuntimeError(
-                "Main feed returned an invalid signals field: expected a list."
-            )
-
-        records = [
-            main_signal_to_owner_record(signal)
-            for signal in raw_signals
-            if isinstance(signal, dict)
-        ]
-
-        meta = {
-            "source_status": "LIVE",
-            "source_url": MAIN_FEED_URL,
-            "source_timestamp": payload.get("timestamp")
-            or payload.get("last_successful_scan_at_utc"),
-            "active_signals_count": payload.get("active_signals_count", len(records)),
-            "upstream_health": payload.get("last_error"),
-            "upstream_mode": payload.get("mode"),
-            "retrieved_at_utc": utc_now_iso(),
-        }
-
-        return records, meta
-
-    except Exception as exc:
-        reason = f"{type(exc).__name__}: {exc}"
-
-        return (
-            [source_unavailable_record(reason)],
-            {
-                "source_status": "UNAVAILABLE",
-                "source_url": MAIN_FEED_URL or None,
-                "source_timestamp": None,
-                "active_signals_count": 0,
-                "upstream_health": reason,
-                "upstream_mode": None,
-                "retrieved_at_utc": utc_now_iso(),
-            },
-        )
-
-
-def format_price(value: Any, label: str) -> str | None:
-    if isinstance(value, (int, float)):
-        return f"{label} {value:.2f}"
-
-    return None
-
-
-def april_display_state(eligibility_state: Any) -> str:
-    state = safe_text(eligibility_state, "HIDDEN").upper()
-
-    if state == "ELIGIBLE":
+    if eligibility == "EXECUTION_ELIGIBLE":
         return "QUALIFIED"
 
-    if state == "ELIGIBLE_WATCH":
+    if eligibility in {"ELIGIBLE_WATCH", "BUILDING"}:
         return "WATCH"
 
     return "HIDDEN"
 
 
-def to_april_record(record: dict[str, Any]) -> dict[str, Any]:
-    state = safe_text(record.get("eligibility_state"), "HIDDEN")
-    weighted_score = record.get("weighted_core_score", 0.0)
-    blockers = record.get("eligibility_blockers", [])
+def format_price(value: Any, label: str) -> str | None:
+    number = safe_number(value)
 
-    if not isinstance(weighted_score, (int, float)):
-        weighted_score = 0.0
+    if number is None:
+        return None
 
-    if not isinstance(blockers, list):
-        blockers = [str(blockers)]
+    if abs(number) >= 1000:
+        return f"{label} {number:,.2f}"
 
-    entry = record.get("entry")
-    stop_loss = record.get("stop_loss")
-    take_profit = record.get("take_profit")
-    risk_reward = record.get("risk_reward")
+    if abs(number) >= 1:
+        return f"{label} {number:.4f}"
+
+    return f"{label} {number:.8f}"
+
+
+def calculate_risk_reward(
+    side: str,
+    entry: float | None,
+    stop_loss: float | None,
+    take_profit: float | None,
+) -> float | None:
+    if (
+        entry is None
+        or stop_loss is None
+        or take_profit is None
+        or entry == stop_loss
+    ):
+        return None
+
+    risk = (
+        entry - stop_loss
+        if side == "LONG"
+        else stop_loss - entry
+    )
+
+    reward = (
+        take_profit - entry
+        if side == "LONG"
+        else entry - take_profit
+    )
+
+    if risk <= 0 or reward <= 0:
+        return None
+
+    return reward / risk
+
+
+def concise_gate_blockers(
+    gates: Any,
+    eligibility: str,
+) -> list[str]:
+    if eligibility == "EXECUTION_ELIGIBLE":
+        return []
+
+    blockers: list[str] = []
+
+    if isinstance(gates, dict):
+        for gate_name, gate_value in gates.items():
+            if not isinstance(gate_value, dict):
+                continue
+
+            status = safe_text(
+                gate_value.get("status"),
+                "UNKNOWN",
+            ).upper()
+
+            if status not in {"PASS", "OK", "CLEAR"}:
+                reason = safe_text(
+                    gate_value.get("reason"),
+                    status,
+                )
+
+                blockers.append(
+                    f"{gate_name}:{reason}"
+                )
+
+    return blockers[:6]
+
+
+def sale_signal_to_april_record(
+    signal: dict[str, Any],
+) -> dict[str, Any]:
+    eligibility = safe_text(
+        signal.get("eligibility"),
+        "REJECTED",
+    ).upper()
+
+    display_state = eligibility_to_display_state(
+        eligibility
+    )
+
+    geometry = signal.get("geometry", {})
+
+    if not isinstance(geometry, dict):
+        geometry = {}
+
+    score = safe_number(signal.get("score"), 0.0)
+    score = max(0.0, min(100.0, score or 0.0))
+    weighted_score = score / 100.0
+
+    side = normalize_direction(
+        signal.get("side")
+        or geometry.get("side")
+    )
+
+    entry = safe_number(geometry.get("entry"))
+    stop_loss = safe_number(geometry.get("sl"))
+    take_profit = safe_number(geometry.get("tp1"))
+    take_profit_2 = safe_number(geometry.get("tp2"))
+
+    risk_reward = calculate_risk_reward(
+        side=side,
+        entry=entry,
+        stop_loss=stop_loss,
+        take_profit=take_profit,
+    )
+
+    gates = signal.get("gates", {})
+    blockers = concise_gate_blockers(
+        gates=gates,
+        eligibility=eligibility,
+    )
+
+    if display_state == "HIDDEN" and not blockers:
+        blockers = [f"eligibility:{eligibility}"]
 
     return {
-        "symbol": safe_text(record.get("pair"), "UNKNOWN"),
-        "pair": safe_text(record.get("pair"), "UNKNOWN"),
-        "direction": normalize_direction(record.get("direction")),
-        "display_state": april_display_state(state),
-        "weighted_eligibility_score": f"{weighted_score:.0%}",
+        "symbol": safe_text(
+            signal.get("symbol"),
+            safe_text(signal.get("pair"), "UNKNOWN"),
+        ),
+        "pair": safe_text(signal.get("pair"), "UNKNOWN"),
+        "direction": side,
+        "display_state": display_state,
+        "weighted_eligibility_score": f"{score:.0f}%",
         "active_weighted_threshold": "60%",
         "weighted_core_score": weighted_score,
-        "weighted_core_gate": safe_text(record.get("weighted_core_gate")),
-        "confidence": f"{weighted_score:.0%}",
-        "speed_state": safe_text(record.get("speed_state")),
-        "speed_policy": safe_text(record.get("speed_policy")),
-        "speed_caution_reason": safe_text(
-            record.get("speed_caution_reason")
+        "weighted_core_gate": eligibility,
+        "confidence": f"{score:.0f}%",
+        "speed_state": safe_text(
+            signal.get("speed_state")
+            or signal.get("speed_phase"),
+            "UNAVAILABLE",
         ),
-        "eligibility_state": state,
+        "speed_policy": "SALE_FEED_SOURCE_OF_TRUTH",
+        "speed_caution_reason": safe_text(
+            signal.get("rejected_at"),
+            "No rejection timestamp.",
+        ),
+        "eligibility_state": eligibility,
         "eligibility_blockers": blockers,
         "entry": entry,
         "stop_loss": stop_loss,
         "take_profit": take_profit,
+        "take_profit_2": take_profit_2,
         "risk_reward": risk_reward,
         "entry_display": format_price(entry, "Entry"),
-        "stop_loss_display": format_price(stop_loss, "Stop"),
-        "take_profit_display": format_price(take_profit, "Target"),
+        "stop_loss_display": format_price(
+            stop_loss,
+            "Stop",
+        ),
+        "take_profit_display": format_price(
+            take_profit,
+            "Target",
+        ),
+        "take_profit_2_display": format_price(
+            take_profit_2,
+            "Target 2",
+        ),
         "risk_reward_display": (
             f"R:R {risk_reward:.2f}"
-            if isinstance(risk_reward, (int, float))
+            if risk_reward is not None
             else None
         ),
-        "event_timestamp_utc": record.get("event_timestamp_utc"),
-        "source": safe_text(record.get("source")),
-        "battle_state": safe_text(record.get("battle_state")),
-        "prism_status": safe_text(record.get("prism_status")),
-        "prism_first_block": safe_text(record.get("prism_first_block")),
-        "lar_state": safe_text(record.get("lar_state")),
-        "lar_pool_side": safe_text(record.get("lar_pool_side")),
-        "lar_pool_type": safe_text(record.get("lar_pool_type")),
-        "lar_description": safe_text(record.get("lar_description")),
+        "event_timestamp_utc": (
+            signal.get("ts")
+            or signal.get("generated_at")
+        ),
+        "source": "signals.json",
+        "higher_timeframe_direction": signal.get(
+            "htf_direction"
+        ),
+        "geometry": geometry,
+        "manual_review_only": True,
+        "trade_authority": False,
+        "entry_authority": False,
+    }
+
+
+def load_sale_feed() -> tuple[
+    dict[str, Any],
+    list[dict[str, Any]],
+    str | None,
+]:
+    try:
+        raw = SALE_FEED_PATH.read_text(
+            encoding="utf-8"
+        )
+
+        payload = json.loads(raw)
+
+        if not isinstance(payload, dict):
+            raise ValueError(
+                "signals.json must contain a JSON object."
+            )
+
+        raw_records = payload.get(
+            SALE_FEED_RECORDS_KEY,
+            [],
+        )
+
+        if not isinstance(raw_records, list):
+            raise ValueError(
+                f"signals.json {SALE_FEED_RECORDS_KEY} "
+                "must be a list."
+            )
+
+        records = [
+            sale_signal_to_april_record(item)
+            for item in raw_records
+            if isinstance(item, dict)
+        ]
+
+        return payload, records, None
+
+    except Exception as exc:
+        return {}, [], f"{type(exc).__name__}: {exc}"
+
+
+def source_unavailable_record(
+    error: str,
+) -> dict[str, Any]:
+    return {
+        "symbol": "SALE_FEED_UNAVAILABLE",
+        "pair": "SALE_FEED_UNAVAILABLE",
+        "direction": "NEUTRAL",
+        "display_state": "HIDDEN",
+        "weighted_eligibility_score": "0%",
+        "active_weighted_threshold": "60%",
+        "weighted_core_score": 0.0,
+        "weighted_core_gate": "UNAVAILABLE",
+        "confidence": "0%",
+        "speed_state": "UNAVAILABLE",
+        "speed_policy": "SALE_FEED_SOURCE_OF_TRUTH",
+        "speed_caution_reason": error,
+        "eligibility_state": "UNAVAILABLE",
+        "eligibility_blockers": [error],
+        "entry": None,
+        "stop_loss": None,
+        "take_profit": None,
+        "take_profit_2": None,
+        "risk_reward": None,
+        "entry_display": None,
+        "stop_loss_display": None,
+        "take_profit_display": None,
+        "take_profit_2_display": None,
+        "risk_reward_display": None,
+        "event_timestamp_utc": utc_now_iso(),
+        "source": "signals.json",
         "manual_review_only": True,
         "trade_authority": False,
         "entry_authority": False,
@@ -301,71 +341,100 @@ def dashboard():
 
 @app.get("/api/feed")
 def api_feed():
-    owner_records, source_meta = get_owner_feed_records()
+    payload, records, error = load_sale_feed()
 
-    april_records = [
-        to_april_record(record)
-        for record in owner_records
-    ]
+    if error is not None:
+        records = [source_unavailable_record(error)]
 
     qualified = [
         record
-        for record in april_records
+        for record in records
         if record["display_state"] == "QUALIFIED"
     ]
 
     watch = [
         record
-        for record in april_records
+        for record in records
         if record["display_state"] == "WATCH"
     ]
 
     hidden = [
         record
-        for record in april_records
+        for record in records
         if record["display_state"] == "HIDDEN"
     ]
+
+    summary = payload.get("summary", {})
+
+    if not isinstance(summary, dict):
+        summary = {}
 
     return jsonify(
         {
             "service": "oracle-feed-mobile",
-            "mode": "MAIN_FEED_READ_ONLY",
+            "mode": "SALE_FEED_ALL_49_PAIRS",
             "manual_review_only": True,
             "trade_authority": False,
             "entry_authority": False,
             "generated_at_utc": utc_now_iso(),
-            "source": source_meta,
+            "source": {
+                "status": (
+                    "LIVE_SNAPSHOT"
+                    if error is None
+                    else "UNAVAILABLE"
+                ),
+                "file": "signals.json",
+                "records_key": SALE_FEED_RECORDS_KEY,
+                "file_generated_at": payload.get(
+                    "generated_at"
+                ),
+                "schema_version": payload.get(
+                    "schema_version"
+                ),
+                "error": error,
+            },
+            "universe": payload.get("universe", {}),
+            "summary": summary,
             "tabs": {
                 "qualified": qualified,
                 "watch": watch,
                 "hidden": hidden,
             },
-            "records": april_records,
+            "records": records,
         }
     )
 
 
 @app.get("/health")
 def health():
-    _, source_meta = get_owner_feed_records()
+    payload, records, error = load_sale_feed()
 
     return jsonify(
         {
             "status": (
                 "healthy"
-                if source_meta["source_status"] == "LIVE"
+                if error is None
                 else "degraded"
             ),
             "service": "oracle-feed-mobile",
-            "mode": "MAIN_FEED_READ_ONLY",
-            "source": source_meta,
+            "mode": "SALE_FEED_ALL_49_PAIRS",
+            "source_file": "signals.json",
+            "records_key": SALE_FEED_RECORDS_KEY,
+            "file_generated_at": payload.get(
+                "generated_at"
+            ),
+            "record_count": len(records),
+            "universe": payload.get("universe", {}),
+            "error": error,
             "checked_at_utc": utc_now_iso(),
         }
     )
 
 
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", "10000"))
+
     app.run(
         host="0.0.0.0",
-        port=int(os.environ.get("PORT", "10000")),
+        port=port,
     )
