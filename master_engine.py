@@ -1051,6 +1051,26 @@ def get_feed() -> JSONResponse:
             default="NEUTRAL",
         ).upper()
 
+        delta_tempo = record.get("delta_tempo") or {}
+        pressure = delta_tempo.get("pressure") or {}
+        participation = delta_tempo.get("participation") or {}
+        tempo = delta_tempo.get("tempo") or {}
+
+        buyer_pressure = pressure.get("buyer_pressure")
+        seller_pressure = pressure.get("seller_pressure")
+
+        pressure_imbalance_score = None
+        if isinstance(buyer_pressure, (int, float)) and isinstance(
+            seller_pressure,
+            (int, float),
+        ):
+            pressure_imbalance_score = round(
+                abs(buyer_pressure - seller_pressure) * 100,
+                4,
+            )
+
+        threshold = 10.0
+
         return {
             **record,
             "display_state": display_state,
@@ -1063,6 +1083,37 @@ def get_feed() -> JSONResponse:
                 ).upper() == "ONLINE"
                 else "unavailable"
             ),
+            "weighted_eligibility_score": pressure_imbalance_score,
+            "active_weighted_threshold": threshold,
+            "pressure_strength": pressure.get("state"),
+            "absolute_tempo": tempo.get("range_expansion_ratio"),
+            "delta_state": pressure.get("state"),
+            "score_version": (
+                "DELTA_TEMPO_PRESSURE_IMBALANCE_V1"
+            ),
+            "diagnostics": {
+                "weighted_eligibility_reason_codes": [
+                    (
+                        "DISPLAY_ONLY: pressure imbalance is "
+                        "abs(buyer_pressure - seller_pressure) * 100; "
+                        "it is not a trade-qualification score."
+                    )
+                ],
+                "legacy_reason_codes": [
+                    f"PRISM_STATUS:{safe_text(record.get('prism_status'))}",
+                    f"PRISM_BLOCK:{safe_text(record.get('prism_first_block'))}",
+                    f"LAR_STATE:{safe_text(record.get('lar_state'))}",
+                    (
+                        "PARTICIPATION:"
+                        f"{safe_text(participation.get('state'))}"
+                    ),
+                    f"TEMPO:{safe_text(tempo.get('state'))}",
+                    (
+                        "TEMPO_TRANSITION:"
+                        f"{safe_text(tempo.get('transition'))}"
+                    ),
+                ],
+            },
         }
 
     signal_keys = {
